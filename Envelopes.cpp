@@ -9,7 +9,7 @@
 */
 
 #include "Envelopes.h"
-#include "PluginProcessor.h"
+#include "../PluginProcessor.h"
 
 //==============================================================================
 Envelope::Envelope(const String& n, ElectroAudioProcessor& p,

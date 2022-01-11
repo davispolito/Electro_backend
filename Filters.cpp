@@ -9,7 +9,7 @@
  */
 
 #include "Filters.h"
-#include "PluginProcessor.h"
+#include "../PluginProcessor.h"
 
 //==============================================================================
 Filter::Filter(const String& n, ElectroAudioProcessor& p,

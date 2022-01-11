@@ -9,7 +9,7 @@
 */
 
 #include "Oscillators.h"
-#include "PluginProcessor.h"
+#include "../PluginProcessor.h"
 
 //==============================================================================
 

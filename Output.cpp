@@ -9,7 +9,7 @@
 */
 
 #include "Output.h"
-#include "PluginProcessor.h"
+#include "../PluginProcessor.h"
 
 //==============================================================================
 Output::Output(const String& n, ElectroAudioProcessor& p,

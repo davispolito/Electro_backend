@@ -11,9 +11,9 @@
 #pragma once
 
 #include <JuceHeader.h>
-#include "PluginProcessor.h"
-#include "Electro_backend/ElectroComponents.h"
-#include "Electro_backend/ElectroLookAndFeel.h"
+#include "../PluginProcessor.h"
+#include "ElectroComponents.h"
+#include "ElectroLookAndFeel.h"
 
 class ElectroAudioProcessorEditor;
 

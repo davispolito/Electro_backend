@@ -9,7 +9,7 @@
 */
 
 #include "Utilities.h"
-#include "PluginProcessor.h"
+#include "../PluginProcessor.h"
 
 SmoothedParameter::SmoothedParameter(ElectroAudioProcessor& processor, AudioProcessorValueTreeState& vts,
                                      String paramId) :

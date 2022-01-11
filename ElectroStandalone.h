@@ -18,8 +18,8 @@
 #endif
 #endif
 
-#include "PluginProcessor.h"
-#include "Electro_backend/ElectroLookAndFeel.h"
+#include "../PluginProcessor.h"
+#include "ElectroLookAndFeel.h"
 
 //==============================================================================
 /**
