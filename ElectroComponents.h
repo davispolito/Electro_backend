@@ -171,8 +171,76 @@ public:
         }
     }
 };
+//==============================================================================
+class TuningTab : public Component
+{
+public:
+    TuningTab(ElectroAudioProcessor& p, AudioProcessorValueTreeState& vts) :
+    processor(p),
+    importChooser("Import Scala Tuning",
+                  File::getSpecialLocation(File::userDocumentsDirectory),
+                  "*.scl")
+    {
+        importButton.setButtonText("Import .scl");
+        importButton.setLookAndFeel(&laf);
+        importButton.onClick = [this] { importScala(); };
+        addAndMakeVisible(importButton);
+    }
+    
+    ~TuningTab() override
+    {
+        importButton.setLookAndFeel(nullptr);
+    }
+    void importScala(void)
+    {
+        importChooser.launchAsync (FileBrowserComponent::openMode |
+                                   FileBrowserComponent::canSelectFiles,
+                                   [this] (const FileChooser& chooser)
+                                   {
+            String path = chooser.getResult().getFullPathName();
+            if (path.isEmpty()) return;
+
+            processor.loadScala(path.toStdString());
+        });
+    }
+    void resized() override
+    {
+        Rectangle<int> area = getLocalBounds();
+        
+        int h = area.getHeight();
+        int w = area.getWidth();
+        int r = area.getWidth() - w - 2;
+        
+        Rectangle<int> bottomArea = area.removeFromBottom(h*0.15);
+        bottomArea.removeFromTop(h*0.03);
+        Rectangle<int> upperBottomArea = bottomArea.removeFromTop(h*0.06);
+        
+
+        upperBottomArea.removeFromRight(2);
+        bottomArea.removeFromRight(2);
+        
+        //importButton.setBounds(bottomArea.removeFromRight(w*4));
+        importButton.setBounds(0, 0, 200, 50);
+    }
+    
+private:
+
+    ElectroAudioProcessor& processor;
+    TextButton importButton;
+
+    FileChooser importChooser;
+
+
+    ElectroLookAndFeel laf;
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TuningTab)
+};
+
+
+
 
 //==============================================================================
+
 class CopedentTable : public Component,
                       public TableListBoxModel,
                       public ComboBox::Listener
