@@ -1,0 +1,6 @@
+[submodule "tuning-library"]
+	path = tuning-library
+	url = git@github.com:surge-synthesizer/tuning-library.git
+[submodule "MTS-ESP"]
+	path = MTS-ESP
+	url = git@github.com:ODDSound/MTS-ESP.git

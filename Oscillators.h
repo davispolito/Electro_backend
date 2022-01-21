@@ -33,11 +33,10 @@ public:
     //==============================================================================
     void setWaveTables(File file);
     File& getWaveTableFile() { return waveTableFile; }
-    
+    void setMtoF(float mn);
     OscShapeSet getCurrentShapeSet() { return currentShapeSet; }
     
 private:
-    
     void (Oscillator::*shapeTick)(float& sample, int v, float freq, float shape);
     void sawSquareTick(float& sample, int v, float freq, float shape);
     void sineTriTick(float& sample, int v, float freq, float shape);

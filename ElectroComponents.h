@@ -185,11 +185,18 @@ public:
         importButton.setLookAndFeel(&laf);
         importButton.onClick = [this] { importScala(); };
         addAndMakeVisible(importButton);
+        MTSButton.setButtonText("MTS On");
+        MTSButton.setLookAndFeel(&laf);
+        MTSButton.onClick = [this] {
+            processor.tuner.setIsMTS(MTSButton.getToggleState());
+        };
+        addAndMakeVisible(MTSButton);
     }
     
     ~TuningTab() override
     {
         importButton.setLookAndFeel(nullptr);
+        MTSButton.setLookAndFeel(nullptr);
     }
     void importScala(void)
     {
@@ -200,9 +207,15 @@ public:
             String path = chooser.getResult().getFullPathName();
             if (path.isEmpty()) return;
 
-            processor.loadScala(path.toStdString());
+            processor.tuner.loadScala(path.toStdString(), processor.centsDeviation);
         });
+        processor.tuner.setIsMTS(false);
+        MTSButton.setToggleState(false, nullptr);
+
     }
+    
+    
+    
     void resized() override
     {
         Rectangle<int> area = getLocalBounds();
@@ -221,13 +234,14 @@ public:
         
         //importButton.setBounds(bottomArea.removeFromRight(w*4));
         importButton.setBounds(0, 0, 200, 50);
+        MTSButton.setBounds(200, 200, 200, 50);
     }
     
 private:
-
+    
     ElectroAudioProcessor& processor;
     TextButton importButton;
-
+    ToggleButton MTSButton;
     FileChooser importChooser;
 
 
