@@ -178,8 +178,8 @@ public:
     TuningTab(ElectroAudioProcessor& p, AudioProcessorValueTreeState& vts) :
     processor(p),
     importChooser("Import Scala Tuning",
-                  File::getSpecialLocation(File::userDocumentsDirectory),
-                  "*.scl")
+                  File::getSpecialLocation(File::userDocumentsDirectory)
+                  )
     {
         importButton.setButtonText("Import .scl");
         importButton.setLookAndFeel(&laf);
@@ -201,9 +201,10 @@ public:
     void importScala(void)
     {
         importChooser.launchAsync (FileBrowserComponent::openMode |
-                                   FileBrowserComponent::canSelectFiles,
-                                   [this] (const FileChooser& chooser)
-                                   {
+                             FileBrowserComponent::canSelectFiles |
+                             FileBrowserComponent::canSelectDirectories,
+                             [this] (const FileChooser& chooser)
+                             {
             String path = chooser.getResult().getFullPathName();
             if (path.isEmpty()) return;
 

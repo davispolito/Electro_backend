@@ -33,11 +33,24 @@ private:
     void lowpassTick(float& sample, int v, float cutoff, float q, float morph);
     void highpassTick(float& sample, int v, float cutoff, float q, float morph);
     void bandpassTick(float& sample, int v, float cutoff, float q, float morph);
+    void diodeLowpassTick(float& sample, int v, float cutoff, float q, float morph);
+    void LadderLowpassTick(float& sample, int v, float cutoff, float q, float morph);
+    void VZlowshelfTick(float& sample, int v, float cutoff, float q, float morph);
+    void VZhighshelfTick(float& sample, int v, float cutoff, float q, float morph);
+    void VZpeakTick(float& sample, int v, float cutoff, float q, float morph);
+    void VZbandrejectTick(float& sample, int v, float cutoff, float q, float morph);
+
     
-    //tVZFilter filters[NUM_STRINGS];
+    tDiodeFilter diodeFilters[NUM_STRINGS];
+    tVZFilter VZfilterPeak[NUM_STRINGS];
+    tVZFilter VZfilterLS[NUM_STRINGS];
+    tVZFilter VZfilterHS[NUM_STRINGS];
+    tVZFilter VZfilterBR[NUM_STRINGS];
     tSVF lowpass[NUM_STRINGS];
     tSVF highpass[NUM_STRINGS];
     tSVF bandpass[NUM_STRINGS];
+    tLadderFilter Ladderfilter[NUM_STRINGS];
+    
     
     std::atomic<float>* afpFilterType;
     FilterType currentFilterType = FilterTypeNil;
