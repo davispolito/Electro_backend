@@ -69,7 +69,8 @@ public:
     
     : settings (settingsToUse, takeOwnershipOfSettings),
     channelConfiguration (channels),
-    autoOpenMidiDevices (shouldAutoOpenMidiDevices)
+    autoOpenMidiDevices (shouldAutoOpenMidiDevices),
+    fc (TRANS("Save current state"), getLastFile())
     {
 #if JUCE_WINDOWS
 #ifdef _DEBUG
@@ -173,34 +174,35 @@ public:
     /** Pops up a dialog letting the user save the processor's state to a file. */
     void askUserToSaveState (const String& fileSuffix = String())
     {
-#if JUCE_MODAL_LOOPS_PERMITTED
-        FileChooser fc (TRANS("Save current state"), getLastFile(), getFilePatterns (fileSuffix));
         
-        if (fc.browseForFileToSave (true))
-        {
-            setLastFile (fc);
+        fc.launchAsync(FileBrowserComponent::saveMode |
+                       FileBrowserComponent::canSelectDirectories | FileBrowserComponent::canSelectFiles,
+                       [this](const FileChooser& fc)
+                       {
             
-            MemoryBlock data;
-            processor->getStateInformation (data);
-            
-            if (! fc.getResult().replaceWithData (data.getData(), data.getSize()))
-                AlertWindow::showMessageBoxAsync (AlertWindow::WarningIcon,
-                                                  TRANS("Error whilst saving"),
-                                                  TRANS("Couldn't write to the specified file!"));
-        }
-#else
-        ignoreUnused (fileSuffix);
-#endif
+              
+                setLastFile (fc);
+                
+                MemoryBlock data;
+                processor->getStateInformation (data);
+                
+                if (! fc.getResult().replaceWithData (data.getData(), data.getSize()))
+                    AlertWindow::showMessageBoxAsync (AlertWindow::WarningIcon,
+                                                      TRANS("Error whilst saving"),
+                                                      TRANS("Couldn't write to the specified file!"));
+            });
     }
     
     /** Pops up a dialog letting the user re-load the processor's state from a file. */
     void askUserToLoadState (const String& fileSuffix = String())
     {
-#if JUCE_MODAL_LOOPS_PERMITTED
-        FileChooser fc (TRANS("Load a saved state"), getLastFile(), getFilePatterns (fileSuffix));
-        
-        if (fc.browseForFileToOpen())
-        {
+        //FileChooser fc (TRANS("Load a saved state"), getLastFile(), getFilePatterns (fileSuffix));
+        fc.launchAsync(FileBrowserComponent::openMode |
+                       FileBrowserComponent::canSelectDirectories | FileBrowserComponent::canSelectFiles,
+                       [this](const FileChooser& fc)
+                       {
+            String path = fc.getResult().getFullPathName();
+            if (path.isEmpty()) return;
             setLastFile (fc);
             
             MemoryBlock data;
@@ -211,10 +213,7 @@ public:
                 AlertWindow::showMessageBoxAsync (AlertWindow::WarningIcon,
                                                   TRANS("Error whilst loading"),
                                                   TRANS("Couldn't read from the specified file!"));
-        }
-#else
-        ignoreUnused (fileSuffix);
-#endif
+            });
     }
     
     //==============================================================================
@@ -394,7 +393,7 @@ public:
     Array<MidiDeviceInfo> lastMidiDevices;
     
     ElectroLookAndFeel2 laf;
-    
+    FileChooser fc;
 private:
     //==============================================================================
     class SettingsComponent : public Component
