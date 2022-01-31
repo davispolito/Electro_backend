@@ -151,6 +151,7 @@ void Oscillator::tick(float output[][NUM_STRINGS])
         
         float note = processor.voiceNote[v];
         float finalFreq = processor.tuner.mtof(LEAF_clip(0, note + pitch + fine*0.01f, 127)) + freq;
+        //DBG(note);
         //freq = freq < 10.f ? 0.f : freq
         
         float sample = 0.0f;

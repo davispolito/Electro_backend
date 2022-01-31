@@ -181,6 +181,17 @@ public:
                   File::getSpecialLocation(File::userDocumentsDirectory)
                   )
     {
+        clearButton.setButtonText("Clear Tuning");
+        clearButton.setLookAndFeel(&laf);
+        clearButton.onClick = [this] {
+            for (int i = 0; i < 12; i++)
+            {
+                processor.centsDeviation[i] = 0;
+            }
+            processor.tuner.setIsMTS(false);
+            MTSButton.setToggleState(false, nullptr);
+            };
+        addAndMakeVisible(clearButton);
         importButton.setButtonText("Import .scl");
         importButton.setLookAndFeel(&laf);
         importButton.onClick = [this] { importScala(); };
@@ -235,7 +246,8 @@ public:
         
         //importButton.setBounds(bottomArea.removeFromRight(w*4));
         importButton.setBounds(0, 0, 200, 50);
-        MTSButton.setBounds(200, 200, 200, 50);
+        clearButton.setBounds(200,50,200,50);
+        MTSButton.setBounds(200, 0, 200, 50);
     }
     
 private:
@@ -244,7 +256,7 @@ private:
     TextButton importButton;
     ToggleButton MTSButton;
     FileChooser importChooser;
-
+    TextButton clearButton;
 
     ElectroLookAndFeel laf;
 
