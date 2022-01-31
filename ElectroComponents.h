@@ -246,8 +246,8 @@ public:
         
         //importButton.setBounds(bottomArea.removeFromRight(w*4));
         importButton.setBounds(0, 0, 200, 50);
-        clearButton.setBounds(200,50,200,50);
-        MTSButton.setBounds(200, 0, 200, 50);
+        clearButton.setBounds(200,0,200,50);
+        MTSButton.setBounds(400, 0, 200, 50);
     }
     
 private:
