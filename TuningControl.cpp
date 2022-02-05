@@ -38,12 +38,14 @@ float TuningControl::_MTS_mtof(float mn)
 }
 void TuningControl::MTSOnOff()
 {
-    if (isMTS && !MTS_HasMaster(client))
+    if (isMTS && (!MTS_HasMaster(client) || client == nullptr))
     {
         client = MTS_RegisterClient();
     } else if (!isMTS && MTS_HasMaster(client))
     {
+        //Deregister just deletes the client so we must set it to null so that we know it is deleted;
         MTS_DeregisterClient(client);
+        client = nullptr;
     }
 }
 // ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ SCALA READING ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~

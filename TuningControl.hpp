@@ -20,9 +20,9 @@
 class TuningControl
 {
 public:
-    TuningControl()
+    TuningControl() : client(nullptr), isMTS(false)
     {
-        setIsMTS(false);
+        mtofptr = setMtoFFunction(isMTS);
     }
     ~TuningControl()
     {
