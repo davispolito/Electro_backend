@@ -206,8 +206,8 @@ public:
     
     ~TuningTab() override
     {
-        importButton.setLookAndFeel(nullptr);
-        MTSButton.setLookAndFeel(nullptr);
+        //importButton.setLookAndFeel(nullptr);
+        //MTSButton.setLookAndFeel(nullptr);
     }
     void importScala(void)
     {
@@ -252,13 +252,14 @@ public:
     
 private:
     
+    ElectroLookAndFeel laf;
+
     ElectroAudioProcessor& processor;
     TextButton importButton;
     ToggleButton MTSButton;
     FileChooser importChooser;
     TextButton clearButton;
 
-    ElectroLookAndFeel laf;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TuningTab)
 };
