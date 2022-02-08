@@ -127,10 +127,6 @@ chooser("Select wavetable file or folder...",
               File::getSpecialLocation(File::userDocumentsDirectory)),
 isHarmonic(false)
 {
-    
-    
-    buttonAttachments.add(new ButtonAttachment(vts, ac.getName() + " isHarmonic", pitchDialToggle));
-    
     outlineColour = Colours::darkgrey;
     
     // Pitch and freq dials should snap to ints
@@ -139,14 +135,14 @@ isHarmonic(false)
     pitchDialToggle.setLookAndFeel(&laf);
     pitchDialToggle.addListener(this);
     pitchDialToggle.setTitle("Harmonic Dial");
-    pitchDialToggle.setButtonText("Harmonic/Pitch");
+    
     addAndMakeVisible(pitchDialToggle);
     
     
-//    smoothingToggle.setLookAndFeel(&laf);
-//    smoothingToggle.addListener(this);
-//    smoothingToggle.setButtonText("Smoothed");
-//    addAndMakeVisible(smoothingToggle);
+    smoothingToggle.setLookAndFeel(&laf);
+    smoothingToggle.addListener(this);
+    smoothingToggle.setButtonText("Smoothed");
+    addAndMakeVisible(smoothingToggle);
     
     harmonicsLabel.setLookAndFeel(&laf);
     harmonicsLabel.setEditable(true);
@@ -198,8 +194,6 @@ isHarmonic(false)
     s = std::make_unique<MappingSource>
     (editor, *editor.processor.getMappingSource(ac.getName()), ac.getName());
     addAndMakeVisible(s.get());
-    
-    
 }
 
 OscModule::~OscModule()
@@ -215,13 +209,18 @@ void OscModule::resized()
     
     s->setBounds(4, 4, getWidth()*0.1f, enabledToggle.getHeight()-8);
    
-    harmonicsLabel.setBoundsRelative(relLeftMargin + relDialWidth * 0.25,
+    harmonicsLabel.setBoundsRelative(relLeftMargin + relDialWidth * 0.5,
                                      0.02f, relDialWidth+relDialSpacing * 0.25, 0.16f);
     
+<<<<<<< Updated upstream
+    pitchLabel.setBoundsRelative(relLeftMargin+relDialWidth * 1.5,
+                                 0.02f, relDialWidth+relDialSpacing * 0.25, 0.16f);
+=======
     pitchDialToggle.setBoundsRelative(0.0f, 0.412f, 0.05f, 0.15f);
     
-    pitchLabel.setBoundsRelative(relLeftMargin+relDialWidth * 1.25,
+    pitchLabel.setBoundsRelative(relLeftMargin+0.5f*relDialWidth,
                                  0.02f, relDialWidth+relDialSpacing, 0.16f);
+>>>>>>> Stashed changes
     
     freqLabel.setBoundsRelative(relLeftMargin+2*relDialWidth+1.5*relDialSpacing,
                                  0.02f, relDialWidth+relDialSpacing, 0.16f);
@@ -261,21 +260,26 @@ void OscModule::buttonClicked(Button* button)
         sendSlider.setEnabled(enabledToggle.getToggleState());
         sendSlider.setAlpha(enabledToggle.getToggleState() ? 1. : 0.5);
     }
+<<<<<<< Updated upstream
+    else if (button == &smoothingToggle)
+    {
+        getDial(OscPitch)->setRange(-16, 16, smoothingToggle.getToggleState() ? 1. : 0.001 );
+    }
+        
+=======
     else if (button == &pitchDialToggle)
     {
         if (isHarmonic)
         {
             getDial(OscPitch)->setRange(-24, 24., 1.);
-            getDial(OscPitch)->setText("Pitch", dontSendNotification);
             isHarmonic = false;
         } else
         {
-            getDial(OscPitch)->setRange(-16, 16., 1.);
-            getDial(OscPitch)->setText("Harmonics", dontSendNotification);
+            getDial(OscPitch)->setRange(-15, 15., 1.);
             isHarmonic = true;
         }
-        displayPitch();
     }
+>>>>>>> Stashed changes
 }
 
 void OscModule::labelTextChanged(Label* label)
@@ -409,24 +413,18 @@ void OscModule::updateShapeCB()
 //MAKE CHANGE HERE
 void OscModule::displayPitch()
 {
-    
-   
     auto harm = getDial(OscPitch)->getSlider().getValue();
     harmonicsLabel.setColour(Label::textColourId, Colours::gold.withBrightness(0.95f));
     String t = String(abs(harm),3);
     t = harm >=0 ? t : String("1/" + t);
-    if (isHarmonic)
-        harmonicsLabel.setText(t, dontSendNotification);
-    else
-        harmonicsLabel.setText("0.000", dontSendNotification);
-    auto pitch = isHarmonic ? 0 : getDial(OscPitch)->getSlider().getValue();
+    harmonicsLabel.setText(t, dontSendNotification);
+    
     auto fine = getDial(OscFine)->getSlider().getValue()*0.01;
     pitchLabel.setColour(Label::textColourId, Colours::gold.withBrightness(0.95f));
-    String text = pitch+fine >= 0 ? "+" : "";
-    text += String(pitch+fine, 3);
+    String text = fine >= 0 ? "+" : "";
+    text += String(fine, 3);
     pitchLabel.setText(text, dontSendNotification);
-
-
+    
     auto freq = getDial(OscFreq)->getSlider().getValue();
     freqLabel.setColour(Label::textColourId, Colours::gold.withBrightness(0.95f));
     text = freq >= 0 ? "+" : "";

@@ -113,8 +113,11 @@ public:
     void displayPitchMapping(MappingTarget* mt);
     
 private:
+<<<<<<< Updated upstream
     Label harmonicsLabel;
+=======
     ToggleButton pitchDialToggle;
+>>>>>>> Stashed changes
     Label pitchLabel;
     Label freqLabel;
     ComboBox shapeCB;

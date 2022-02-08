@@ -38,7 +38,7 @@ MappingSourceModel(p, n, true, true, Colours::darkorange)
     }
     
     filterSend = std::make_unique<SmoothedParameter>(p, vts, n + " FilterSend");
-    isHarmonic_raw = vts.getRawParameterValue(n + " isHarmonic");
+    
     afpShapeSet = vts.getRawParameterValue(n + " ShapeSet");
 }
 
@@ -140,23 +140,39 @@ void Oscillator::tick(float output[][NUM_STRINGS])
     for (int v = 0; v < processor.numVoicesActive; ++v)
     {
         if (!processor.voiceIsSounding[v]) continue;
+        float harm, pitch;
         
-        float harm_pitch = quickParams[OscPitch][v]->tickNoSmoothing();
+<<<<<<< Updated upstream
+        float harm = quickParams[OscPitch][v]->tickNoSmoothing();
+=======
+>>>>>>> Stashed changes
         float fine = quickParams[OscFine][v]->tickNoSmoothing();
         float freq = quickParams[OscFreq][v]->tickNoSmoothing();
         float shape = quickParams[OscShape][v]->tickNoSmoothing();
         float amp = quickParams[OscAmp][v]->tickNoSmoothing();
-       
+        
         amp = amp < 0.f ? 0.f : amp;
         float note = processor.voiceNote[v];
-        if (isHarmonic_raw == nullptr || *isHarmonic_raw > 0)
-        {
-            note = harm_pitch >= 0 ? ftom(processor.tuner.mtof(note) * (harm_pitch + 1)) : ftom(processor.tuner.mtof(note) / abs((harm_pitch - 1)));
-            harm_pitch = 0;
-        }
+<<<<<<< Updated upstream
         //DBG(ftom(processor.tuner.mtof(note) / (harm - 1)));
         //DBG(processor.tuner.mtof(note) / (harm - 1));
-        float finalFreq = processor.tuner.mtof(LEAF_clip(0, note + harm_pitch + fine*0.01f, 127)) + freq;
+        note = harm >= 0 ? ftom(processor.tuner.mtof(note) * (harm + 1)) : ftom(processor.tuner.mtof(note) / abs((harm - 1)));
+        float finalFreq = processor.tuner.mtof(LEAF_clip(0, note + fine*0.01f, 127)) + freq;
+=======
+
+        if (quickParams[OscIsHarmonic][v]->tickNoSmoothing())
+        {
+            harm =  1.0f + quickParams[OscPitch][v]->tickNoSmoothing();
+            harm = (processor.tuner.mtof(note) * harm - processor.tuner.mtof(note));
+            pitch = 0;
+        } else
+        {
+            pitch = quickParams[OscPitch][v]->tickNoSmoothing();
+            harm = 0;
+        }
+        DBG(harm);
+        float finalFreq = processor.tuner.mtof(LEAF_clip(0, note + pitch + fine*0.01f, 127)) + freq + harm;
+>>>>>>> Stashed changes
         //DBG(note);
         //freq = freq < 10.f ? 0.f : freq
         

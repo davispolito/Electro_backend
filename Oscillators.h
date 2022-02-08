@@ -62,7 +62,8 @@ private:
     float* sourceValues[MAX_NUM_UNIQUE_SKEWS];
 
     std::unique_ptr<SmoothedParameter> filterSend;
-    
+    std::atomic<float>* isHarmonic_raw;
+    bool isHarmonic;
     std::atomic<float>* afpShapeSet;
     OscShapeSet currentShapeSet = OscShapeSetNil;
     
