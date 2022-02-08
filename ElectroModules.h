@@ -72,6 +72,7 @@ protected:
     OwnedArray<ElectroDial> dials;
     
     ToggleButton enabledToggle;
+    ToggleButton smoothingToggle;
     
     float relLeftMargin, relDialWidth, relDialSpacing;
     float relTopMargin, relDialHeight;
@@ -112,7 +113,7 @@ public:
     void displayPitchMapping(MappingTarget* mt);
     
 private:
-    
+    Label harmonicsLabel;
     Label pitchLabel;
     Label freqLabel;
     ComboBox shapeCB;

@@ -129,8 +129,20 @@ chooser("Select wavetable file or folder...",
     outlineColour = Colours::darkgrey;
     
     // Pitch and freq dials should snap to ints
-    getDial(OscPitch)->setRange(-24., 24., 1.);
+    getDial(OscPitch)->setRange(-16., 16., 1.);
     getDial(OscFreq)->setRange(-2000., 2000., 1.);
+    
+    smoothingToggle.setLookAndFeel(&laf);
+    smoothingToggle.addListener(this);
+    smoothingToggle.setButtonText("Smoothed");
+    addAndMakeVisible(smoothingToggle);
+    
+    harmonicsLabel.setLookAndFeel(&laf);
+    harmonicsLabel.setEditable(true);
+    harmonicsLabel.setJustificationType(Justification::centred);
+    harmonicsLabel.setColour(Label::backgroundColourId, Colours::darkgrey.withBrightness(0.2f));
+    harmonicsLabel.addListener(this);
+    addAndMakeVisible(harmonicsLabel);
     
     pitchLabel.setLookAndFeel(&laf);
     pitchLabel.setEditable(true);
@@ -189,9 +201,12 @@ void OscModule::resized()
     ElectroModule::resized();
     
     s->setBounds(4, 4, getWidth()*0.1f, enabledToggle.getHeight()-8);
+   
+    harmonicsLabel.setBoundsRelative(relLeftMargin + relDialWidth * 0.5,
+                                     0.02f, relDialWidth+relDialSpacing * 0.25, 0.16f);
     
-    pitchLabel.setBoundsRelative(relLeftMargin+0.5f*relDialWidth,
-                                 0.02f, relDialWidth+relDialSpacing, 0.16f);
+    pitchLabel.setBoundsRelative(relLeftMargin+relDialWidth * 1.5,
+                                 0.02f, relDialWidth+relDialSpacing * 0.25, 0.16f);
     
     freqLabel.setBoundsRelative(relLeftMargin+2*relDialWidth+1.5*relDialSpacing,
                                  0.02f, relDialWidth+relDialSpacing, 0.16f);
@@ -202,7 +217,7 @@ void OscModule::resized()
     sendSlider.setBoundsRelative(0.96f, 0.f, 0.04f, 1.0f);
     
     enabledToggle.setBoundsRelative(0.917f, 0.41f, 0.04f, 0.15f);
-    
+    smoothingToggle.setBoundsRelative(0.0f, 0.41f, 0.04f, 0.15f);
     f1Label.setBoundsRelative(0.9f, 0.05f, 0.06f, 0.15f);
     f2Label.setBoundsRelative(0.9f, 0.80f, 0.06f, 0.15f);
 }
@@ -231,6 +246,11 @@ void OscModule::buttonClicked(Button* button)
         sendSlider.setEnabled(enabledToggle.getToggleState());
         sendSlider.setAlpha(enabledToggle.getToggleState() ? 1. : 0.5);
     }
+    else if (button == &smoothingToggle)
+    {
+        getDial(OscPitch)->setRange(-16, 16, smoothingToggle.getToggleState() ? 1. : 0.001 );
+    }
+        
 }
 
 void OscModule::labelTextChanged(Label* label)
@@ -240,13 +260,18 @@ void OscModule::labelTextChanged(Label* label)
         auto value = pitchLabel.getText().getDoubleValue();
         int i = value;
         double f = value-i;
-        getDial(OscPitch)->getSlider().setValue(i, sendNotificationAsync);
+        //getDial(OscPitch)->getSlider().setValue(i, sendNotificationAsync);
         getDial(OscFine)->getSlider().setValue(f*100., sendNotificationAsync);
     }
     else if (label == &freqLabel)
     {
         auto value = freqLabel.getText().getDoubleValue();
         getDial(OscFreq)->getSlider().setValue(value, sendNotificationAsync);
+    }
+    else if (label == &harmonicsLabel)
+    {
+        auto value = harmonicsLabel.getText().getDoubleValue();
+        getDial(OscPitch)->getSlider().setValue(value, sendNotificationAsync);
     }
 }
 
@@ -359,11 +384,16 @@ void OscModule::updateShapeCB()
 
 void OscModule::displayPitch()
 {
-    auto pitch = getDial(OscPitch)->getSlider().getValue();
+    auto harm = getDial(OscPitch)->getSlider().getValue();
+    harmonicsLabel.setColour(Label::textColourId, Colours::gold.withBrightness(0.95f));
+    String t = String(abs(harm),3);
+    t = harm >=0 ? t : String("1/" + t);
+    harmonicsLabel.setText(t, dontSendNotification);
+    
     auto fine = getDial(OscFine)->getSlider().getValue()*0.01;
     pitchLabel.setColour(Label::textColourId, Colours::gold.withBrightness(0.95f));
-    String text = pitch+fine >= 0 ? "+" : "";
-    text += String(pitch+fine, 3);
+    String text = fine >= 0 ? "+" : "";
+    text += String(fine, 3);
     pitchLabel.setText(text, dontSendNotification);
     
     auto freq = getDial(OscFreq)->getSlider().getValue();
