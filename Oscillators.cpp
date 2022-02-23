@@ -39,6 +39,7 @@ MappingSourceModel(p, n, true, true, Colours::darkorange)
     
     filterSend = std::make_unique<SmoothedParameter>(p, vts, n + " FilterSend");
     isHarmonic_raw = vts.getRawParameterValue(n + " isHarmonic");
+    isStepped_raw = vts.getRawParameterValue(n + " isStepped");
     afpShapeSet = vts.getRawParameterValue(n + " ShapeSet");
 }
 
@@ -149,6 +150,10 @@ void Oscillator::tick(float output[][NUM_STRINGS])
        
         amp = amp < 0.f ? 0.f : amp;
         float note = processor.voiceNote[v];
+        if (isStepped_raw == nullptr || *isStepped_raw > 0)
+        {
+            harm_pitch = round(harm_pitch);
+        }
         if (isHarmonic_raw == nullptr || *isHarmonic_raw > 0)
         {
             note = harm_pitch >= 0 ? ftom(processor.tuner.mtof(note) * (harm_pitch + 1)) : ftom(processor.tuner.mtof(note) / abs((harm_pitch - 1)));

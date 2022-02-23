@@ -115,6 +115,7 @@ public:
 private:
     Label harmonicsLabel;
     ToggleButton pitchDialToggle;
+    ToggleButton steppedToggle;
     Label pitchLabel;
     Label freqLabel;
     ComboBox shapeCB;
@@ -122,8 +123,7 @@ private:
     Label f1Label;
     Label f2Label;
     
-    bool isHarmonic;
-    
+
     std::unique_ptr<MappingSource> s;
     
     FileChooser chooser;
@@ -165,17 +165,13 @@ public:
     
     void resized() override;
     void sliderValueChanged(Slider* slider) override;
-    void labelTextChanged(Label* label) override;
-    
+
     void mouseEnter(const MouseEvent &) override;
     void mouseExit(const MouseEvent &) override;
     
-    void displayCutoff();
-    void displayCutoffMapping(MappingTarget* mt);
-    
+
 private:
     
-    Label cutoffLabel;
     ComboBox typeCB;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (FilterModule)

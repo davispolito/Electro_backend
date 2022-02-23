@@ -124,13 +124,12 @@ OscModule::OscModule(ElectroAudioProcessorEditor& editor, AudioProcessorValueTre
                      AudioComponent& ac) :
 ElectroModule(editor, vts, ac, 0.05f, 0.132f, 0.05f, 0.18f, 0.8f),
 chooser("Select wavetable file or folder...",
-              File::getSpecialLocation(File::userDocumentsDirectory)),
-isHarmonic(false)
+              File::getSpecialLocation(File::userDocumentsDirectory))
 {
     
     
     buttonAttachments.add(new ButtonAttachment(vts, ac.getName() + " isHarmonic", pitchDialToggle));
-    
+    buttonAttachments.add(new ButtonAttachment(vts, ac.getName() + " isStepped", steppedToggle));
     outlineColour = Colours::darkgrey;
     
     // Pitch and freq dials should snap to ints
@@ -141,6 +140,11 @@ isHarmonic(false)
     pitchDialToggle.setTitle("Harmonic Dial");
     pitchDialToggle.setButtonText("Harmonic/Pitch");
     addAndMakeVisible(pitchDialToggle);
+    steppedToggle.setLookAndFeel(&laf);
+    steppedToggle.addListener(this);
+    steppedToggle.setTitle("Harmonic Dial");
+    steppedToggle.setButtonText("Harmonic/Pitch");
+    addAndMakeVisible(steppedToggle);
     
     
 //    smoothingToggle.setLookAndFeel(&laf);
@@ -219,6 +223,9 @@ void OscModule::resized()
                                      0.02f, relDialWidth+relDialSpacing * 0.25, 0.16f);
     
     pitchDialToggle.setBoundsRelative(0.0f, 0.412f, 0.05f, 0.15f);
+    steppedToggle.setBoundsRelative(0.0f, 0.2f, 0.05f, 0.15f);
+
+    
     
     pitchLabel.setBoundsRelative(relLeftMargin+relDialWidth * 1.25,
                                  0.02f, relDialWidth+relDialSpacing, 0.16f);
@@ -261,18 +268,16 @@ void OscModule::buttonClicked(Button* button)
         sendSlider.setEnabled(enabledToggle.getToggleState());
         sendSlider.setAlpha(enabledToggle.getToggleState() ? 1. : 0.5);
     }
-    else if (button == &pitchDialToggle)
+    else if (button == &pitchDialToggle || button == &steppedToggle)
     {
-        if (isHarmonic)
+        if (!pitchDialToggle.getToggleState())
         {
-            getDial(OscPitch)->setRange(-24, 24., 1.);
+            getDial(OscPitch)->setRange(-24, 24., steppedToggle.getToggleState() ? 1 : 0.01 );
             getDial(OscPitch)->setText("Pitch", dontSendNotification);
-            isHarmonic = false;
         } else
         {
-            getDial(OscPitch)->setRange(-16, 16., 1.);
+            getDial(OscPitch)->setRange(-16, 16., steppedToggle.getToggleState() ? 1 : 0.01 );
             getDial(OscPitch)->setText("Harmonics", dontSendNotification);
-            isHarmonic = true;
         }
         displayPitch();
     }
@@ -415,11 +420,11 @@ void OscModule::displayPitch()
     harmonicsLabel.setColour(Label::textColourId, Colours::gold.withBrightness(0.95f));
     String t = String(abs(harm),3);
     t = harm >=0 ? t : String("1/" + t);
-    if (isHarmonic)
+    if (pitchDialToggle.getState())
         harmonicsLabel.setText(t, dontSendNotification);
     else
         harmonicsLabel.setText("0.000", dontSendNotification);
-    auto pitch = isHarmonic ? 0 : getDial(OscPitch)->getSlider().getValue();
+    auto pitch = pitchDialToggle.getState() ? 0 : getDial(OscPitch)->getSlider().getValue();
     auto fine = getDial(OscFine)->getSlider().getValue()*0.01;
     pitchLabel.setColour(Label::textColourId, Colours::gold.withBrightness(0.95f));
     String text = pitch+fine >= 0 ? "+" : "";
@@ -599,14 +604,14 @@ ElectroModule(editor, vts, ac, 0.04f, 0.215f, 0.05f, 0.18f, 0.8f) //0.05f, 0.132
 {
     outlineColour = Colours::darkgrey;
     
-    double cutoff = getDial(FilterCutoff)->getSlider().getValue();
-    cutoffLabel.setText(String(cutoff, 2), dontSendNotification);
-    cutoffLabel.setLookAndFeel(&laf);
-    cutoffLabel.setEditable(true);
-    cutoffLabel.setJustificationType(Justification::centred);
-    cutoffLabel.setColour(Label::backgroundColourId, Colours::darkgrey.withBrightness(0.2f));
-    cutoffLabel.addListener(this);
-    addAndMakeVisible(cutoffLabel);
+    //double cutoff = getDial(FilterCutoff)->getSlider().getValue();
+//    cutoffLabel.setText(String(cutoff, 2), dontSendNotification);
+//    cutoffLabel.setLookAndFeel(&laf);
+//    cutoffLabel.setEditable(true);
+//    cutoffLabel.setJustificationType(Justification::centred);
+//    cutoffLabel.setColour(Label::backgroundColourId, Colours::darkgrey.withBrightness(0.2f));
+//    cutoffLabel.addListener(this);
+    //addAndMakeVisible(cutoffLabel);
     
     RangedAudioParameter* set = vts.getParameter(ac.getName() + " Type");
     typeCB.addItemList(filterTypeNames, 1);
@@ -627,15 +632,13 @@ void FilterModule::resized()
 {
     ElectroModule::resized();
     
-    for (int i = 1; i < ac.getParamNames().size(); ++i)
+    for (int i = 0; i < ac.getParamNames().size(); ++i)
     {
-        dials[i]->setBoundsRelative((relDialWidth*(i+1))+(relDialSpacing*i),
+        dials[i]->setBoundsRelative((relDialWidth*(i))+(relDialSpacing * 0.6f*(i+1)),
                                     relTopMargin, relDialWidth, relDialHeight);
     }
     
-    cutoffLabel.setBoundsRelative(relLeftMargin+relDialWidth+0.5f*relDialSpacing,
-                                  0.42f, relDialWidth-relLeftMargin, 0.16f);
-    
+
     typeCB.setBounds(enabledToggle.getRight(), 4, getWidth()*0.3f, enabledToggle.getHeight()-4);
 //    typeCB.setBoundsRelative(relLeftMargin, 0.01f, relDialWidth+relDialSpacing, 0.16f);
 }
@@ -644,76 +647,26 @@ void FilterModule::sliderValueChanged(Slider* slider)
 {
     if (slider == &getDial(FilterCutoff)->getSlider())
     {
-        displayCutoff();
     }
     else if (MappingTarget* mt = dynamic_cast<MappingTarget*>(slider))
     {
         dynamic_cast<ElectroDial*>(mt->getParentComponent())->sliderValueChanged(slider);
-        displayCutoffMapping(mt);
     }
 }
 
-void FilterModule::labelTextChanged(Label* label)
-{
-    if (label == &cutoffLabel)
-    {
-        auto value = cutoffLabel.getText().getDoubleValue();
-        getDial(FilterCutoff)->getSlider().setValue(value);
-    }
-}
 
 void FilterModule::mouseEnter(const MouseEvent& e)
 {
     if (MappingTarget* mt = dynamic_cast<MappingTarget*>(e.originalComponent->getParentComponent()))
     {
-        displayCutoffMapping(mt);
     }
 }
 
 void FilterModule::mouseExit(const MouseEvent& e)
 {
-    displayCutoff();
 }
 
-void FilterModule::displayCutoff()
-{
-    double cutoff = getDial(FilterCutoff)->getSlider().getValue();
-    cutoffLabel.setColour(Label::textColourId, Colours::gold.withBrightness(0.95f));
-    cutoffLabel.setText(String(cutoff, 2), dontSendNotification);
-}
 
-void FilterModule::displayCutoffMapping(MappingTarget* mt)
-{
-    if (!mt->isActive()) displayCutoff();
-    else if (mt->getParentComponent() == getDial(FilterCutoff))
-    {
-        auto start = mt->getModel().start;
-        auto end = mt->getModel().end;
-        cutoffLabel.setColour(Label::textColourId, mt->getColour());
-        String text;
-        if (mt->isBipolar())
-        {
-            if (mt->getSkewFactor() != 1. && start != end)
-            {
-                text = (start >= 0 ? "+" : "-");
-                text += String(fabs(start), 2) + "/";
-                text += (end >= 0 ? "+" : "-");
-                text += String(fabs(end), 2);
-            }
-            else
-            {
-                text = String::charToString(0xb1);
-                text += String(fabs(mt->getModel().end), 2);
-            }
-        }
-        else
-        {
-            text = (end >= 0 ? "+" : "-");
-            text += String(fabs(end), 2);
-        }
-        cutoffLabel.setText(text, dontSendNotification);
-    }
-}
 
 //==============================================================================
 //==============================================================================

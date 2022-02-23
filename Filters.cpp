@@ -52,6 +52,7 @@ void Filter::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     AudioComponent::prepareToPlay(sampleRate, samplesPerBlock);
 }
+//refactor to change function pointer when the type is selected rather than checking at every frame
 
 void Filter::frame()
 {
@@ -113,7 +114,7 @@ void Filter::tick(float* samples)
         float midiCutoff = quickParams[FilterCutoff][v]->tickNoSmoothing();
         float keyFollow = quickParams[FilterKeyFollow][v]->tickNoSmoothing();
         float q = quickParams[FilterResonance][v]->tickNoSmoothing();
-        
+        float gain = quickParams[FilterGain][v]->tickNoSmoothing();
         LEAF_clip(0.f, keyFollow, 1.f);
         
         float follow = processor.voiceNote[v];
