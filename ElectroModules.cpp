@@ -68,6 +68,8 @@ relDialHeight(relDialHeight)
     {
         enabledToggle.addListener(this);
         enabledToggle.setToggleState(ac.isEnabled(), sendNotification);
+        if (name != "Filter1" && name != "Filter2")
+            enabledToggle.setTooltip("Send to Filters On/Off");
         addAndMakeVisible(enabledToggle);
         buttonAttachments.add(new ButtonAttachment(vts, name, enabledToggle));
     }
