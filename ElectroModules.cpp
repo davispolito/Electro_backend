@@ -67,6 +67,7 @@ relDialHeight(relDialHeight)
     if (ac.isToggleable())
     {
         enabledToggle.addListener(this);
+        enabledToggle.setToggleState(ac.isEnabled(), sendNotification);
         addAndMakeVisible(enabledToggle);
         buttonAttachments.add(new ButtonAttachment(vts, name, enabledToggle));
     }
@@ -123,8 +124,7 @@ ElectroDial* ElectroModule::getDial (int index)
 OscModule::OscModule(ElectroAudioProcessorEditor& editor, AudioProcessorValueTreeState& vts,
                      AudioComponent& ac) :
 ElectroModule(editor, vts, ac, 0.05f, 0.132f, 0.05f, 0.18f, 0.8f),
-chooser("Select wavetable file or folder...",
-              File::getSpecialLocation(File::userDocumentsDirectory))
+chooser(nullptr)
 {
     
     
@@ -138,15 +138,23 @@ chooser("Select wavetable file or folder...",
     pitchDialToggle.setLookAndFeel(&laf);
     pitchDialToggle.addListener(this);
     pitchDialToggle.setTitle("Harmonic Dial");
-    pitchDialToggle.setButtonText("Harmonic/Pitch");
+    pitchDialToggle.setButtonText("Harmonic");
+    pitchDialToggle.setToggleable(true);
+    pitchDialToggle.setClickingTogglesState(true);
+    pitchDialToggle.setToggleState(true, dontSendNotification);
     addAndMakeVisible(pitchDialToggle);
     steppedToggle.setLookAndFeel(&laf);
     steppedToggle.addListener(this);
-    steppedToggle.setTitle("Harmonic Dial");
-    steppedToggle.setButtonText("Harmonic/Pitch");
+    steppedToggle.setTitle("Stepped Dial");
+    steppedToggle.setButtonText("Stepped");
+    steppedToggle.changeWidthToFitText();
+    steppedToggle.setToggleable(true);
+    steppedToggle.setClickingTogglesState(true);
+    steppedToggle.setToggleState(true, dontSendNotification);
     addAndMakeVisible(steppedToggle);
-    
-    
+    displayPitch();
+    getDial(OscPitch)->setRange(-16, 16., steppedToggle.getToggleState() ? 1 : 0.01 );
+    getDial(OscPitch)->setText("Harmonics", dontSendNotification);
 //    smoothingToggle.setLookAndFeel(&laf);
 //    smoothingToggle.addListener(this);
 //    smoothingToggle.setButtonText("Smoothed");
@@ -186,6 +194,7 @@ chooser("Select wavetable file or folder...",
     
     sendSlider.setSliderStyle(Slider::SliderStyle::LinearVertical);
     sendSlider.setTextBoxStyle(Slider::TextEntryBoxPosition::NoTextBox, false, 10, 10);
+    
     addAndMakeVisible(sendSlider);
     sliderAttachments.add(new SliderAttachment(vts, ac.getName() + " FilterSend", sendSlider));
     
@@ -274,10 +283,21 @@ void OscModule::buttonClicked(Button* button)
         {
             getDial(OscPitch)->setRange(-24, 24., steppedToggle.getToggleState() ? 1 : 0.01 );
             getDial(OscPitch)->setText("Pitch", dontSendNotification);
+            pitchDialToggle.setButtonText("Pitch");
         } else
         {
             getDial(OscPitch)->setRange(-16, 16., steppedToggle.getToggleState() ? 1 : 0.01 );
             getDial(OscPitch)->setText("Harmonics", dontSendNotification);
+            pitchDialToggle.setButtonText("Harmonic");
+        }
+        
+        if (!steppedToggle.getToggleState())
+        {
+            steppedToggle.setButtonText("Smooth");
+        }
+        else
+        {
+            steppedToggle.setButtonText("Stepped");
         }
         displayPitch();
     }
@@ -312,14 +332,17 @@ void OscModule::comboBoxChanged(ComboBox *comboBox)
         // Select file... option
         if (shapeCB.getSelectedItemIndex() == shapeCB.getNumItems()-1)
         {
-            chooser.launchAsync (FileBrowserComponent::openMode |
-                                 FileBrowserComponent::canSelectFiles |
-                                 FileBrowserComponent::canSelectDirectories,
+            if (chooser != nullptr)
+                delete chooser;
+            chooser = new FileChooser ("Pick a wav table", editor.processor.getLastFile());
+            chooser->launchAsync (FileBrowserComponent::openMode |
+                                 FileBrowserComponent::canSelectFiles,
                                  [this] (const FileChooser& chooser)
                                  {
+                editor.processor.setLastFile(chooser);
                 String path = chooser.getResult().getFullPathName();
                 Oscillator& osc = static_cast<Oscillator&>(ac);
-                
+                editor.processor.setLastFile(chooser);
                 if (path.isEmpty())
                 {
                     shapeCB.setSelectedItemIndex(0, dontSendNotification);
@@ -331,6 +354,7 @@ void OscModule::comboBoxChanged(ComboBox *comboBox)
                 osc.setWaveTables(file);
                 vts.getParameter(ac.getName() + " ShapeSet")->setValueNotifyingHost(1.);
                 updateShapeCB();
+            
             });
         }
         // Selected a loaded file
@@ -420,11 +444,11 @@ void OscModule::displayPitch()
     harmonicsLabel.setColour(Label::textColourId, Colours::gold.withBrightness(0.95f));
     String t = String(abs(harm),3);
     t = harm >=0 ? t : String("1/" + t);
-    if (pitchDialToggle.getState())
+    if (pitchDialToggle.getToggleState())
         harmonicsLabel.setText(t, dontSendNotification);
     else
         harmonicsLabel.setText("0.000", dontSendNotification);
-    auto pitch = pitchDialToggle.getState() ? 0 : getDial(OscPitch)->getSlider().getValue();
+    auto pitch = pitchDialToggle.getToggleState() ? 0 : getDial(OscPitch)->getSlider().getValue();
     auto fine = getDial(OscFine)->getSlider().getValue()*0.01;
     pitchLabel.setColour(Label::textColourId, Colours::gold.withBrightness(0.95f));
     String text = pitch+fine >= 0 ? "+" : "";
@@ -845,12 +869,34 @@ OutputModule::OutputModule(ElectroAudioProcessorEditor& editor, AudioProcessorVa
 ElectroModule(editor, vts, ac, 0.07f, 0.22f, 0.07f, 0.11f, 0.78f)
 {
     outlineColour = Colours::darkgrey;
-    
+    meters.setChannelFormat(juce::AudioChannelSet::stereo());
+    sd::SoundMeter::Options meterOptions;
+    meterOptions.faderEnabled     = true;
+    meterOptions.headerEnabled    = true;
+    meterOptions.peakSegment_db    = -3.0f;
+    meterOptions.warningSegment_db = -12.0f;
+    meters.setOptions (meterOptions);
+    addAndMakeVisible (meters);
     masterDial = std::make_unique<ElectroDial>(editor, "Master", "Master", false, false);
     sliderAttachments.add(new SliderAttachment(vts, "Master", masterDial->getSlider()));
+  
     addAndMakeVisible(masterDial.get());
+    startTimerHz (30);
+    
 }
 
+// The 'polling' timer.
+void OutputModule::timerCallback()
+{
+   // Loop through all meters (channels)...
+   for (int meterIndex = 0; meterIndex < meters.getNumChannels(); ++meterIndex)
+   {
+      // Get the level, of the specified meter (channel), from the audio processor...
+      meters.setInputLevel (meterIndex, editor.processor.getPeakLevel (meterIndex));
+   }
+
+   meters.refresh();
+}
 OutputModule::~OutputModule()
 {
     sliderAttachments.clear();
@@ -862,6 +908,7 @@ void OutputModule::resized()
 {
     ElectroModule::resized();
     
-    masterDial->setBoundsRelative(0.7f, relTopMargin, 0.17f, relDialHeight);
+    masterDial->setBoundsRelative(0.65f, relTopMargin, 0.17f, relDialHeight);
+    meters.setBoundsRelative(0.8f, relTopMargin, 0.17f, relDialHeight);
 }
 

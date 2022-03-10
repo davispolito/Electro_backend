@@ -196,8 +196,8 @@ public:
     OwnedArray<SmoothedParameter>& getParameterArray(int p);
     
     bool isToggleable() { return toggleable; }
-    bool isEnabled();
-    
+    bool isEnabled() { return enabled; }
+
     String& getName() { return name; }
     StringArray& getParamNames() { return paramNames; }
     
@@ -224,6 +224,6 @@ protected:
     float invBlockSize = 0.f;
     
     int sampleInBlock;
-    
+    bool isOn;
     bool toggleable;
 };

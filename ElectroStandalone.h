@@ -169,6 +169,7 @@ public:
     {
         if (settings != nullptr)
             settings->setValue ("lastStateFile", fc.getResult().getFullPathName());
+        DBG(settings->getValue ("lastStateFile"));
     }
     
     /** Pops up a dialog letting the user save the processor's state to a file. */
@@ -184,6 +185,7 @@ public:
                 setLastFile (fc);
                 
                 MemoryBlock data;
+                
                 processor->getStateInformation (data);
                 
                 if (! fc.getResult().replaceWithData (data.getData(), data.getSize()))
@@ -206,7 +208,7 @@ public:
             setLastFile (fc);
             
             MemoryBlock data;
-            
+        
             if (fc.getResult().loadFileAsData (data))
                 processor->setStateInformation (data.getData(), (int) data.getSize());
             else

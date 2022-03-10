@@ -14,7 +14,7 @@
 #include "../PluginProcessor.h"
 #include "ElectroComponents.h"
 #include "ElectroLookAndFeel.h"
-
+#include "../sound_meter/sound_meter.h"
 class ElectroAudioProcessorEditor;
 
 typedef AudioProcessorValueTreeState::SliderAttachment SliderAttachment;
@@ -114,8 +114,8 @@ public:
     
 private:
     Label harmonicsLabel;
-    ToggleButton pitchDialToggle;
-    ToggleButton steppedToggle;
+    TextButton pitchDialToggle;
+    TextButton steppedToggle;
     Label pitchLabel;
     Label freqLabel;
     ComboBox shapeCB;
@@ -126,7 +126,7 @@ private:
 
     std::unique_ptr<MappingSource> s;
     
-    FileChooser chooser;
+    FileChooser* chooser;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OscModule)
 };
@@ -229,6 +229,7 @@ private:
 //==============================================================================
 
 class OutputModule : public ElectroModule
+                    , private juce::Timer
 {
 public:
     
@@ -238,8 +239,8 @@ public:
     void resized() override;
     
 private:
-    
+    sd::SoundMeter::MetersComponent meters;
     std::unique_ptr<ElectroDial> masterDial;
-    
+    void timerCallback() override;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OutputModule)
 };

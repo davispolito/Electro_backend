@@ -77,21 +77,21 @@ void Filter::frame()
             filterTick = &Filter::diodeLowpassTick;
             break;
             
-        case VZPeakFilter:
-            filterTick = &Filter::VZpeakTick;
-            break;
-            
-        case VZLowshelfFilter:
-            filterTick = &Filter::VZlowshelfTick;
-            break;
-            
-        case VZHighshelfFilter:
-            filterTick = &Filter::VZhighshelfTick;
-            break;
-            
-        case VZBandrejectFilter:
-            filterTick = &Filter::VZbandrejectTick;
-            break;
+//        case VZPeakFilter:
+//            filterTick = &Filter::VZpeakTick;
+//            break;
+//            
+//        case VZLowshelfFilter:
+//            filterTick = &Filter::VZlowshelfTick;
+//            break;
+//            
+//        case VZHighshelfFilter:
+//            filterTick = &Filter::VZhighshelfTick;
+//            break;
+//            
+//        case VZBandrejectFilter:
+//            filterTick = &Filter::VZbandrejectTick;
+//            break;
             
         case LadderLowpassFilter:
             filterTick = &Filter::LadderLowpassTick;
