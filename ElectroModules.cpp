@@ -130,8 +130,7 @@ chooser(nullptr)
 {
     
     
-    buttonAttachments.add(new ButtonAttachment(vts, ac.getName() + " isHarmonic", pitchDialToggle));
-    buttonAttachments.add(new ButtonAttachment(vts, ac.getName() + " isStepped", steppedToggle));
+    
     outlineColour = Colours::darkgrey;
     
     // Pitch and freq dials should snap to ints
@@ -161,7 +160,8 @@ chooser(nullptr)
 //    smoothingToggle.addListener(this);
 //    smoothingToggle.setButtonText("Smoothed");
 //    addAndMakeVisible(smoothingToggle);
-    
+    buttonAttachments.add(new ButtonAttachment(vts, ac.getName() + " isHarmonic", pitchDialToggle));
+    buttonAttachments.add(new ButtonAttachment(vts, ac.getName() + " isStepped", steppedToggle));
     harmonicsLabel.setLookAndFeel(&laf);
     harmonicsLabel.setEditable(true);
     harmonicsLabel.setJustificationType(Justification::centred);
@@ -444,8 +444,7 @@ void OscModule::displayPitch()
    
     auto harm = getDial(OscPitch)->getSlider().getValue();
     harmonicsLabel.setColour(Label::textColourId, Colours::gold.withBrightness(0.95f));
-    String t = String(abs(harm),3);
-    t = harm >=0 ? t : String("1/" + t);
+    String t = harm >= 0 ? String(abs(harm + 1),3) : String("1/" + String(abs(harm-1),3));
     if (pitchDialToggle.getToggleState())
         harmonicsLabel.setText(t, dontSendNotification);
     else
