@@ -29,27 +29,27 @@ public:
     
 private:
     
-    void (Filter::*filterTick)(float& sample, int v, float cutoff, float q, float morph);
-    void lowpassTick(float& sample, int v, float cutoff, float q, float morph);
-    void highpassTick(float& sample, int v, float cutoff, float q, float morph);
-    void bandpassTick(float& sample, int v, float cutoff, float q, float morph);
-    void diodeLowpassTick(float& sample, int v, float cutoff, float q, float morph);
-    void LadderLowpassTick(float& sample, int v, float cutoff, float q, float morph);
-    void VZlowshelfTick(float& sample, int v, float cutoff, float q, float morph);
-    void VZhighshelfTick(float& sample, int v, float cutoff, float q, float morph);
-    void VZpeakTick(float& sample, int v, float cutoff, float q, float morph);
-    void VZbandrejectTick(float& sample, int v, float cutoff, float q, float morph);
+    void (Filter::*filterTick)(float& sample, int v, float cutoff, float q, float morph, float gain);
+    void lowpassTick(float& sample, int v, float cutoff, float q, float morph, float gain);
+    void highpassTick(float& sample, int v, float cutoff, float q, float morph, float gain);
+    void bandpassTick(float& sample, int v, float cutoff, float q, float morph, float gain);
+    void diodeLowpassTick(float& sample, int v, float cutoff, float q, float morph, float gain);
+    void LadderLowpassTick(float& sample, int v, float cutoff, float q, float morph, float gain);
+    void VZlowshelfTick(float& sample, int v, float cutoff, float q, float morph, float gain);
+    void VZhighshelfTick(float& sample, int v, float cutoff, float q, float morph, float gain);
+    void VZpeakTick(float& sample, int v, float cutoff, float q, float morph, float gain);
+    void VZbandrejectTick(float& sample, int v, float cutoff, float q, float morph, float gain);
 
     
-    tDiodeFilter diodeFilters[NUM_STRINGS];
-    tVZFilter VZfilterPeak[NUM_STRINGS];
-    tVZFilter VZfilterLS[NUM_STRINGS];
-    tVZFilter VZfilterHS[NUM_STRINGS];
-    tVZFilter VZfilterBR[NUM_STRINGS];
-    tSVF lowpass[NUM_STRINGS];
-    tSVF highpass[NUM_STRINGS];
-    tSVF bandpass[NUM_STRINGS];
-    tLadderFilter Ladderfilter[NUM_STRINGS];
+    tDiodeFilter diodeFilters[MAX_NUM_VOICES];
+    tVZFilter VZfilterPeak[MAX_NUM_VOICES];
+    tVZFilter VZfilterLS[MAX_NUM_VOICES];
+    tVZFilter VZfilterHS[MAX_NUM_VOICES];
+    tVZFilter VZfilterBR[MAX_NUM_VOICES];
+    tSVF lowpass[MAX_NUM_VOICES];
+    tSVF highpass[MAX_NUM_VOICES];
+    tSVF bandpass[MAX_NUM_VOICES];
+    tLadderFilter Ladderfilter[MAX_NUM_VOICES];
     
     
     std::atomic<float>* afpFilterType;

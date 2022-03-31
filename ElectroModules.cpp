@@ -644,6 +644,9 @@ ElectroModule(editor, vts, ac, 0.04f, 0.215f, 0.05f, 0.18f, 0.8f) //0.05f, 0.132
     typeCB.setLookAndFeel(&laf);
     addAndMakeVisible(typeCB);
     comboBoxAttachments.add(new ComboBoxAttachment(vts, ac.getName() + " Type", typeCB));
+    
+    typeCB.addMouseListener(this, true);
+    
 }
 
 FilterModule::~FilterModule()
@@ -718,6 +721,8 @@ void EnvModule::resized()
     
     velocityToggle.setBoundsRelative(relLeftMargin, 0.f, 2*relDialWidth+relDialSpacing, 0.16f);
 }
+
+
 
 //==============================================================================
 //==============================================================================
@@ -809,6 +814,8 @@ void LFOModule::comboBoxChanged(ComboBox *comboBox)
     }
 }
 
+
+
 void LFOModule::mouseEnter(const MouseEvent& e)
 {
     if (MappingTarget* mt = dynamic_cast<MappingTarget*>(e.originalComponent->getParentComponent()))
@@ -871,18 +878,34 @@ ElectroModule(editor, vts, ac, 0.07f, 0.22f, 0.07f, 0.11f, 0.78f)
 {
     outlineColour = Colours::darkgrey;
     meters.setChannelFormat(juce::AudioChannelSet::stereo());
-    sd::SoundMeter::Options meterOptions;
-    meterOptions.faderEnabled     = true;
-    meterOptions.headerEnabled    = true;
-    meterOptions.peakSegment_db    = -3.0f;
-    meterOptions.warningSegment_db = -12.0f;
-    meters.setOptions (meterOptions);
-    addAndMakeVisible (meters);
     masterDial = std::make_unique<ElectroDial>(editor, "Master", "Master", false, false);
     sliderAttachments.add(new SliderAttachment(vts, "Master", masterDial->getSlider()));
   
     addAndMakeVisible(masterDial.get());
-    startTimerHz (30);
+    sd::SoundMeter::Options meterOptions;
+    meterOptions.faderEnabled = false;  // Enable or disable the 'fader' overlay. Use the sd::SoundMeter::MetersComponent::FadersChangeListener to get the fader value updates.
+    meterOptions.headerEnabled         = true;           // Enable the 'header' part above the meter, displaying the channel ID.
+    meterOptions.valueEnabled          = true;           // Enable the 'value' part below the level, displaying the peak level.
+    meterOptions.refreshRate           = 30;  // Frequency of the meter updates (when using the internal timer).
+    meterOptions.useGradient           = true;            // Use gradients to fill the meter (hard segment boundaries otherwise).
+    meterOptions.showPeakHoldIndicator = false;           // Show the peak hold indicator (double click value to reset).
+    meterOptions.peakSegment_db        = -3.0f;           // -3.0 dB peak segment divider.
+    meterOptions.warningSegment_db     = -12.0f;          // -12.0 dB warning segment indicator.
+    meterOptions.tickMarksEnabled      = true;            // Enable tick-marks. Divider lines at certain levels on the meter and label strip.
+    meterOptions.tickMarksOnTop        = true;            // Put the tick-marks above the level readout.
+    meterOptions.tickMarks             = { -1.0f, -3.0f, -6.0f, -12.0f };  // Positions (in decibels) of the tick-marks.
+    meterOptions.decayTime_ms          = 1000.0f;                                          // The meter will take 1000 ms to decay to 0.
+    meters.setOptions (meterOptions);
+    meters.setLabelStripPosition (sd::SoundMeter::LabelStripPosition::right);
+    addAndMakeVisible (meters);
+    RangedAudioParameter* set = vts.getParameter(ac.getName() + " DistortionType");
+    distortionCB.addItemList(distortionNames, 1);
+    distortionCB.setSelectedItemIndex(set->convertFrom0to1(set->getValue()), dontSendNotification);
+    distortionCB.setLookAndFeel(&laf);
+    addAndMakeVisible(distortionCB);
+
+    comboBoxAttachments.add(new ComboBoxAttachment(vts, ac.getName() + " DistortionType", distortionCB));
+        startTimerHz (30);
     
 }
 
@@ -908,8 +931,10 @@ OutputModule::~OutputModule()
 void OutputModule::resized()
 {
     ElectroModule::resized();
-    
+    distortionCB.setBoundsRelative(relLeftMargin, 0.02f,
+                           relDialWidth+relDialSpacing, 0.16f);
     masterDial->setBoundsRelative(0.65f, relTopMargin, 0.17f, relDialHeight);
-    meters.setBoundsRelative(0.8f, relTopMargin, 0.17f, relDialHeight);
+    meters.setBoundsRelative(.85f, relTopMargin - 0.1, 0.1f, relDialHeight);
+    //meters.setAlwaysOnTop(true);
 }
 

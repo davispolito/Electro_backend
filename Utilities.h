@@ -212,7 +212,7 @@ protected:
     StringArray paramNames;
     
     // First size needs to be at least the greatest number of params for any component
-    SmoothedParameter* quickParams[10][NUM_STRINGS];
+    SmoothedParameter* quickParams[10][MAX_NUM_VOICES];
     
     OwnedArray<MappingTargetModel> targets;
     

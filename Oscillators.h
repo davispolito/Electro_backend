@@ -28,7 +28,7 @@ public:
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock);
     void frame();
-    void tick(float output[][NUM_STRINGS]);
+    void tick(float output[][MAX_NUM_VOICES]);
     
     //==============================================================================
     void setWaveTables(File file);
@@ -46,18 +46,18 @@ private:
     void triTick(float& sample, int v, float freq, float shape);
     void userTick(float& sample, int v, float freq, float shape);
     
-    tMBSaw saw[NUM_STRINGS];
-    tMBPulse pulse[NUM_STRINGS];
-    tCycle sine[NUM_STRINGS];
-    tMBTriangle tri[NUM_STRINGS];
+    tMBSaw saw[MAX_NUM_VOICES];
+    tMBPulse pulse[MAX_NUM_VOICES];
+    tCycle sine[MAX_NUM_VOICES];
+    tMBTriangle tri[MAX_NUM_VOICES];
     
     // Using seperate objects for pairs to easily maintain phase relation
-    tMBSaw sawPaired[NUM_STRINGS];
-    tMBPulse pulsePaired[NUM_STRINGS];
-    tCycle sinePaired[NUM_STRINGS];
-    tMBTriangle triPaired[NUM_STRINGS];
+    tMBSaw sawPaired[MAX_NUM_VOICES];
+    tMBPulse pulsePaired[MAX_NUM_VOICES];
+    tCycle sinePaired[MAX_NUM_VOICES];
+    tMBTriangle triPaired[MAX_NUM_VOICES];
     
-    tWaveOscS wave[NUM_STRINGS];
+    tWaveOscS wave[MAX_NUM_VOICES];
     
     float* sourceValues[MAX_NUM_UNIQUE_SKEWS];
 
@@ -68,7 +68,7 @@ private:
     std::atomic<float>* afpShapeSet;
     OscShapeSet currentShapeSet = OscShapeSetNil;
     
-    float outSamples[2][NUM_STRINGS];
+    float outSamples[2][MAX_NUM_VOICES];
     
     File waveTableFile;
     bool loadingTables = false;
@@ -109,18 +109,18 @@ private:
     
     RangedAudioParameter* sync;
     
-    tMBSaw saw[NUM_STRINGS];
-    tMBPulse pulse[NUM_STRINGS];
-    tCycle sine[NUM_STRINGS];
-    tMBTriangle tri[NUM_STRINGS];
+    tMBSaw saw[MAX_NUM_VOICES];
+    tMBPulse pulse[MAX_NUM_VOICES];
+    tCycle sine[MAX_NUM_VOICES];
+    tMBTriangle tri[MAX_NUM_VOICES];
     
     // Using seperate objects for pairs to easily maintain phase relation
-    tMBSaw sawPaired[NUM_STRINGS];
-    tMBPulse pulsePaired[NUM_STRINGS];
-    tCycle sinePaired[NUM_STRINGS];
-    tMBTriangle triPaired[NUM_STRINGS];
+    tMBSaw sawPaired[MAX_NUM_VOICES];
+    tMBPulse pulsePaired[MAX_NUM_VOICES];
+    tCycle sinePaired[MAX_NUM_VOICES];
+    tMBTriangle triPaired[MAX_NUM_VOICES];
     
-    tWaveOscS wave[NUM_STRINGS];
+    tWaveOscS wave[MAX_NUM_VOICES];
     
     float* sourceValues[MAX_NUM_UNIQUE_SKEWS];
     float phaseReset;
@@ -142,12 +142,12 @@ public:
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock);
     void frame();
-    void tick(float output[][NUM_STRINGS]);
+    void tick(float output[][MAX_NUM_VOICES]);
     
 private:
     
-    tNoise noise[NUM_STRINGS];
-    tSVF bandpass[NUM_STRINGS];
+    tNoise noise[MAX_NUM_VOICES];
+    tSVF bandpass[MAX_NUM_VOICES];
     
     std::unique_ptr<SmoothedParameter> filterSend;
     

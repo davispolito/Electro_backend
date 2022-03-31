@@ -20,11 +20,11 @@ MappingSourceModel(p, n, true, true, Colours::darkorange)
 {
     for (int i = 0; i < processor.numInvParameterSkews; ++i)
     {
-        sourceValues[i] = (float*) leaf_alloc(&p.leaf, sizeof(float) * NUM_STRINGS);
+        sourceValues[i] = (float*) leaf_alloc(&p.leaf, sizeof(float) * MAX_NUM_VOICES);
         sources[i] = &sourceValues[i];
     }
     
-    for (int i = 0; i < NUM_STRINGS; i++)
+    for (int i = 0; i < MAX_NUM_VOICES; i++)
     {
         tMBSaw_init(&saw[i], &processor.leaf);
         tMBPulse_init(&pulse[i], &processor.leaf);
@@ -50,7 +50,7 @@ Oscillator::~Oscillator()
         leaf_free(&processor.leaf, (char*)sourceValues[i]);
     }
     
-    for (int i = 0; i < NUM_STRINGS; i++)
+    for (int i = 0; i < MAX_NUM_VOICES; i++)
     {
         tMBSaw_free(&saw[i]);
         tMBPulse_free(&pulse[i]);
@@ -73,7 +73,7 @@ Oscillator::~Oscillator()
 void Oscillator::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     AudioComponent::prepareToPlay(sampleRate, samplesPerBlock);
-    for (int i = 0; i < NUM_STRINGS; i++)
+    for (int i = 0; i < MAX_NUM_VOICES; i++)
     {
         tMBSaw_setSampleRate(&saw[i], sampleRate);
         tMBPulse_setSampleRate(&pulse[i], sampleRate);
@@ -134,7 +134,7 @@ void Oscillator::frame()
     }
 }
 
-void Oscillator::tick(float output[][NUM_STRINGS])
+void Oscillator::tick(float output[][MAX_NUM_VOICES])
 {
     if (loadingTables || !enabled) return;
 
@@ -250,14 +250,14 @@ void Oscillator::setWaveTables(File file)
     {
         if (waveTableFile.exists())
         {
-            for (int i = 0; i < NUM_STRINGS; ++i)
+            for (int i = 0; i < MAX_NUM_VOICES; ++i)
             {
                 tWaveOscS_free(&wave[i]);
             }
         }
         waveTableFile = loaded;
         
-        for (int i = 0; i < NUM_STRINGS; ++i)
+        for (int i = 0; i < MAX_NUM_VOICES; ++i)
         {
             Array<tWaveTableS>& tables = processor.waveTables.getReference(waveTableFile.getFullPathName());
             tWaveOscS_init(&wave[i], tables.getRawDataPointer(), tables.size(), &processor.leaf);
@@ -275,13 +275,13 @@ MappingSourceModel(p, n, true, true, Colours::chartreuse)
 {
     for (int i = 0; i < p.numInvParameterSkews; ++i)
     {
-        sourceValues[i] = (float*) leaf_alloc(&p.leaf, sizeof(float) * NUM_STRINGS);
+        sourceValues[i] = (float*) leaf_alloc(&p.leaf, sizeof(float) * MAX_NUM_VOICES);
         sources[i] = &sourceValues[i];
     }
     
     sync = vts.getParameter(n + " Sync");
     
-    for (int i = 0; i < NUM_STRINGS; i++)
+    for (int i = 0; i < MAX_NUM_VOICES; i++)
     {
         tMBSaw_init(&saw[i], &processor.leaf);
         tMBPulse_init(&pulse[i], &processor.leaf);
@@ -306,7 +306,7 @@ LowFreqOscillator::~LowFreqOscillator()
         leaf_free(&processor.leaf, (char*)sourceValues[i]);
     }
     
-    for (int i = 0; i < NUM_STRINGS; i++)
+    for (int i = 0; i < MAX_NUM_VOICES; i++)
     {
         tMBSaw_free(&saw[i]);
         tMBPulse_free(&pulse[i]);
@@ -323,7 +323,7 @@ LowFreqOscillator::~LowFreqOscillator()
 void LowFreqOscillator::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     AudioComponent::prepareToPlay(sampleRate, samplesPerBlock);
-    for (int i = 0; i < NUM_STRINGS; i++)
+    for (int i = 0; i < MAX_NUM_VOICES; i++)
     {
         tMBSaw_setSampleRate(&saw[i], sampleRate);
         tMBPulse_setSampleRate(&pulse[i], sampleRate);
@@ -469,11 +469,11 @@ MappingSourceModel(p, n, true, true, Colours::darkorange)
 {
     for (int i = 0; i < p.numInvParameterSkews; ++i)
     {
-        sourceValues[i] = (float*) leaf_alloc(&p.leaf, sizeof(float) * NUM_STRINGS);
+        sourceValues[i] = (float*) leaf_alloc(&p.leaf, sizeof(float) * MAX_NUM_VOICES);
         sources[i] = &sourceValues[i];
     }
     
-    for (int i = 0; i < NUM_STRINGS; i++)
+    for (int i = 0; i < MAX_NUM_VOICES; i++)
     {
         tNoise_init(&noise[i], WhiteNoise, &processor.leaf);
         tSVF_init(&bandpass[i], SVFTypeBandpass, 2000.f, 0.7f, &processor.leaf);
@@ -491,7 +491,7 @@ NoiseGenerator::~NoiseGenerator()
         leaf_free(&processor.leaf, (char*)sourceValues[i]);
     }
     
-    for (int i = 0; i < NUM_STRINGS; i++)
+    for (int i = 0; i < MAX_NUM_VOICES; i++)
     {
         tNoise_free(&noise[i]);
         tSVF_free(&bandpass[i]);
@@ -501,7 +501,7 @@ NoiseGenerator::~NoiseGenerator()
 void NoiseGenerator::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     AudioComponent::prepareToPlay(sampleRate, samplesPerBlock);
-    for (int i = 0; i < NUM_STRINGS; i++)
+    for (int i = 0; i < MAX_NUM_VOICES; i++)
     {
         tSVF_setSampleRate(&bandpass[i], sampleRate);
     }
@@ -545,7 +545,7 @@ void NoiseGenerator::frame()
 //    }
 }
 
-void NoiseGenerator::tick(float output[][NUM_STRINGS])
+void NoiseGenerator::tick(float output[][MAX_NUM_VOICES])
 {
     if (!enabled) return;
     //    float a = sampleInBlock * invBlockSize;
@@ -559,9 +559,10 @@ void NoiseGenerator::tick(float output[][NUM_STRINGS])
         amp = amp < 0.f ? 0.f : amp;
     
         tSVF_setFreq(&bandpass[v], color);
-        float sample = tSVF_tick(&bandpass[v], tNoise_tick(&noise[v])) * amp;
-        
+        //float sample = tSVF_tick(&bandpass[v], tNoise_tick(&noise[v])) * amp;
+        float sample = tNoise_tick(&noise[v]) * amp;
         float normSample = (sample + 1.f) * 0.5f;
+        //float normSample = sample;
         sourceValues[0][v] = normSample;
         for (int i = 1; i < processor.numInvParameterSkews; ++i)
         {

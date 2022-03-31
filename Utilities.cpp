@@ -230,7 +230,7 @@ void SmoothedParameter::prepareToPlay(double sampleRate, int samplesPerBlock)
 MappingSourceModel::MappingSourceModel(ElectroAudioProcessor& p, const String &name,
                                        bool perVoice, bool bipolar, Colour colour) :
 name(name),
-numSourcePointers(perVoice ? NUM_STRINGS : 1),
+numSourcePointers(perVoice ? MAX_NUM_VOICES : 1),
 bipolar(bipolar),
 colour(colour),
 modelProcessor(p)
@@ -413,7 +413,7 @@ toggleable(toggleable)
     {
         String pn = name + " " + paramNames[i];
         params.add(new OwnedArray<SmoothedParameter>());
-        for (int v = 0; v < NUM_STRINGS; ++v)
+        for (int v = 0; v < MAX_NUM_VOICES; ++v)
         {
             params[i]->add(new SmoothedParameter(p, vts, pn));
             quickParams[i][v] = params[i]->getUnchecked(v);

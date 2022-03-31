@@ -169,7 +169,6 @@ public:
     void mouseEnter(const MouseEvent &) override;
     void mouseExit(const MouseEvent &) override;
     
-
 private:
     
     ComboBox typeCB;
@@ -239,6 +238,8 @@ public:
     void resized() override;
     
 private:
+    
+    ComboBox distortionCB;
     sd::SoundMeter::MetersComponent meters;
     std::unique_ptr<ElectroDial> masterDial;
     void timerCallback() override;

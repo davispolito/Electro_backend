@@ -189,7 +189,7 @@ public:
                 processor.centsDeviation[i] = 0;
             }
             processor.tuner.setIsMTS(false);
-            MTSButton.setToggleState(false, nullptr);
+            MTSButton.setToggleState(false, dontSendNotification);
             };
         addAndMakeVisible(clearButton);
         importButton.setButtonText("Import .scl");
@@ -222,7 +222,7 @@ public:
             processor.tuner.loadScala(path.toStdString(), processor.centsDeviation);
         });
         processor.tuner.setIsMTS(false);
-        MTSButton.setToggleState(false, nullptr);
+        MTSButton.setToggleState(false, dontSendNotification);
 
     }
     
@@ -820,7 +820,7 @@ private:
     ElectroAudioProcessor& processor;
     
     static const int numColumns = CopedentColumnNil;
-    static const int numRows = NUM_STRINGS;        // Number of strings
+    static const int numRows = MAX_NUM_VOICES;        // Number of strings
     
     StringArray columnList;
     Array<Array<float>>& copedentArray;

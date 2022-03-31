@@ -19,7 +19,7 @@ MappingSourceModel(p, n, true, false, Colours::deepskyblue)
 {
     for (int i = 0; i < processor.numInvParameterSkews; ++i)
     {
-        sourceValues[i] = (float*) leaf_alloc(&processor.leaf, sizeof(float) * NUM_STRINGS);
+        sourceValues[i] = (float*) leaf_alloc(&processor.leaf, sizeof(float) * MAX_NUM_VOICES);
         sources[i] = &sourceValues[i];
     }
     
@@ -34,7 +34,7 @@ MappingSourceModel(p, n, true, false, Colours::deepskyblue)
     expBufferSizeMinusOne = EXP_BUFFER_SIZE - 1;
     decayExpBufferSizeMinusOne = DECAY_EXP_BUFFER_SIZE - 1;
     
-    for (int i = 0; i < NUM_STRINGS; i++)
+    for (int i = 0; i < MAX_NUM_VOICES; i++)
     {
         tADSRT_init(&envs[i], expBuffer[0] * 8192.0f,
                     expBuffer[(int)(0.06f * expBufferSizeMinusOne)] * 8192.0f,
@@ -52,7 +52,7 @@ Envelope::~Envelope()
         leaf_free(&processor.leaf, (char*)sourceValues[i]);
     }
     
-    for (int i = 0; i < NUM_STRINGS; i++)
+    for (int i = 0; i < MAX_NUM_VOICES; i++)
     {
         tADSRT_free(&envs[i]);
     }
@@ -61,7 +61,7 @@ Envelope::~Envelope()
 void Envelope::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     AudioComponent::prepareToPlay(sampleRate, samplesPerBlock);
-    for (int i = 0; i < NUM_STRINGS; i++)
+    for (int i = 0; i < MAX_NUM_VOICES; i++)
     {
         tADSRT_setSampleRate(&envs[i], sampleRate);
     }

@@ -35,7 +35,7 @@ public:
 private:
     RangedAudioParameter* useVelocity;
     
-    tADSRT envs[NUM_STRINGS];
+    tADSRT envs[MAX_NUM_VOICES];
     
     float* sourceValues[MAX_NUM_UNIQUE_SKEWS];
     
