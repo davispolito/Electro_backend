@@ -1,0 +1,133 @@
+/*
+  ==============================================================================
+
+    Distortion.cpp
+    Created: 31 Mar 2022 11:33:06am
+    Author:  Davis Polito
+
+  ==============================================================================
+*/
+
+#include "Distortion.h"
+Filter::Filter(const String& n, ElectroAudioProcessor& p,
+                             AudioProcessorValueTreeState& vts) :
+AudioComponent(n, p, vts, cFilterParams, true)
+{
+    for (int i = 0; i < MAX_NUM_VOICES; i++)
+    {
+        tSVF_init(&lowpass[i], SVFTypeLowpass, 2000.f, 0.7f, &processor.leaf);
+        tSVF_init(&highpass[i], SVFTypeHighpass, 2000.f, 0.7f, &processor.leaf);
+        tSVF_init(&bandpass[i], SVFTypeBandpass, 2000.f, 0.7f, &processor.leaf);
+        tDiodeFilter_init(&diodeFilters[i], 2000.f, 1.0f, &processor.leaf);
+        tVZFilter_init(&VZfilterPeak[i], Bell, 2000.f, 1.0f, &processor.leaf);
+        tVZFilter_init(&VZfilterLS[i], Lowshelf, 2000.f, 1.0f, &processor.leaf);
+        tVZFilter_init(&VZfilterHS[i], Highshelf, 2000.f, 1.0f, &processor.leaf);
+         tVZFilter_init(&VZfilterBR[i], BandReject, 2000.f, 1.0f, &processor.leaf);
+        tLadderFilter_init(&Ladderfilter[i], 2000.f, 1.0f, &processor.leaf);
+    }
+    
+    afpFilterType = vts.getRawParameterValue(n + " Type");
+}
+
+Filter::~Filter()
+{
+    for (int i = 0; i < MAX_NUM_VOICES; i++)
+    {
+        tSVF_free(&lowpass[i]);
+        tSVF_free(&highpass[i]);
+        tSVF_free(&bandpass[i]);
+        tDiodeFilter_free(&diodeFilters[i]);
+        tVZFilter_free(&VZfilterPeak[i]);
+        tVZFilter_free(&VZfilterLS[i]);
+        tVZFilter_free(&VZfilterHS[i]);
+        tVZFilter_free(&VZfilterBR[i]);
+        tLadderFilter_free(&Ladderfilter[i]);
+    }
+}
+
+void Filter::prepareToPlay (double sampleRate, int samplesPerBlock)
+{
+    AudioComponent::prepareToPlay(sampleRate, samplesPerBlock);
+}
+//refactor to change function pointer when the type is selected rather than checking at every frame
+
+void Filter::frame()
+{
+    sampleInBlock = 0;
+    enabled = afpEnabled == nullptr || *afpEnabled > 0;
+    
+    currentFilterType = FilterType(int(*afpFilterType));
+    switch (currentFilterType) {
+        case LowpassFilter:
+            filterTick = &Filter::lowpassTick;
+            break;
+            
+        case HighpassFilter:
+            filterTick = &Filter::highpassTick;
+            break;
+            
+        case BandpassFilter:
+            filterTick = &Filter::bandpassTick;
+            break;
+            
+        case DiodeLowpassFilter:
+            filterTick = &Filter::diodeLowpassTick;
+            break;
+            
+        case VZPeakFilter:
+            filterTick = &Filter::VZpeakTick;
+            break;
+            
+        case VZLowshelfFilter:
+            filterTick = &Filter::VZlowshelfTick;
+            break;
+            
+        case VZHighshelfFilter:
+            filterTick = &Filter::VZhighshelfTick;
+            break;
+            
+        case VZBandrejectFilter:
+            filterTick = &Filter::VZbandrejectTick;
+            break;
+            
+        case LadderLowpassFilter:
+            filterTick = &Filter::LadderLowpassTick;
+            break;
+            
+        default:
+            filterTick = &Filter::lowpassTick;
+            break;
+    }
+}
+
+void Filter::tick(float* samples)
+{
+    if (!enabled) return;
+    
+//    float a = sampleInBlock * invBlockSize;
+    
+    for (int v = 0; v < processor.numVoicesActive; ++v)
+    {
+        float midiCutoff = quickParams[FilterCutoff][v]->tickNoSmoothing();
+        float keyFollow = quickParams[FilterKeyFollow][v]->tickNoSmoothing();
+        float q = quickParams[FilterResonance][v]->tickNoSmoothing();
+        float gain = quickParams[FilterGain][v]->tickNoSmoothing();
+        
+        LEAF_clip(0.f, keyFollow, 1.f);
+        
+        float follow = processor.voiceNote[v];
+        if (isnan(follow))
+        {
+            follow = 0.0f;
+        }
+
+        float cutoff = midiCutoff + (follow * keyFollow);
+        cutoff = fabsf(mtof(cutoff));
+        
+        q = q < 0.1f ? 0.1f : q;
+        
+        (this->*filterTick)(samples[v], v, cutoff, q, keyFollow, gain);
+    }
+    
+    sampleInBlock++;
+}
