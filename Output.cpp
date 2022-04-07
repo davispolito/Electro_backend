@@ -23,7 +23,7 @@ AudioComponent(n, p, vts, cOutputParams, false)
     tOversampler_init(&os[0], MASTER_OVERSAMPLE, 0, &processor.leaf);
     tOversampler_init(&os[1], MASTER_OVERSAMPLE, 0, &processor.leaf);
     processor.leaf.clearOnAllocation = temp;
-    afpDistortionType = vts.getRawParameterValue(n + " DistortionType");
+    //afpDistortionType = vts.getRawParameterValue(n + " DistortionType");
 }
 
 Output::~Output()
@@ -113,29 +113,26 @@ void Output::tick(float input[MAX_NUM_VOICES], float output[2], int numChannels)
     }
     
     //JS - I added a final saturator - would sound a little better in the plugin with oversampling, too. Could just oversample the distortion by 4 and see how that feels.
-    currentDistortionType = DistortionType(int(*afpDistortionType));
+    //currentDistortionType = DistortionType(int(*afpDistortionType));
 
     tOversampler_upsample(&os[0], output[0], oversamplerArray);
     
     for (int i = 0; i < MASTER_OVERSAMPLE; i++)
     {
     
-        switch (currentDistortionType) {
-            case distortion1:
+        
                 output[0] = tanhf(oversamplerArray[i]);
-                break;
+               
             
-            case dist2:
+            
                 output[0] = LEAF_shaper(oversamplerArray[i], 0.6f);
-                break;
-            default:
-                break;
-        }
+             
+        
     }
     //output[0] = tOversampler_tick(&os[0], output[0], oversamplerArray, &tanhf);
     //output[1] = tOversampler_tick(&os[1], output[1], oversamplerArray, &tanhf);
-    output[0] = output[0] * m * pedGain;
-        output[1] = output[0] * m * pedGain;
+output[0] = output[0] * m * pedGain;
+output[1] = output[0] * m * pedGain;
     //output[1] = output[1] * m * pedGain;
     
     sampleInBlock++;

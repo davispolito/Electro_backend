@@ -29,8 +29,8 @@ public:
     
 private:
     
-    std::atomic<float>* afpDistortionType;
-    DistortionType currentDistortionType = distnil;
+//    std::atomic<float>* afpDistortionType;
+//    DistortionType currentDistortionType = distnil;
     std::unique_ptr<SmoothedParameter> master;
     tOversampler os[2];
     float oversamplerArray[MASTER_OVERSAMPLE];
