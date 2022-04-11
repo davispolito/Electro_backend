@@ -139,7 +139,7 @@ void Filter::lowpassTick(float& sample, int v, float cutoff, float q, float morp
 {
     tSVF_setFreqAndQ(&lowpass[v], cutoff, q);
     sample = tSVF_tick(&lowpass[v], sample);
-    sample *= 2.f * gain;
+    sample *= dbtoa(gain);
 }
 
 void Filter::highpassTick(float& sample, int v, float cutoff, float q, float morph, float gain)
@@ -149,7 +149,7 @@ void Filter::highpassTick(float& sample, int v, float cutoff, float q, float mor
     //sample = tVZFilter_tick(&filters[v], sample);
     tSVF_setFreqAndQ(&highpass[v], cutoff, q);
     sample = tSVF_tick(&highpass[v], sample);
-    sample *= 2.f * gain;
+    sample *= dbtoa(gain);
 }
 
 void Filter::bandpassTick(float& sample, int v, float cutoff, float q, float morph, float gain)
@@ -159,7 +159,7 @@ void Filter::bandpassTick(float& sample, int v, float cutoff, float q, float mor
     //sample = tVZFilter_tick(&filters[v], sample);
     tSVF_setFreqAndQ(&bandpass[v], cutoff, q);
     sample = tSVF_tick(&bandpass[v], sample);
-    sample *= 2.f * gain;
+    sample *= dbtoa(gain);
 }
 
 void Filter::diodeLowpassTick(float& sample, int v, float cutoff, float q, float morph, float gain)
@@ -167,7 +167,7 @@ void Filter::diodeLowpassTick(float& sample, int v, float cutoff, float q, float
     tDiodeFilter_setFreq(&diodeFilters[v], cutoff);
     tDiodeFilter_setQ(&diodeFilters[v], q);
     sample = tDiodeFilter_tick(&diodeFilters[v], sample);
-    sample *= 2.f * gain;
+    sample *= dbtoa(gain);
 }
 
 void Filter::VZpeakTick(float& sample, int v, float cutoff, float q, float morph, float gain)
@@ -196,7 +196,7 @@ void Filter:: VZbandrejectTick(float& sample, int v, float cutoff, float q, floa
     //tVZFilter_setMorphOnly(&filters[v], morph);
     tVZFilter_setFrequencyAndResonanceAndGain(&VZfilterBR[v], cutoff, q, 1);
     sample = tVZFilter_tickEfficient(&VZfilterBR[v], sample);
-    sample *= 2.f*gain;
+    sample *= dbtoa(gain);
 }
 
 void Filter:: LadderLowpassTick(float& sample, int v, float cutoff, float q, float morph, float gain)
@@ -205,5 +205,5 @@ void Filter:: LadderLowpassTick(float& sample, int v, float cutoff, float q, flo
     tLadderFilter_setFreq(&Ladderfilter[v], cutoff);
     tLadderFilter_setQ(&Ladderfilter[v], q);
     sample = tLadderFilter_tick(&Ladderfilter[v], sample);
-    sample *= 2.f * gain;
+    sample *= dbtoa(gain);
 }
