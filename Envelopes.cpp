@@ -111,17 +111,17 @@ void Envelope::tick()
             sourceValues[i][v] = powf(value, invSkew);
         }
         
-        if (processor.strings[0]->numVoices > 1)
-        {
-            if (processor.strings[0]->voices[v][0] == -2)
-            {
-                if (envs[v]->whichStage == env_idle)
-                {
-                    tSimplePoly_deactivateVoice(&processor.strings[0], v);
-                    processor.voiceIsSounding[v] = false;
-                }
-            }
-        }
+//        if (processor.strings[0]->numVoices > 1)
+//        {
+//            if (processor.strings[0]->voices[v][0] == -2)
+//            {
+//                if (envs[v]->whichStage == env_idle)
+//                {
+//                    tSimplePoly_deactivateVoice(&processor.strings[0], v);
+//                    processor.voiceIsSounding[v] = false;
+//                }
+//            }
+//        }
     }
 //    sampleInBlock++;
 }
