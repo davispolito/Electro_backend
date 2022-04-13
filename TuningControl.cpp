@@ -72,10 +72,16 @@ void TuningControl::loadScala(std::string fname, float* arr)
         for (int i = 0; i < 12; i++)
         {
             float micro = s.tones[i].cents;
+            DBG("Micro" + String(micro));
             float equal = et.tones[i].cents;
+            DBG("equal" + String(equal));
             float offset = micro - equal;
             arr[(i+1)%12] = offset / 100.f; //.scl format puts first interval as the first line so we shift the representation over
             DBG("Cents Deviation " + String(arr[(i+1)%12]));
+        }
+        for (int i = 0; i < 12; i++)
+        {
+            DBG(String(i) + ":" + String(arr[i]));
         }
     }
 }
