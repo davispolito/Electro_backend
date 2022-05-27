@@ -110,18 +110,20 @@ void Envelope::tick()
             float invSkew = processor.quickInvParameterSkews[i];
             sourceValues[i][v] = powf(value, invSkew);
         }
-        
-//        if (processor.strings[0]->numVoices > 1)
-//        {
-//            if (processor.strings[0]->voices[v][0] == -2)
+        if (isAmpEnv)
+        {
+//            if (processor.strings[0]->numVoices > 1)
 //            {
-//                if (envs[v]->whichStage == env_idle)
-//                {
-//                    tSimplePoly_deactivateVoice(&processor.strings[0], v);
-//                    processor.voiceIsSounding[v] = false;
-//                }
+                if (processor.strings[0]->voices[v][0] == -2)
+                {
+                    if (envs[v]->whichStage == env_idle)
+                    {
+                        tSimplePoly_deactivateVoice(&processor.strings[0], v);
+                        processor.voiceIsSounding[v] = false;
+                    }
+                }
 //            }
-//        }
+        }
     }
 //    sampleInBlock++;
 }
@@ -135,5 +137,6 @@ void Envelope::noteOn(int voice, float velocity)
 
 void Envelope::noteOff(int voice, float velocity)
 {
+    
     tADSRT_off(&envs[voice]);
 }

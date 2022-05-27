@@ -239,9 +239,28 @@ public:
     
 private:
     
-    ComboBox distortionCB;
+    //ComboBox distortionCB;
     sd::SoundMeter::MetersComponent meters;
     std::unique_ptr<ElectroDial> masterDial;
     void timerCallback() override;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OutputModule)
+};
+
+
+//==============================================================================
+
+class FXModule : public ElectroModule
+{
+public:
+    
+    FXModule(ElectroAudioProcessorEditor& editor, AudioProcessorValueTreeState&, AudioComponent&);
+    ~FXModule() override;
+    
+    void resized() override;
+    void paint(Graphics &g) override;
+    void comboBoxChanged(ComboBox *comboBox) override;
+private:
+    ComboBox fxCB;
+    
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (FXModule)
 };

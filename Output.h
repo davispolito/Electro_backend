@@ -12,7 +12,8 @@
 
 #include "../Constants.h"
 #include "Utilities.h"
-#define MASTER_OVERSAMPLE 4
+
+
 //==============================================================================
 
 class Output : public AudioComponent
@@ -25,14 +26,11 @@ public:
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock);
     void frame();
-    void tick(float input[MAX_NUM_VOICES], float output[2], int numChannels);
-    
-private:
-    
-//    std::atomic<float>* afpDistortionType;
-//    DistortionType currentDistortionType = distnil;
+    void tick(float input[MAX_NUM_VOICES]);
     std::unique_ptr<SmoothedParameter> master;
-    tOversampler os[2];
-    float oversamplerArray[MASTER_OVERSAMPLE];
+private:
+   
+    
+    
 };
 

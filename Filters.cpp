@@ -139,7 +139,7 @@ void Filter::lowpassTick(float& sample, int v, float cutoff, float q, float morp
 {
     tSVF_setFreqAndQ(&lowpass[v], cutoff, q);
     sample = tSVF_tick(&lowpass[v], sample);
-    sample *= dbtoa(gain);
+    sample *= dbtoa((gain * 24.0f) - 12.0f);
 }
 
 void Filter::highpassTick(float& sample, int v, float cutoff, float q, float morph, float gain)
@@ -149,7 +149,7 @@ void Filter::highpassTick(float& sample, int v, float cutoff, float q, float mor
     //sample = tVZFilter_tick(&filters[v], sample);
     tSVF_setFreqAndQ(&highpass[v], cutoff, q);
     sample = tSVF_tick(&highpass[v], sample);
-    sample *= dbtoa(gain);
+    sample *= dbtoa((gain * 24.0f) - 12.0f);
 }
 
 void Filter::bandpassTick(float& sample, int v, float cutoff, float q, float morph, float gain)
@@ -159,7 +159,7 @@ void Filter::bandpassTick(float& sample, int v, float cutoff, float q, float mor
     //sample = tVZFilter_tick(&filters[v], sample);
     tSVF_setFreqAndQ(&bandpass[v], cutoff, q);
     sample = tSVF_tick(&bandpass[v], sample);
-    sample *= dbtoa(gain);
+    sample *= dbtoa((gain * 24.0f) - 12.0f);
 }
 
 void Filter::diodeLowpassTick(float& sample, int v, float cutoff, float q, float morph, float gain)
@@ -167,7 +167,7 @@ void Filter::diodeLowpassTick(float& sample, int v, float cutoff, float q, float
     tDiodeFilter_setFreq(&diodeFilters[v], cutoff);
     tDiodeFilter_setQ(&diodeFilters[v], q);
     sample = tDiodeFilter_tick(&diodeFilters[v], sample);
-    sample *= dbtoa(gain);
+    sample *= dbtoa((gain * 24.0f) - 12.0f);
 }
 
 void Filter::VZpeakTick(float& sample, int v, float cutoff, float q, float morph, float gain)

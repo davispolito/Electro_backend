@@ -31,7 +31,7 @@ public:
     //==============================================================================
     void noteOn(int voice, float velocity);
     void noteOff(int voice, float velocity);
-    
+    bool isAmpEnv = false;
 private:
     RangedAudioParameter* useVelocity;
     

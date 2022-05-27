@@ -898,15 +898,15 @@ ElectroModule(editor, vts, ac, 0.07f, 0.22f, 0.07f, 0.11f, 0.78f)
     meters.setOptions (meterOptions);
     meters.setLabelStripPosition (sd::SoundMeter::LabelStripPosition::right);
     addAndMakeVisible (meters);
-    RangedAudioParameter* set = vts.getParameter(ac.getName() + " DistortionType");
-    distortionCB.addItemList(distortionNames, 1);
-    distortionCB.setSelectedItemIndex(set->convertFrom0to1(set->getValue()), dontSendNotification);
-    distortionCB.setLookAndFeel(&laf);
-    addAndMakeVisible(distortionCB);
+//    RangedAudioParameter* set = vts.getParameter(ac.getName() + " DistortionType");
+//    distortionCB.addItemList(distortionNames, 1);
+//    distortionCB.setSelectedItemIndex(set->convertFrom0to1(set->getValue()), dontSendNotification);
+//    distortionCB.setLookAndFeel(&laf);
+//    addAndMakeVisible(distortionCB);
 
-    comboBoxAttachments.add(new ComboBoxAttachment(vts, ac.getName() + " DistortionType", distortionCB));
-        startTimerHz (30);
-    
+//    comboBoxAttachments.add(new ComboBoxAttachment(vts, ac.getName() + " DistortionType", distortionCB));
+//        startTimerHz (30);
+//
 }
 
 // The 'polling' timer.
@@ -931,10 +931,57 @@ OutputModule::~OutputModule()
 void OutputModule::resized()
 {
     ElectroModule::resized();
-    distortionCB.setBoundsRelative(relLeftMargin, 0.02f,
-                           relDialWidth+relDialSpacing, 0.16f);
+//    distortionCB.setBoundsRelative(relLeftMargin, 0.02f,
+//                           relDialWidth+relDialSpacing, 0.16f);
     masterDial->setBoundsRelative(0.65f, relTopMargin, 0.17f, relDialHeight);
     meters.setBoundsRelative(.85f, relTopMargin - 0.1, 0.1f, relDialHeight);
     //meters.setAlwaysOnTop(true);
 }
+
+//==============================================================================
+
+FXModule::FXModule(ElectroAudioProcessorEditor& editor, AudioProcessorValueTreeState& vts,
+                     AudioComponent& ac) :
+ElectroModule(editor, vts, ac, 0.03f, 0.14f, 0.025f, 0.17f, 0.80f)
+{
+    RangedAudioParameter* set = vts.getParameter(ac.getName() + " FXType");
+    fxCB.addItemList(FXTypeNames, 1);
+    fxCB.setSelectedItemIndex(set->convertFrom0to1(set->getValue()), dontSendNotification);
+    fxCB.setLookAndFeel(&laf);
+    addAndMakeVisible(fxCB);
+    comboBoxAttachments.add(new ComboBoxAttachment(vts, ac.getName() + " FXType", fxCB));
+}
+
+FXModule::~FXModule()
+{
+    sliderAttachments.clear();
+    buttonAttachments.clear();
+    comboBoxAttachments.clear();
+}
+
+void FXModule::resized()
+{
+    ElectroModule::resized();
+    fxCB.setBoundsRelative(0.01f, 0.02f,
+                              relDialWidth+0.6f*relDialSpacing, 0.16f);
+}
+
+void FXModule::paint(Graphics &g)
+{
+    ElectroModule::paint(g);
+    
+    auto bounds = getLocalBounds();
+    g.setColour(juce::Colours::grey);
+    g.drawRect(bounds,2);
+}
+
+
+void FXModule::comboBoxChanged(ComboBox *comboBox)
+{
+//    if (comboBox == &fxCB)
+//    {
+//        effect.setTick((FXType)fxCB.getSelectedItemIndex());
+//    }
+}
+
 
