@@ -128,15 +128,17 @@ void MappingTarget::mouseDown(const MouseEvent& event)
     {
         if (event.mods.isCtrlDown() || event.mods.isRightButtonDown())
         {
-            PopupMenu menu;
-            menu.setLookAndFeel(&laf);
-            menu.addItem(1, "Remove");
-            if (model.currentScalarSource != nullptr)
-            {
-                menu.addItem(2, "Remove Scalar (" + String(model.currentScalarSource->name) + ")");
+            if (removable) {
+                PopupMenu menu;
+                menu.setLookAndFeel(&laf);
+                menu.addItem(1, "Remove");
+                if (model.currentScalarSource != nullptr)
+                {
+                    menu.addItem(2, "Remove Scalar (" + String(model.currentScalarSource->name) + ")");
+                }
+                menu.showMenuAsync(PopupMenu::Options(),
+                                   ModalCallbackFunction::forComponent (menuCallback, this) );
             }
-            menu.showMenuAsync(PopupMenu::Options(),
-                               ModalCallbackFunction::forComponent (menuCallback, this) );
         }
         else
         {

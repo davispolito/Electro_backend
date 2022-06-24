@@ -69,7 +69,9 @@ public:
     MappingTargetModel& getModel() { return model; }
     bool isBipolar() { return model.bipolar; }
     bool isActive() { return sliderEnabled; }
+    bool isRemovable() {return removable; }
     
+    void setRemovable(bool isRemovable) { removable = isRemovable; }
     bool isInterestedInDragSource(const SourceDetails &dragSourceDetails) override;
     void itemDropped(const SourceDetails &dragSourceDetails) override;
     
@@ -98,7 +100,7 @@ public:
 private:
     ElectroAudioProcessor& processor;
     MappingTargetModel& model;
-    
+    bool removable;
     String text;
     bool sliderEnabled;
     double overflowValue;

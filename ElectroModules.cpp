@@ -898,6 +898,7 @@ ElectroModule(editor, vts, ac, 0.07f, 0.22f, 0.07f, 0.11f, 0.78f)
     meters.setOptions (meterOptions);
     meters.setLabelStripPosition (sd::SoundMeter::LabelStripPosition::right);
     addAndMakeVisible (meters);
+    getDial(OutputAmp)->getTargets()[2]->setRemovable(false);
 //    RangedAudioParameter* set = vts.getParameter(ac.getName() + " DistortionType");
 //    distortionCB.addItemList(distortionNames, 1);
 //    distortionCB.setSelectedItemIndex(set->convertFrom0to1(set->getValue()), dontSendNotification);
