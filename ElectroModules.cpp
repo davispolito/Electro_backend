@@ -950,6 +950,8 @@ ElectroModule(editor, vts, ac, 0.03f, 0.14f, 0.025f, 0.17f, 0.80f)
     fxCB.setLookAndFeel(&laf);
     addAndMakeVisible(fxCB);
     comboBoxAttachments.add(new ComboBoxAttachment(vts, ac.getName() + " FXType", fxCB));
+    fxCB.addListener(this);
+    fxCB.addMouseListener(this, true);
 }
 
 FXModule::~FXModule()
@@ -978,10 +980,30 @@ void FXModule::paint(Graphics &g)
 
 void FXModule::comboBoxChanged(ComboBox *comboBox)
 {
-//    if (comboBox == &fxCB)
-//    {
-//        effect.setTick((FXType)fxCB.getSelectedItemIndex());
-//    }
+    if (comboBox == &fxCB)
+    {
+        setNamesAndDefaults((FXType)fxCB.getSelectedItemIndex());
+    }
+}
+
+void FXModule::setNamesAndDefaults(FXType effect)
+{
+    for (int i = 0; i < vFXInit.size() - 1; i++)
+    {
+        getDial(i)->setText(FXParamNames[effect][i], dontSendNotification);
+        getDial(i)->setValue(FXParamDefaults[effect][i]);
+        if (FXParamNames[effect][i].isEmpty())
+        {
+            getDial(i)->setAlpha(0.5);
+            getDial(i)->setEnabled(false);
+        } else
+        {
+            getDial(i)->setAlpha(1);
+            getDial(i)->setEnabled(true);
+        }
+        
+        
+    }
 }
 
 

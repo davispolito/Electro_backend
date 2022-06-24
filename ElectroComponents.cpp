@@ -555,6 +555,11 @@ void ElectroDial::setRange(double newMin, double newMax, double newInt)
     slider.setRange(newMin, newMax, newInt);
 }
 
+
+void ElectroDial::setValue(double val)
+{
+    slider.setValue(val);
+}
 void ElectroDial::setText (const String& newText, NotificationType notification)
 {
     label.setText(newText, notification);

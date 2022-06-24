@@ -128,7 +128,7 @@ public:
     void mouseDown(const MouseEvent& event) override;
     
     void setRange(double newMin, double newMax, double newInt);
-    
+    void setValue(double val);
     void setText (const String& newText, NotificationType notification);
     void setFont (const Font& newFont);
     
