@@ -31,10 +31,10 @@ public:
     //==============================================================================
     void noteOn(int voice, float velocity);
     void noteOff(int voice, float velocity);
-    bool isAmpEnv = false;
+    void setIsAmpEnv(bool isAmpEnv) {isAmpEnv = isAmpEnv;}
 private:
     RangedAudioParameter* useVelocity;
-    
+    bool isAmpEnv = false;
     tADSRT envs[MAX_NUM_VOICES];
     
     float* sourceValues[MAX_NUM_UNIQUE_SKEWS];
