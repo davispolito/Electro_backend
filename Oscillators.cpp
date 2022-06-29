@@ -475,8 +475,10 @@ MappingSourceModel(p, n, true, true, Colours::darkorange)
     
     for (int i = 0; i < MAX_NUM_VOICES; i++)
     {
+        tVZFilter_init(&shelf1[i], Lowshelf, 80.0f, 32.0f,   &processor.leaf);
+        tVZFilter_init(&shelf2[i], Highshelf, 12000.0f, 32.0f,  &processor.leaf);
+        tVZFilter_init(&bell1[i], Bell, 1000.0f, 1.9f,   &processor.leaf);
         tNoise_init(&noise[i], WhiteNoise, &processor.leaf);
-        tSVF_init(&bandpass[i], SVFTypeBandpass, 2000.f, 0.7f, &processor.leaf);
     }
     
     filterSend = std::make_unique<SmoothedParameter>(p, vts, n + " FilterSend");
@@ -494,7 +496,9 @@ NoiseGenerator::~NoiseGenerator()
     for (int i = 0; i < MAX_NUM_VOICES; i++)
     {
         tNoise_free(&noise[i]);
-        tSVF_free(&bandpass[i]);
+        tVZFilter_free(&bell1[i]);
+        tVZFilter_free(&shelf1[i]);
+        tVZFilter_free(&shelf2[i]);
     }
 }
 
@@ -503,7 +507,9 @@ void NoiseGenerator::prepareToPlay (double sampleRate, int samplesPerBlock)
     AudioComponent::prepareToPlay(sampleRate, samplesPerBlock);
     for (int i = 0; i < MAX_NUM_VOICES; i++)
     {
-        tSVF_setSampleRate(&bandpass[i], sampleRate);
+        tVZFilter_setSampleRate(&bell1[i], sampleRate);
+        tVZFilter_setSampleRate(&shelf1[i], sampleRate);
+        tVZFilter_setSampleRate(&shelf2[i], sampleRate);
     }
 }
 
@@ -552,15 +558,21 @@ void NoiseGenerator::tick(float output[][MAX_NUM_VOICES])
     
     for (int v = 0; v < processor.numVoicesActive; v++)
     {
-        float color = quickParams[NoiseColor][v]->tickNoSmoothing();
+        float tilt = quickParams[NoiseTilt][v]->tickNoSmoothing();
         float amp = quickParams[NoiseAmp][v]->tickNoSmoothing();
-        color = color < 0.f ? 0.f : color;
-        color = mtof(color*100.f + 24.f);
+        float freq = quickParams[NoiseFreq][v]->tickNoSmoothing();
+        float gain = quickParams[NoiseGain][v]->tickNoSmoothing();
         amp = amp < 0.f ? 0.f : amp;
-    
-        tSVF_setFreq(&bandpass[v], color);
+        tVZFilter_setGain(&shelf1[v], fastdbtoa(-1.0f * ((tilt * 30.0f) - 15.0f)));
+        tVZFilter_setGain(&shelf2[v], fastdbtoa((tilt * 30.0f) - 15.0f));
+        tVZFilter_setFrequencyAndBandwidthAndGain(&bell1[v], faster_mtof(freq * 77.0f + 42.0f), (0.5 +1.0f)*6.0f, fastdbtoa((gain* 34.0f) - 17.0f));
+        
+        
         //float sample = tSVF_tick(&bandpass[v], tNoise_tick(&noise[v])) * amp;
         float sample = tNoise_tick(&noise[v]) * amp;
+        sample = tVZFilter_tickEfficient(&shelf1[v], sample);
+        sample = tVZFilter_tickEfficient(&shelf2[v], sample);
+        sample = tVZFilter_tickEfficient(&bell1[v], sample);
         float normSample = (sample + 1.f) * 0.5f;
         //float normSample = sample;
         sourceValues[0][v] = normSample;

@@ -72,6 +72,8 @@ private:
     
     File waveTableFile;
     bool loadingTables = false;
+    
+   
 };
 
 //==============================================================================
@@ -145,9 +147,10 @@ public:
     void tick(float output[][MAX_NUM_VOICES]);
     
 private:
-    
+    // noise tilt
+    tVZFilter shelf1[MAX_NUM_VOICES], shelf2[MAX_NUM_VOICES], bell1[MAX_NUM_VOICES];
     tNoise noise[MAX_NUM_VOICES];
-    tSVF bandpass[MAX_NUM_VOICES];
+
     
     std::unique_ptr<SmoothedParameter> filterSend;
     

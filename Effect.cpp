@@ -44,7 +44,21 @@ Effect::Effect(const String& n, ElectroAudioProcessor& p,
 
 Effect::~Effect()
 {
-    
+    for (int i = 0; i < MAX_NUM_VOICES; i++)
+    {
+        tCrusher_free(&bc[i]);
+        tHighpass_free(&dcBlock1[i]);
+        tHighpass_free(&dcBlock1[i]);
+        tVZFilter_free(&bell1[i]);
+        tVZFilter_free(&shelf1[i]);
+        tVZFilter_free(&shelf2[i]);
+        tCompressor_free(&comp[i]);
+        tLockhartWavefolder_free(&wf[i]);
+        tHermiteDelay_free(&delay1[i]);
+        tHermiteDelay_free(&delay2[i]);
+        tCycle_free(&mod1[i]);
+        tCycle_free(&mod2[i]);
+    }
 }
 
 //void Effect::setTick(FXType t)

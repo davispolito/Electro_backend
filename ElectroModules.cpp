@@ -560,7 +560,7 @@ void OscModule::displayPitchMapping(MappingTarget* mt)
 
 NoiseModule::NoiseModule(ElectroAudioProcessorEditor& editor, AudioProcessorValueTreeState& vts,
                      AudioComponent& ac) :
-ElectroModule(editor, vts, ac, 0.15f, 0.3f, 0.05f, 0.0f, 0.98f)
+ElectroModule(editor, vts, ac, 0.01f, 0.2f, 0.02f, 0.18f, 0.8f)
 {
     outlineColour = Colours::darkgrey;
     
