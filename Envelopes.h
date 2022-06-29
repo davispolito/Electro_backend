@@ -31,7 +31,7 @@ public:
     //==============================================================================
     void noteOn(int voice, float velocity);
     void noteOff(int voice, float velocity);
-    void setIsAmpEnv(bool isAmpEnv) {isAmpEnv = isAmpEnv;}
+    void setIsAmpEnv(bool isAmpEnv) {this->isAmpEnv = isAmpEnv;}
 private:
     RangedAudioParameter* useVelocity;
     bool isAmpEnv = false;
