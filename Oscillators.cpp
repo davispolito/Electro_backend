@@ -559,9 +559,9 @@ void NoiseGenerator::tick(float output[][MAX_NUM_VOICES])
     for (int v = 0; v < processor.numVoicesActive; v++)
     {
         float tilt = quickParams[NoiseTilt][v]->tickNoSmoothing();
-        float amp = quickParams[NoiseAmp][v]->tickNoSmoothing();
-        float freq = quickParams[NoiseFreq][v]->tickNoSmoothing();
         float gain = quickParams[NoiseGain][v]->tickNoSmoothing();
+        float freq = quickParams[NoiseFreq][v]->tickNoSmoothing();
+        float amp = quickParams[NoiseAmp][v]->tickNoSmoothing();
         amp = amp < 0.f ? 0.f : amp;
         tVZFilter_setGain(&shelf1[v], fastdbtoa(-1.0f * ((tilt * 30.0f) - 15.0f)));
         tVZFilter_setGain(&shelf2[v], fastdbtoa((tilt * 30.0f) - 15.0f));
@@ -573,6 +573,7 @@ void NoiseGenerator::tick(float output[][MAX_NUM_VOICES])
         sample = tVZFilter_tickEfficient(&shelf1[v], sample);
         sample = tVZFilter_tickEfficient(&shelf2[v], sample);
         sample = tVZFilter_tickEfficient(&bell1[v], sample);
+        sample = sample * amp; 
         float normSample = (sample + 1.f) * 0.5f;
         //float normSample = sample;
         sourceValues[0][v] = normSample;

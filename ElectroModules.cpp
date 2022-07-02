@@ -600,7 +600,7 @@ void NoiseModule::resized()
     
     sendSlider.setBoundsRelative(0.92f, 0.f, 0.08f, 1.0f);
     
-    enabledToggle.setBoundsRelative(0.84f, 0.4f, 0.1f, 0.18f);
+    enabledToggle.setBoundsRelative(0.86f, 0.4f, 0.1f, 0.18f);
 
     
     
@@ -874,7 +874,7 @@ void LFOModule::displayRateMapping(MappingTarget* mt)
 
 OutputModule::OutputModule(ElectroAudioProcessorEditor& editor, AudioProcessorValueTreeState& vts,
                            AudioComponent& ac) :
-ElectroModule(editor, vts, ac, 0.07f, 0.22f, 0.07f, 0.11f, 0.78f)
+ElectroModule(editor, vts, ac, 0.07f, 0.22f, 0.07f, 0.07f, 0.78f)
 {
     outlineColour = Colours::darkgrey;
     meters.setChannelFormat(juce::AudioChannelSet::stereo());
@@ -883,6 +883,7 @@ ElectroModule(editor, vts, ac, 0.07f, 0.22f, 0.07f, 0.11f, 0.78f)
   
     addAndMakeVisible(masterDial.get());
     sd::SoundMeter::Options meterOptions;
+    
     meterOptions.faderEnabled = false;  // Enable or disable the 'fader' overlay. Use the sd::SoundMeter::MetersComponent::FadersChangeListener to get the fader value updates.
     meterOptions.headerEnabled         = true;           // Enable the 'header' part above the meter, displaying the channel ID.
     meterOptions.valueEnabled          = true;           // Enable the 'value' part below the level, displaying the peak level.
@@ -895,19 +896,13 @@ ElectroModule(editor, vts, ac, 0.07f, 0.22f, 0.07f, 0.11f, 0.78f)
     meterOptions.tickMarksOnTop        = true;            // Put the tick-marks above the level readout.
     meterOptions.tickMarks             = { -1.0f, -3.0f, -6.0f, -12.0f };  // Positions (in decibels) of the tick-marks.
     meterOptions.decayTime_ms          = 1000.0f;                                          // The meter will take 1000 ms to decay to 0.
+     
     meters.setOptions (meterOptions);
     meters.setLabelStripPosition (sd::SoundMeter::LabelStripPosition::right);
-    addAndMakeVisible (meters);
-    getDial(OutputAmp)->getTargets()[2]->setRemovable(false);
-//    RangedAudioParameter* set = vts.getParameter(ac.getName() + " DistortionType");
-//    distortionCB.addItemList(distortionNames, 1);
-//    distortionCB.setSelectedItemIndex(set->convertFrom0to1(set->getValue()), dontSendNotification);
-//    distortionCB.setLookAndFeel(&laf);
-//    addAndMakeVisible(distortionCB);
 
-//    comboBoxAttachments.add(new ComboBoxAttachment(vts, ac.getName() + " DistortionType", distortionCB));
-//        startTimerHz (30);
-//
+    getDial(OutputAmp)->getTargets()[2]->setRemovable(false);
+    addAndMakeVisible (meters);
+    startTimerHz(30);
 }
 
 // The 'polling' timer.
@@ -932,11 +927,9 @@ OutputModule::~OutputModule()
 void OutputModule::resized()
 {
     ElectroModule::resized();
-//    distortionCB.setBoundsRelative(relLeftMargin, 0.02f,
-//                           relDialWidth+relDialSpacing, 0.16f);
-    masterDial->setBoundsRelative(0.65f, relTopMargin, 0.17f, relDialHeight);
-    meters.setBoundsRelative(.85f, relTopMargin - 0.1, 0.1f, relDialHeight);
-    //meters.setAlwaysOnTop(true);
+    masterDial->setBoundsRelative(0.4f, relTopMargin, 0.17f, relDialHeight);
+    meters.setBoundsRelative(.83f, relTopMargin - 0.05, 0.2f, relDialHeight*1.6f);
+    meters.setAlwaysOnTop(true);
 }
 
 //==============================================================================
