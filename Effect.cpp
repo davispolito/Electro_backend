@@ -48,7 +48,7 @@ Effect::~Effect()
     {
         tCrusher_free(&bc[i]);
         tHighpass_free(&dcBlock1[i]);
-        tHighpass_free(&dcBlock1[i]);
+        tHighpass_free(&dcBlock2[i]);
         tVZFilter_free(&bell1[i]);
         tVZFilter_free(&shelf1[i]);
         tVZFilter_free(&shelf2[i]);
