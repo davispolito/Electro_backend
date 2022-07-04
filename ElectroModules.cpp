@@ -928,7 +928,7 @@ void OutputModule::resized()
 {
     ElectroModule::resized();
     masterDial->setBoundsRelative(0.4f, relTopMargin, 0.17f, relDialHeight);
-    meters.setBoundsRelative(.83f, relTopMargin - 0.05, 0.2f, relDialHeight*1.6f);
+    meters.setBoundsRelative(.83f, relTopMargin - 0.05f, 0.2f, relDialHeight*1.6f);
     meters.setAlwaysOnTop(true);
 }
 

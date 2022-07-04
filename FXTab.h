@@ -37,7 +37,7 @@ public:
         
         int h = area.getHeight();
         int w = area.getWidth();
-        int r = area.getWidth() - w - 2;
+        //int r = area.getWidth() - w - 2;
 
         Rectangle<int> bottomArea = area.removeFromBottom(h*0.15);
         bottomArea.removeFromTop(h*0.03);
