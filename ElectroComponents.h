@@ -237,9 +237,9 @@ public:
         //int w = area.getWidth();
         //int r = area.getWidth() - w - 2;
         
-        Rectangle<int> bottomArea = area.removeFromBottom(h*0.15);
-        bottomArea.removeFromTop(h*0.03);
-        Rectangle<int> upperBottomArea = bottomArea.removeFromTop(h*0.06);
+        Rectangle<int> bottomArea = area.removeFromBottom((int)(h*0.15));
+        bottomArea.removeFromTop((int)(h*0.03));
+        Rectangle<int> upperBottomArea = bottomArea.removeFromTop((int)(h*0.06));
         
 
         upperBottomArea.removeFromRight(2);
@@ -699,11 +699,11 @@ public:
         int w = area.getWidth() / n;
         int r = area.getWidth() - (w*n) - 2;
         
-        Rectangle<int> bottomArea = area.removeFromBottom(h*0.15);
-        bottomArea.removeFromTop(h*0.03);
-        Rectangle<int> upperBottomArea = bottomArea.removeFromTop(h*0.06);
+        Rectangle<int> bottomArea = area.removeFromBottom((int)(h*0.15));
+        bottomArea.removeFromTop((int)(h*0.03));
+        Rectangle<int> upperBottomArea = bottomArea.removeFromTop((int)(h*0.06));
         
-        fundamentalLabel.setBounds(upperBottomArea.removeFromLeft(w*4).reduced(0.f, h*0.01f));
+        fundamentalLabel.setBounds(upperBottomArea.removeFromLeft(w*4).reduced(0.f, (int)(h*0.01f)));
         fundamentalField.setBounds(bottomArea.removeFromLeft(w*4));
         
         upperBottomArea.removeFromRight(2);

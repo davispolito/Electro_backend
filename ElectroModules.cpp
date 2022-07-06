@@ -67,7 +67,14 @@ relDialHeight(relDialHeight)
     if (ac.isToggleable())
     {
         enabledToggle.addListener(this);
-        enabledToggle.setToggleState(ac.isEnabled(), sendNotification);
+        if ((name == "Osc2") || (name == "Osc3"))
+        {
+            enabledToggle.setToggleState(false, sendNotification);
+        }
+        else
+        {
+            enabledToggle.setToggleState(ac.isEnabled(), sendNotification);
+        }
         if (name != "Filter1" && name != "Filter2")
             enabledToggle.setTooltip("Send to Filters On/Off");
         addAndMakeVisible(enabledToggle);
@@ -139,7 +146,7 @@ chooser(nullptr)
     pitchDialToggle.setLookAndFeel(&laf);
     pitchDialToggle.addListener(this);
     pitchDialToggle.setTitle("Harmonic Dial");
-    pitchDialToggle.setButtonText("Harmonic");
+    pitchDialToggle.setButtonText("H");
     pitchDialToggle.setToggleable(true);
     pitchDialToggle.setClickingTogglesState(true);
     pitchDialToggle.setToggleState(true, dontSendNotification);
@@ -147,7 +154,7 @@ chooser(nullptr)
     steppedToggle.setLookAndFeel(&laf);
     steppedToggle.addListener(this);
     steppedToggle.setTitle("Stepped Dial");
-    steppedToggle.setButtonText("Stepped");
+    steppedToggle.setButtonText("S");
     steppedToggle.changeWidthToFitText();
     steppedToggle.setToggleable(true);
     steppedToggle.setClickingTogglesState(true);
@@ -228,20 +235,20 @@ void OscModule::resized()
 {
     ElectroModule::resized();
     
-    s->setBounds(4, 4, getWidth()*0.1f, enabledToggle.getHeight()-8);
+    s->setBounds(4, 4, (int)(getWidth()*0.1f), enabledToggle.getHeight()-8);
    
-    harmonicsLabel.setBoundsRelative(relLeftMargin + relDialWidth * 0.25,
-                                     0.02f, relDialWidth+relDialSpacing * 0.25, 0.16f);
+    harmonicsLabel.setBoundsRelative(relLeftMargin + (relDialWidth * 0.25f),
+                                     0.02f, relDialWidth+((relDialSpacing * 0.25f)), 0.16f);
     
     pitchDialToggle.setBoundsRelative(0.0f, 0.412f, 0.05f, 0.15f);
     steppedToggle.setBoundsRelative(0.0f, 0.2f, 0.05f, 0.15f);
 
     
     
-    pitchLabel.setBoundsRelative(relLeftMargin+relDialWidth * 1.25,
+    pitchLabel.setBoundsRelative(relLeftMargin+(relDialWidth * 1.25f),
                                  0.02f, relDialWidth+relDialSpacing, 0.16f);
     
-    freqLabel.setBoundsRelative(relLeftMargin+2*relDialWidth+1.5*relDialSpacing,
+    freqLabel.setBoundsRelative(relLeftMargin+2*relDialWidth+((1.5f*relDialSpacing)),
                                  0.02f, relDialWidth+relDialSpacing, 0.16f);
     
     shapeCB.setBoundsRelative(relLeftMargin+3*(relDialWidth+relDialSpacing), 0.02f,
@@ -285,21 +292,21 @@ void OscModule::buttonClicked(Button* button)
         {
             getDial(OscPitch)->setRange(-24, 24., steppedToggle.getToggleState() ? 1 : 0.01 );
             getDial(OscPitch)->setText("Pitch", dontSendNotification);
-            pitchDialToggle.setButtonText("Pitch");
+            pitchDialToggle.setButtonText("P");
         } else
         {
             getDial(OscPitch)->setRange(-16, 16., steppedToggle.getToggleState() ? 1 : 0.01 );
             getDial(OscPitch)->setText("Harmonics", dontSendNotification);
-            pitchDialToggle.setButtonText("Harmonic");
+            pitchDialToggle.setButtonText("H");
         }
         
         if (!steppedToggle.getToggleState())
         {
-            steppedToggle.setButtonText("Smooth");
+            steppedToggle.setButtonText("SM");
         }
         else
         {
-            steppedToggle.setButtonText("Stepped");
+            steppedToggle.setButtonText("ST");
         }
         displayPitch();
     }
@@ -310,10 +317,10 @@ void OscModule::labelTextChanged(Label* label)
     if (label == &pitchLabel)
     {
         auto value = pitchLabel.getText().getDoubleValue();
-        int i = value;
+        int i = (int)value;
         double f = value-i;
         //getDial(OscPitch)->getSlider().setValue(i, sendNotificationAsync);
-        getDial(OscFine)->getSlider().setValue(f*100., sendNotificationAsync);
+        getDial(OscFine)->getSlider().setValue(f*100.0f, sendNotificationAsync);
     }
     else if (label == &freqLabel)
     {
@@ -595,7 +602,7 @@ void NoiseModule::resized()
 {
     ElectroModule::resized();
     
-    s->setBounds(4, 4, getWidth()*0.2f, enabledToggle.getHeight()-8);
+    s->setBounds(4, 4, (int)(getWidth()*0.2f), enabledToggle.getHeight()-8);
     s->toFront(false);
     
     sendSlider.setBoundsRelative(0.92f, 0.f, 0.08f, 1.0f);
@@ -667,7 +674,7 @@ void FilterModule::resized()
     }
     
 
-    typeCB.setBounds(enabledToggle.getRight(), 4, getWidth()*0.3f, enabledToggle.getHeight()-4);
+    typeCB.setBounds(enabledToggle.getRight(), 4, (int)(getWidth()*0.3f), enabledToggle.getHeight()-4);
 //    typeCB.setBoundsRelative(relLeftMargin, 0.01f, relDialWidth+relDialSpacing, 0.16f);
 }
 

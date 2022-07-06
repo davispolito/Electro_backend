@@ -85,7 +85,7 @@ public:
 
         auto inChannels = (channelConfiguration.size() > 0 ? channelConfiguration[0].numIns
                                                            : processor->getMainBusNumInputChannels());
-
+        
         if (preferredSetupOptions != nullptr)
             options.reset (new AudioDeviceManager::AudioDeviceSetup (*preferredSetupOptions));
 
