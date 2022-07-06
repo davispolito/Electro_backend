@@ -23,10 +23,9 @@ public:
     void prepareToPlay (double sampleRate, int samplesPerBlock)
     {
         AudioComponent::prepareToPlay(sampleRate, samplesPerBlock);
-    };
+    }
     
-    ElectroAudioProcessor* getProcessor() {return &processor;};
-    float tick(float sample, float param1, float param2, float param3, float param4, float param5, int v);
+    ElectroAudioProcessor* getProcessor() {return &processor;}    float tick(float sample, float param1, float param2, float param3, float param4, float param5, int v);
     void setTick(FXType);
     void frame();
     void oversample_tick(float* samples, int v);
@@ -46,6 +45,7 @@ private:
     tCycle mod1[MAX_NUM_VOICES];
     tCycle mod2[MAX_NUM_VOICES];
     float tiltFilterTick(float sample, float param1, float param2, float param3, float param4, float param5,int v);
+    float hardClipTick(float sample, float param1, float param2, float param3, float param4, float param5,int v);
     //void (Effect::*effectTick)(float& sample, int v, float param1, float param2, float param3, float mix);
     float tanhTick(float sample, float param1, float param2, float param3, float param4, float param5, int v);
     float softClipTick(float sample, float param1, float param2, float param3, float param4, float param5, int v);
@@ -59,14 +59,3 @@ private:
     std::atomic<float>* afpFXType;
     int sampleInBlock;
 };
-
-//class TanhClipper : public Effect
-//{
-//public:
-//    TanhClipper(const String&, ElectroAudioProcessor&, AudioProcessorValueTreeState&);
-//    ~TanhClipper();
-//    
-//    void tick(float* samples);
-//private:
-//    
-//};

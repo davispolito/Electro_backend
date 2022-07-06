@@ -86,6 +86,8 @@ Effect::EffectTick Effect::typeToTick(FXType type)
             break;
         case Softclip:
             return &Effect::softClipTick;
+        case Hardclip:
+            return &Effect::hardClipTick;
         case ABSaturator:
             return &Effect::satTick;
         break;
@@ -119,11 +121,13 @@ Effect::EffectTick Effect::typeToTick(FXType type)
 float Effect::wavefolderTick(float sample, float param1, float param2, float param3, float param4, float param5, int v)
 {
     float gain = dbtoa(param1 * 12.0f);
+    float offset = (param2 * 2.0f) - 1.0f;
     sample = sample * gain;
     
-    float temp = tLockhartWavefolder_tick(&wf[v],(sample + (param2 * gain)));
+    float temp = tLockhartWavefolder_tick(&wf[v],(sample + (offset * gain)));
     
     temp = tHighpass_tick(&dcBlock1[v], temp);
+    temp *= param3;
     return temp;
 }
 
@@ -148,9 +152,11 @@ float Effect::chorusTick(float sample, float param1, float param2, float param3,
 float Effect::shaperTick(float sample, float param1, float param2, float param3, float param4, float param5, int v)
 {
     float gain = dbtoa(param1 * 24.0f);
+    float offset = (param2 * 2.0f) - 1.0f;
     sample = sample * gain;
-    float temp = LEAF_shaper(sample + (param2 * gain),param3);
+    float temp = LEAF_shaper(sample + (offset * gain),param3);
     temp = tHighpass_tick(&dcBlock1[v], temp);
+    temp *= param4;
     return temp;
 }
 
@@ -167,6 +173,7 @@ float Effect::tiltFilterTick(float sample, float param1, float param2, float par
     sample = tVZFilter_tickEfficient(&shelf1[v], sample);
     sample = tVZFilter_tickEfficient(&shelf2[v], sample);
     sample = tVZFilter_tickEfficient(&bell1[v], sample);
+    sample *= param5;
     return sample;
 }
 
@@ -190,8 +197,12 @@ float Effect::tanhTick(float sample, float param1, float param2, float param3, f
 {
     float gain = dbtoa(param1 * 24.0f);
     sample = sample * gain;
-    float temp = tanhf(sample + (param2 * gain));
+    gain = gain * 0.5f;
+    float offset = (param2 * 2.0f) - 1.0f;
+    //need to do something with shape param
+    float temp = tanhf(sample + (offset*gain));
     temp = tHighpass_tick(&dcBlock1[v], temp);
+    temp *= param4;
     temp = tanhf(temp);
     //temp = tHighpass_tick(&dcBlock2, temp);
     return temp;
@@ -201,18 +212,49 @@ float Effect::softClipTick(float sample, float param1, float param2, float param
 {
     float gain = dbtoa(param1 * 24.0f);
     sample = sample * gain;
-    sample = sample + (param2);
+    float offset = (param2 * 2.0f) - 1.0f;
+    sample = sample + (offset);
+    float shape = (param3 * .99f) + 0.01f;
     if (sample <= -1.0f)
     {
-        sample = -0.666666f;
+        sample = -1.0f;
     } else if (sample >= 1.0f)
     {
-        sample = 0.6666666f;
-    } else
-    {
-        sample = sample - ((sample * sample * sample)* 0.3333333f);
+        sample = 1.0f;
     }
+    {
+        sample = (shape * sample) - ((shape * (sample * sample * sample))* 0.3333333f);
+        sample = sample / (shape - ((shape*shape*shape) * 0.3333333f));
+    }
+
     sample = tHighpass_tick(&dcBlock1[v], sample);
+    sample *= param4;
+    return sample;
+}
+
+
+float Effect::hardClipTick(float sample, float param1, float param2, float param3, float param4, float param5, int v)
+{
+    
+    float gain = dbtoa(param1 * 24.0f);
+    sample = sample * gain;
+    float offset = (param2 * 2.0f) - 1.0f;
+    sample = sample + (offset);
+    float shape = ((param3 * .99f) + 0.01f)* PI_DIV_2;
+    if (sample <= -1.0f)
+    {
+        sample = -1.0f;
+    } else if (sample >= 1.0f)
+    {
+        sample = 1.0f;
+    }
+    {
+        sample = sinf(  (sinf(sample*shape)/sinf(shape)) * shape   );
+        sample = sample / sinf(shape);
+    }
+
+    sample = tHighpass_tick(&dcBlock1[v], sample);
+    sample *= param4;
     return sample;
 }
 
@@ -221,10 +263,12 @@ float Effect::satTick(float sample, float param1, float param2, float param3, fl
 {
     float gain = dbtoa(param1 * 24.0f);
     sample = sample * gain;
-    float temp = (sample + (param2 * gain)) / (1.0f + fabs(sample + param2));
+    float offset = (param2 * 2.0f) - 1.0f;
+    float temp = (sample + (param2 * gain)) / (1.0f + fabs(sample + offset));
     temp = tHighpass_tick(&dcBlock1[v], temp);
     temp = tHighpass_tick(&dcBlock2[v], temp);
     temp = tanhf(temp);
+    temp *= param4;
     return temp;
 }
 
@@ -245,32 +289,8 @@ float Effect::bcTick(float sample, float param1, float param2, float param3, flo
 
 float Effect::compressorTick(float sample, float param1, float param2, float param3, float param4, float param5, int v)
 {
-    tCompressor_setParams(&comp[v], param1*-24.0f,((param2*11.0f)+1.0f), 3.0f, param3 * 15.0f, param4 * 1000.0f +  1.0f, param5 * 1000.0f + 1.0f);
+    
+    tCompressor_setParams(&comp[v], param1*-24.0f, ((param2*10.0f)+1.0f), 3.0f, param3 * 18.0f, (param4 * 1000.0f) +  1.0f, (param5 * 1000.0f) + 1.0f);
     return tCompressor_tick (&comp[v], sample);
 }
 
-//TanhClipper::TanhClipper(const String& n, ElectroAudioProcessor& p, AudioProcessorValueTreeState& vts) : Effect(n, p, vts)
-//{
-//    int temp = processor.leaf.clearOnAllocation;
-//    getProcessor()->leaf.clearOnAllocation = 1;
-//    tOversampler_init(&os, oversample, 1, &getProcessor()->leaf);
-//
-//    getProcessor()->leaf.clearOnAllocation = temp;
-//}
-//
-//TanhClipper::~TanhClipper()
-//{
-//    tOversampler_free(&os);
-//}
-//
-//void TanhClipper::tick(float* samples)
-//{
-//
-//
-//    for (int v = 0; v < processor.numVoicesActive; ++v)
-//    {
-//        float drive = quickParams[Param1][v]->tickNoSmoothing();
-//        float mix = quickParams[Mix][v]->tickNoSmoothing();
-//        samples[v] = (1.0f - mix) * samples[v] + mix*tOversampler_tick(&os, samples[v], oversamplerArray, &tanhf);
-//    }
-//}

@@ -49,7 +49,8 @@ public:
     //==============================================================================
     /** Structure used for the number of inputs and outputs. */
     struct PluginInOuts   { short numIns, numOuts; };
-
+    
+    
     //==============================================================================
     /** Creates an instance of the default plugin.
         The settings object can be a PropertySet that the class should use to store its
