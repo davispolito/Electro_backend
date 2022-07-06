@@ -44,6 +44,8 @@ namespace juce
         
         virtual StandaloneFilterWindow* createWindow()
         {
+            AudioDeviceManager::AudioDeviceSetup setup;
+            setup.bufferSize = 64;
 #ifdef JucePlugin_PreferredChannelConfigurations
             StandalonePluginHolder::PluginInOuts channels[] = { JucePlugin_PreferredChannelConfigurations };
 #endif
@@ -51,7 +53,7 @@ namespace juce
             return new StandaloneFilterWindow (getApplicationName(),
                                                LookAndFeel::getDefaultLookAndFeel().findColour (ResizableWindow::backgroundColourId),
                                                appProperties.getUserSettings(),
-                                               false, {}, nullptr
+                                               false, {}, &setup
 #ifdef JucePlugin_PreferredChannelConfigurations
                                                , juce::Array<StandalonePluginHolder::PluginInOuts> (channels, juce::numElementsInArray (channels))
 #else
