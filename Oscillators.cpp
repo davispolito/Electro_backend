@@ -475,8 +475,8 @@ MappingSourceModel(p, n, true, true, Colours::darkorange)
     
     for (int i = 0; i < MAX_NUM_VOICES; i++)
     {
-        tVZFilter_init(&shelf1[i], Lowshelf, 80.0f, 32.0f,   &processor.leaf);
-        tVZFilter_init(&shelf2[i], Highshelf, 12000.0f, 32.0f,  &processor.leaf);
+        tVZFilter_init(&shelf1[i], Lowshelf, 80.0f, 6.0f,   &processor.leaf);
+        tVZFilter_init(&shelf2[i], Highshelf, 12000.0f, 6.0f,  &processor.leaf);
         tVZFilter_init(&bell1[i], Bell, 1000.0f, 1.9f,   &processor.leaf);
         tNoise_init(&noise[i], WhiteNoise, &processor.leaf);
     }
@@ -559,20 +559,21 @@ void NoiseGenerator::tick(float output[][MAX_NUM_VOICES])
     for (int v = 0; v < processor.numVoicesActive; v++)
     {
         float tilt = quickParams[NoiseTilt][v]->tickNoSmoothing();
-        float amp = quickParams[NoiseAmp][v]->tickNoSmoothing();
-        float freq = quickParams[NoiseFreq][v]->tickNoSmoothing();
         float gain = quickParams[NoiseGain][v]->tickNoSmoothing();
+        float freq = quickParams[NoiseFreq][v]->tickNoSmoothing();
+        float amp = quickParams[NoiseAmp][v]->tickNoSmoothing();
         amp = amp < 0.f ? 0.f : amp;
         tVZFilter_setGain(&shelf1[v], fastdbtoa(-1.0f * ((tilt * 30.0f) - 15.0f)));
         tVZFilter_setGain(&shelf2[v], fastdbtoa((tilt * 30.0f) - 15.0f));
-        tVZFilter_setFrequencyAndBandwidthAndGain(&bell1[v], faster_mtof(freq * 77.0f + 42.0f), (0.5 +1.0f)*6.0f, fastdbtoa((gain* 34.0f) - 17.0f));
+        tVZFilter_setFrequencyAndResonanceAndGain(&bell1[v], faster_mtof(freq * 77.0f + 42.0f), 1.9f, fastdbtoa((gain* 34.0f) - 17.0f));
         
         
         //float sample = tSVF_tick(&bandpass[v], tNoise_tick(&noise[v])) * amp;
-        float sample = tNoise_tick(&noise[v]) * amp;
+        float sample = tNoise_tick(&noise[v]) ;
         sample = tVZFilter_tickEfficient(&shelf1[v], sample);
         sample = tVZFilter_tickEfficient(&shelf2[v], sample);
         sample = tVZFilter_tickEfficient(&bell1[v], sample);
+        sample = sample * amp; 
         float normSample = (sample + 1.f) * 0.5f;
         //float normSample = sample;
         sourceValues[0][v] = normSample;

@@ -31,7 +31,7 @@ namespace juce
 #if JUCE_LINUX
             options.folderName          = "~/.config";
 #else
-            options.folderName          = "";
+            options.folderName          = "Snyderphonics";
 #endif
             
             appProperties.setStorageParameters (options);

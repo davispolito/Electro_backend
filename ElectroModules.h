@@ -239,7 +239,6 @@ public:
     
 private:
     
-    //ComboBox distortionCB;
     sd::SoundMeter::MetersComponent meters;
     std::unique_ptr<ElectroDial> masterDial;
     void timerCallback() override;

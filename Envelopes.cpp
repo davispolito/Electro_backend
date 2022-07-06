@@ -120,7 +120,7 @@ void Envelope::tick()
                     {
                         tSimplePoly_deactivateVoice(&processor.strings[0], v);
                         processor.voiceIsSounding[v] = false;
-                        DBG("Voice Ended");
+                        //DBG("Voice Ended");
                     }
                 }
 //            }

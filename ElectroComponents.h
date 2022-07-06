@@ -236,8 +236,8 @@ public:
         Rectangle<int> area = getLocalBounds();
         
         int h = area.getHeight();
-        int w = area.getWidth();
-        int r = area.getWidth() - w - 2;
+        //int w = area.getWidth();
+        //int r = area.getWidth() - w - 2;
         
         Rectangle<int> bottomArea = area.removeFromBottom(h*0.15);
         bottomArea.removeFromTop(h*0.03);
@@ -499,7 +499,7 @@ public:
                 value += copedentArray[0][rowNumber];
                 value = round( value * 1000. ) / 1000.;
             }
-            int n = round(value);
+            int n = (int)round(value);
             double f = value - n;
             if (f == -0.5)
             {
@@ -549,7 +549,7 @@ public:
                 String denominator = text.substring(whereIsDivide+1);
                 value = value / denominator.getDoubleValue();
                 float h = mtof(fundamental);
-                value = ftom(value * h);
+                value = (double)(ftom((float)value * h));
             }
 
             // Value isn't an offset
@@ -569,7 +569,7 @@ public:
         else
         {
             int i = text.indexOfAnyOf("CDEFGAB");
-            
+            value = 0.0;
             // Start by getting the basic pitch class number
             if (text[i] == 'C') value = 0.;
             else if (text[i] == 'D') value = 2.;
@@ -630,7 +630,7 @@ public:
         }
         if (columnNumber == 0)
         {
-            fundamental = value;
+            fundamental = (float)value;
         }
         else
             copedentArray.getReference(columnNumber-1).set(rowNumber, value);
