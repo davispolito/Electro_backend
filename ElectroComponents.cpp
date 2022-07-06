@@ -36,6 +36,27 @@ model(m)
     addAndMakeVisible(&button);
 }
 
+MappingSource::MappingSource(ElectroAudioProcessorEditor& editor, MappingSourceModel& m) :
+Component(m.name),
+label(m.name, m.name),
+button(m.name, DrawableButton::ButtonStyle::ImageFitted),
+processor(editor.processor),
+model(m)
+{
+    addMouseListener(&editor, true);
+    
+    label.setLookAndFeel(&laf);
+    label.setJustificationType(Justification::centredLeft);
+    label.setColour(Label::outlineColourId, model.colour);
+    label.setColour(Label::textColourId, model.colour);
+    addAndMakeVisible(&label);
+    
+    image = Drawable::createFromImageData(BinaryData::mappingsourceicon_svg,
+                                          BinaryData::mappingsourceicon_svgSize);
+    button.setImages(image.get());
+    addAndMakeVisible(&button);
+}
+
 MappingSource::~MappingSource()
 {
     label.setLookAndFeel(nullptr);

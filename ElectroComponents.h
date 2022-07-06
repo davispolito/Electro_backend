@@ -22,6 +22,8 @@ class MappingSource : public Component
 public:
     MappingSource(ElectroAudioProcessorEditor& editor, MappingSourceModel& model,
                   const String &displayName);
+    MappingSource(ElectroAudioProcessorEditor& editor, MappingSourceModel& model);
+
     ~MappingSource() override;
     
     Colour getColour() { return model.colour; }
