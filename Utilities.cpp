@@ -37,6 +37,7 @@ float SmoothedParameter::tick()
     // Well defined inter-thread behavior PROBABLY shouldn't be an issue here, so
     // the atomic is just slowing us down. memory_order_relaxed seems fastest, marginally
     float target = raw->load(std::memory_order_relaxed);
+    //bool isSmoothed = false;
     for (int i = 0; i < numActiveHooks; ++i)
     {
         target += hooks[whichHooks[i]].getValue();
