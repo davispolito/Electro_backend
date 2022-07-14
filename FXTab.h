@@ -33,25 +33,9 @@ public:
    
     void resized() override
     {
-        Rectangle<int> area = getLocalBounds();
-        
-        int h = area.getHeight();
-        int w = area.getWidth();
-        //int r = area.getWidth() - w - 2;
-
-        Rectangle<int> bottomArea = area.removeFromBottom(h*0.15);
-        bottomArea.removeFromTop(h*0.03);
-        Rectangle<int> upperBottomArea = bottomArea.removeFromTop(h*0.06);
-        upperBottomArea.removeFromRight(2);
-        bottomArea.removeFromRight(2);
-        
-        float s = w / EDITOR_WIDTH;
-
-        
-        
         for (int i = 0; i < NUM_FX; i++)
         {
-            fxModules[i]->setBounds(-1, (120*s*i)-i-1, 540*s+1, 120*s);
+            fxModules[i]->setBoundsRelative(0.01f, 0.01f +   i * 0.245f, 0.9f, 0.245f);
         }
     }
     
