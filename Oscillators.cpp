@@ -142,11 +142,11 @@ void Oscillator::tick(float output[][MAX_NUM_VOICES])
     {
         if (!processor.voiceIsSounding[v]) continue;
         
-        float harm_pitch = quickParams[OscPitch][v]->tickNoSmoothing();
-        float fine = quickParams[OscFine][v]->tickNoSmoothing();
-        float freq = quickParams[OscFreq][v]->tickNoSmoothing();
-        float shape = quickParams[OscShape][v]->tickNoSmoothing();
-        float amp = quickParams[OscAmp][v]->tickNoSmoothing();
+        float harm_pitch = quickParams[OscPitch][v]->tick();
+        float fine = quickParams[OscFine][v]->tick();
+        float freq = quickParams[OscFreq][v]->tick();
+        float shape = quickParams[OscShape][v]->tick();
+        float amp = quickParams[OscAmp][v]->tick();
        
         amp = amp < 0.f ? 0.f : amp;
         float note = processor.voiceNote[v];
@@ -381,8 +381,8 @@ void LowFreqOscillator::tick()
     
     for (int v = 0; v < processor.numVoicesActive; v++)
     {
-        float rate = quickParams[LowFreqRate][v]->tickNoSmoothing();
-        float shape = quickParams[LowFreqShape][v]->tickNoSmoothing();
+        float rate = quickParams[LowFreqRate][v]->tick();
+        float shape = quickParams[LowFreqShape][v]->tick();
         // Even though our oscs can handle negative frequency I think allowing the rate to
         // go negative would be confusing behavior
         rate = rate < 0.f ? 0.f : rate;
@@ -558,10 +558,10 @@ void NoiseGenerator::tick(float output[][MAX_NUM_VOICES])
     
     for (int v = 0; v < processor.numVoicesActive; v++)
     {
-        float tilt = quickParams[NoiseTilt][v]->tickNoSmoothing();
-        float gain = quickParams[NoiseGain][v]->tickNoSmoothing();
-        float freq = quickParams[NoiseFreq][v]->tickNoSmoothing();
-        float amp = quickParams[NoiseAmp][v]->tickNoSmoothing();
+        float tilt = quickParams[NoiseTilt][v]->tick();
+        float gain = quickParams[NoiseGain][v]->tick();
+        float freq = quickParams[NoiseFreq][v]->tick();
+        float amp = quickParams[NoiseAmp][v]->tick();
         amp = amp < 0.f ? 0.f : amp;
         tVZFilter_setGain(&shelf1[v], fastdbtoa(-1.0f * ((tilt * 30.0f) - 15.0f)));
         tVZFilter_setGain(&shelf2[v], fastdbtoa((tilt * 30.0f) - 15.0f));

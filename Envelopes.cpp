@@ -81,11 +81,11 @@ void Envelope::tick()
     
     for (int v = 0; v < processor.numVoicesActive; v++)
     {
-        float attack = quickParams[EnvelopeAttack][v]->tickNoSmoothing();
-        float decay = quickParams[EnvelopeDecay][v]->tickNoSmoothing();
-        float sustain = quickParams[EnvelopeSustain][v]->tickNoSmoothing();
-        float release = quickParams[EnvelopeRelease][v]->tickNoSmoothing();
-        float leak = quickParams[EnvelopeLeak][v]->tickNoSmoothing();
+        float attack = quickParams[EnvelopeAttack][v]->tick();
+        float decay = quickParams[EnvelopeDecay][v]->tick();
+        float sustain = quickParams[EnvelopeSustain][v]->tick();
+        float release = quickParams[EnvelopeRelease][v]->tick();
+        float leak = quickParams[EnvelopeLeak][v]->tick();
         attack = attack < 0.f ? 0.f : attack;
         decay = decay < 0.f ? 0.f : decay;
         sustain = sustain < 0.f ? 0.f : sustain;

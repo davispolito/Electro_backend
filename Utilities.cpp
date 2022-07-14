@@ -21,7 +21,8 @@ processor(processor)
     for (int i = 0; i < 3; ++i)
     {
         hooks[i] = ParameterHook("", &value0, 0.0f, 0.0f, "", &value1);
-        whichHooks[i] = 0;
+        smoothedHooks[i] = 0;
+        nonSmoothedHooks[i] = 0;
     }
     processor.params.add(this);
     
@@ -38,12 +39,17 @@ float SmoothedParameter::tick()
     // the atomic is just slowing us down. memory_order_relaxed seems fastest, marginally
     float target = raw->load(std::memory_order_relaxed);
     //bool isSmoothed = false;
-    for (int i = 0; i < numActiveHooks; ++i)
+    for (int i = 0; i < numSmoothedHooks; ++i)
     {
-        target += hooks[whichHooks[i]].getValue();
+        target += hooks[smoothedHooks[i]].getValue();
     }
     smoothed.setTargetValue(target);
-    return value = smoothed.getNextValue();
+    value = smoothed.getNextValue();
+    for (int i = 0; i < numNonSmoothedHooks; ++i)
+    {
+        value += hooks[nonSmoothedHooks[i]].getValue();
+    }
+    return value;
 }
 
 float SmoothedParameter::tickNoHooks()
@@ -52,83 +58,11 @@ float SmoothedParameter::tickNoHooks()
     return value = smoothed.getNextValue();
 }
 
-float SmoothedParameter::tickNoSmoothing()
-{
-    float target = raw->load(std::memory_order_relaxed);
-    for (int i = 0; i < numActiveHooks; ++i)
-    {
-        target += hooks[whichHooks[i]].getValue();
-    }
-    return value = target;
-}
-
 float SmoothedParameter::tickNoHooksNoSmoothing()
 {
     return value = raw->load(std::memory_order_relaxed);
 }
 
-void SmoothedParameter::tickSkews()
-{
-    float target = raw->load(std::memory_order_relaxed);
-    for (int i = 0; i < numActiveHooks; ++i)
-    {
-        target += hooks[whichHooks[i]].getValue();
-    }
-    smoothed.setTargetValue(target);
-    value = smoothed.getNextValue();
-    for (int i = 0; i < processor.numInvParameterSkews; ++i)
-    {
-        float invSkew = processor.quickInvParameterSkews[i];
-        values[i] = powf(value, invSkew);
-    }
-}
-
-void SmoothedParameter::tickSkewsNoHooks()
-{
-    smoothed.setTargetValue(raw->load(std::memory_order_relaxed));
-    value = smoothed.getNextValue();
-    for (int i = 0; i < processor.numInvParameterSkews; ++i)
-    {
-        float invSkew = processor.quickInvParameterSkews[i];
-        values[i] = powf(value, invSkew);
-    }
-}
-
-void SmoothedParameter::tickSkewsNoSmoothing()
-{
-    float target = raw->load(std::memory_order_relaxed);
-    for (int i = 0; i < numActiveHooks; ++i)
-    {
-        target += hooks[whichHooks[i]].getValue();
-    }
-    value = target;
-    for (int i = 0; i < processor.numInvParameterSkews; ++i)
-    {
-        float invSkew = processor.quickInvParameterSkews[i];
-        values[i] = powf(value, invSkew);
-    }
-}
-
-void SmoothedParameter::tickSkewsNoHooksNoSmoothing()
-{
-    value = raw->load(std::memory_order_relaxed);
-    for (int i = 0; i < processor.numInvParameterSkews; ++i)
-    {
-        float invSkew = processor.quickInvParameterSkews[i];
-        values[i] = powf(value, invSkew);
-    }
-}
-
-float SmoothedParameter::skip(int numSamples)
-{
-    float target = raw->load(std::memory_order_relaxed);
-    for (int i = 0; i < numActiveHooks; ++i)
-    {
-        target += hooks[whichHooks[i]].getValue();
-    }
-    smoothed.setTargetValue(target);
-    return value = smoothed.skip(numSamples);
-}
 
 float SmoothedParameter::get()
 {
@@ -162,8 +96,14 @@ void SmoothedParameter::setHook(const String& sourceName, int index,
     hooks[index].hook = (float*)hook;
     hooks[index].min = min;
     hooks[index].length = max-min;
-    
-    if (numActiveHooks < 3) whichHooks[numActiveHooks++] = index;
+    if ((sourceName == "Osc1") || (sourceName == "Osc2") || (sourceName == "Osc3"))
+    {
+        if (numNonSmoothedHooks < 3) nonSmoothedHooks[numNonSmoothedHooks++] = index;
+    }
+    else
+    {
+        if (numSmoothedHooks < 3) smoothedHooks[numSmoothedHooks++] = index;
+    }
 }
 
 void SmoothedParameter::setHookRange(int index, float min, float max)
@@ -182,6 +122,12 @@ void SmoothedParameter::resetHook(int index)
 {
     if (hooks[index].hook == &value0) return;
     
+    bool isSmoothed = true;
+    if ((hooks[index].sourceName == "Osc1") || (hooks[index].sourceName == "Osc2") || (hooks[index].sourceName == "Osc3"))
+    {
+        isSmoothed = false;
+    }
+
     hooks[index].sourceName = "";
     hooks[index].hook = &value0;
     hooks[index].min = 0.0f;
@@ -189,18 +135,38 @@ void SmoothedParameter::resetHook(int index)
     hooks[index].scalarName = "";
     hooks[index].scalar = &value1;
     
-    numActiveHooks--;
-    // If this hook was at the start or middle of the active
-    // hooks list, make sure to move shift the others forward
-    // Could do this with a nested loop but whatever...
-    if (whichHooks[0] == index)
+    if (isSmoothed)
     {
-        whichHooks[0] = whichHooks[1];
-        whichHooks[1] = whichHooks[2];
+        numSmoothedHooks--;
+        // If this hook was at the start or middle of the active
+        // hooks list, make sure to move shift the others forward
+        // Could do this with a nested loop but whatever...
+        if (smoothedHooks[0] == index)
+        {
+            smoothedHooks[0] = smoothedHooks[1];
+            smoothedHooks[1] = smoothedHooks[2];
+        }
+        else if (smoothedHooks[1] == index)
+        {
+            smoothedHooks[1] = smoothedHooks[2];
+        }
     }
-    else if (whichHooks[1] == index)
+    else
     {
-        whichHooks[1] = whichHooks[2];
+        numNonSmoothedHooks--;
+        // If this hook was at the start or middle of the active
+        // hooks list, make sure to move shift the others forward
+        // Could do this with a nested loop but whatever...
+        if (nonSmoothedHooks[0] == index)
+        {
+            nonSmoothedHooks[0] = nonSmoothedHooks[1];
+            nonSmoothedHooks[1] = nonSmoothedHooks[2];
+        }
+        else if (nonSmoothedHooks[1] == index)
+        {
+            nonSmoothedHooks[1] = nonSmoothedHooks[2];
+        }
+        
     }
 }
 
@@ -222,7 +188,7 @@ float SmoothedParameter::getEnd()
 
 void SmoothedParameter::prepareToPlay(double sampleRate, int samplesPerBlock)
 {
-    smoothed.reset(sampleRate, 0.010);
+    smoothed.reset(sampleRate, 0.006);
 }
 
 //==============================================================================

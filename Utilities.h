@@ -64,14 +64,8 @@ public:
     //==============================================================================
     float tick();
     float tickNoHooks();
-    float tickNoSmoothing();
     float tickNoHooksNoSmoothing();
-    void tickSkews();
-    void tickSkewsNoHooks();
-    void tickSkewsNoSmoothing();
-    void tickSkewsNoHooksNoSmoothing();
-    
-    float skip(int numSamples);
+
 
     float get();
     float get(int i);
@@ -107,8 +101,10 @@ private:
     float values[MAX_NUM_UNIQUE_SKEWS];
     float* valuePointers[MAX_NUM_UNIQUE_SKEWS];
     ParameterHook hooks[3];
-    int numActiveHooks = 0;
-    int whichHooks[3];
+    int numSmoothedHooks = 0;
+    int numNonSmoothedHooks = 0;
+    int smoothedHooks[3];
+    int nonSmoothedHooks[3];
     
     float value0 = 0.0f;
     float value1 = 1.0f;
