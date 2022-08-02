@@ -77,7 +77,8 @@ Slider(m.name),
 processor(editor.processor),
 model(m),
 text(""),
-sliderEnabled(false)
+sliderEnabled(false),
+removable(true)
 {    
     setLookAndFeel(&laf);
     setDoubleClickReturnValue(true, 0.);

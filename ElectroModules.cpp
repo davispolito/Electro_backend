@@ -150,6 +150,16 @@ chooser(nullptr)
     pitchDialToggle.setToggleable(true);
     pitchDialToggle.setClickingTogglesState(true);
     pitchDialToggle.setToggleState(true, dontSendNotification);
+    
+    syncToggle.setLookAndFeel(&laf);
+    syncToggle.addListener(this);
+    syncToggle.setTitle("Sync Toggle");
+    syncToggle.setButtonText("Sync");
+    syncToggle.setToggleable(true);
+    syncToggle.setClickingTogglesState(true);
+    syncToggle.setToggleState(true, dontSendNotification);
+    addAndMakeVisible(syncToggle);
+    
     addAndMakeVisible(pitchDialToggle);
     steppedToggle.setLookAndFeel(&laf);
     steppedToggle.addListener(this);
@@ -169,6 +179,7 @@ chooser(nullptr)
 //    addAndMakeVisible(smoothingToggle);
     buttonAttachments.add(new ButtonAttachment(vts, ac.getName() + " isHarmonic", pitchDialToggle));
     buttonAttachments.add(new ButtonAttachment(vts, ac.getName() + " isStepped", steppedToggle));
+    buttonAttachments.add(new ButtonAttachment(vts, ac.getName() + " isSync", syncToggle));
     harmonicsLabel.setLookAndFeel(&laf);
     harmonicsLabel.setEditable(true);
     harmonicsLabel.setJustificationType(Justification::centred);
@@ -241,6 +252,7 @@ void OscModule::resized()
                                      0.02f, relDialWidth+((relDialSpacing * 0.25f)), 0.16f);
     
     pitchDialToggle.setBoundsRelative(0.0f, 0.412f, 0.05f, 0.15f);
+    syncToggle.setBoundsRelative(0.0f, 0.7f, 0.05f, 0.15f);
     steppedToggle.setBoundsRelative(0.0f, 0.2f, 0.05f, 0.15f);
 
     
@@ -309,6 +321,10 @@ void OscModule::buttonClicked(Button* button)
             steppedToggle.setButtonText("ST");
         }
         displayPitch();
+    }
+    else if (button == &syncToggle)
+    {
+        
     }
 }
 

@@ -123,7 +123,7 @@ private:
     Label f1Label;
     Label f2Label;
     
-
+    TextButton syncToggle;
     std::unique_ptr<MappingSource> s;
     
     FileChooser* chooser;

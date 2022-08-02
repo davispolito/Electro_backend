@@ -126,11 +126,11 @@ public:
     int getNumSourcePointers();
     
     String name;
-    float** sources[MAX_NUM_UNIQUE_SKEWS];
+
     int numSourcePointers;
     bool bipolar;
     Colour colour;
-    
+    float** sources[MAX_NUM_UNIQUE_SKEWS];
 private:
     ElectroAudioProcessor& modelProcessor;
     

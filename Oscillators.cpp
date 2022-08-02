@@ -16,7 +16,8 @@
 Oscillator::Oscillator(const String& n, ElectroAudioProcessor& p,
                        AudioProcessorValueTreeState& vts) :
 AudioComponent(n, p, vts, cOscParams, true),
-MappingSourceModel(p, n, true, true, Colours::darkorange)
+MappingSourceModel(p, n, true, true, Colours::darkorange),
+syncSource(nullptr)
 {
     for (int i = 0; i < processor.numInvParameterSkews; ++i)
     {
@@ -40,6 +41,7 @@ MappingSourceModel(p, n, true, true, Colours::darkorange)
     filterSend = std::make_unique<SmoothedParameter>(p, vts, n + " FilterSend");
     isHarmonic_raw = vts.getRawParameterValue(n + " isHarmonic");
     isStepped_raw = vts.getRawParameterValue(n + " isStepped");
+    isSync_raw = vts.getRawParameterValue(n + " isSync");
     afpShapeSet = vts.getRawParameterValue(n + " ShapeSet");
 }
 
@@ -136,7 +138,7 @@ void Oscillator::frame()
 
 void Oscillator::tick(float output[][MAX_NUM_VOICES])
 {
-    if (loadingTables || !enabled) return;
+    //if (loadingTables || !enabled) return;
 
     for (int v = 0; v < processor.numVoicesActive; ++v)
     {
@@ -159,6 +161,7 @@ void Oscillator::tick(float output[][MAX_NUM_VOICES])
             note = harm_pitch >= 0 ? ftom(processor.tuner.mtof(note) * (harm_pitch + 1)) : ftom(processor.tuner.mtof(note) / abs((harm_pitch - 1)));
             harm_pitch = 0;
         }
+        
         //DBG(ftom(processor.tuner.mtof(note) / (harm - 1)));
         //DBG(processor.tuner.mtof(note) / (harm - 1));
         float finalFreq = processor.tuner.mtof(LEAF_clip(0, note + harm_pitch + fine*0.01f, 127)) + freq;
@@ -180,6 +183,8 @@ void Oscillator::tick(float output[][MAX_NUM_VOICES])
             sourceValues[i][v] = powf(normSample, invSkew);
         }
         
+        syncOut[v] = sample;
+        
         sample *= INV_NUM_OSCS;
         
         float f = filterSend->tickNoHooks();
@@ -195,6 +200,11 @@ void Oscillator::sawSquareTick(float& sample, int v, float freq, float shape)
 {
     tMBSaw_setFreq(&sawPaired[v], freq);
     tMBPulse_setFreq(&pulsePaired[v], freq);
+    if (isSync_raw == nullptr || *isSync_raw > 0)
+    {
+        tMBSaw_sync(&sawPaired[v], syncSource->syncOut[v]);
+        tMBPulse_sync(&pulsePaired[v], syncSource->syncOut[v]);
+    }
     sample += tMBSaw_tick(&sawPaired[v]) * (1.0f - shape) * 2.f;
     sample += tMBPulse_tick(&pulsePaired[v]) * shape * 2.f;
 }
@@ -203,6 +213,11 @@ void Oscillator::sineTriTick(float& sample, int v, float freq, float shape)
 {
     tCycle_setFreq(&sinePaired[v], freq);
     tMBTriangle_setFreq(&triPaired[v], freq);
+    
+    if (isSync_raw == nullptr || *isSync_raw > 0)
+    {
+        tMBTriangle_sync(&triPaired[v], syncSource->syncOut[v]);
+    }
     sample += tCycle_tick(&sinePaired[v]) * (1.0f - shape);
     sample += tMBTriangle_tick(&triPaired[v]) * shape * 2.f;;
 }
@@ -210,6 +225,10 @@ void Oscillator::sineTriTick(float& sample, int v, float freq, float shape)
 void Oscillator::sawTick(float& sample, int v, float freq, float shape)
 {
     tMBSaw_setFreq(&saw[v], freq);
+    if (isSync_raw == nullptr || *isSync_raw > 0)
+    {
+        tMBSaw_sync(&saw[v], syncSource->syncOut[v]);
+    }
     sample += tMBSaw_tick(&saw[v]) * 2.f;;
 }
 
@@ -217,6 +236,10 @@ void Oscillator::pulseTick(float& sample, int v, float freq, float shape)
 {
     tMBPulse_setFreq(&pulse[v], freq);
     tMBPulse_setWidth(&pulse[v], shape);
+    if (isSync_raw == nullptr || *isSync_raw > 0)
+    {
+        tMBPulse_sync(&pulse[v], syncSource->syncOut[v]);
+    }
     sample += tMBPulse_tick(&pulse[v]) * 2.f;;
 }
 
@@ -230,6 +253,10 @@ void Oscillator::triTick(float& sample, int v, float freq, float shape)
 {
     tMBTriangle_setFreq(&tri[v], freq);
     tMBTriangle_setWidth(&tri[v], shape);
+    if (isSync_raw == nullptr || *isSync_raw > 0)
+    {
+        tMBTriangle_sync(&tri[v], syncSource->syncOut[v]);
+    }
     sample += tMBTriangle_tick(&tri[v]) * 2.f;;
 }
 
@@ -383,6 +410,7 @@ void LowFreqOscillator::tick()
     {
         float rate = quickParams[LowFreqRate][v]->tick();
         float shape = quickParams[LowFreqShape][v]->tick();
+        phaseReset = quickParams[LowFreqPhase][v]->tick();
         // Even though our oscs can handle negative frequency I think allowing the rate to
         // go negative would be confusing behavior
         rate = rate < 0.f ? 0.f : rate;

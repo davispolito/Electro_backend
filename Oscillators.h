@@ -35,6 +35,8 @@ public:
     File& getWaveTableFile() { return waveTableFile; }
     void setMtoF(float mn);
     OscShapeSet getCurrentShapeSet() { return currentShapeSet; }
+    void setSyncSource(Oscillator* osc) {syncSource = osc;}
+    float syncOut[MAX_NUM_VOICES];
     
 private:
     void (Oscillator::*shapeTick)(float& sample, int v, float freq, float shape);
@@ -60,11 +62,11 @@ private:
     tWaveOscS wave[MAX_NUM_VOICES];
     
     float* sourceValues[MAX_NUM_UNIQUE_SKEWS];
-
+   
     std::unique_ptr<SmoothedParameter> filterSend;
     std::atomic<float>* isHarmonic_raw;
     std::atomic<float>* isStepped_raw;
-
+    std::atomic<float>* isSync_raw;
     std::atomic<float>* afpShapeSet;
     OscShapeSet currentShapeSet = OscShapeSetNil;
     
@@ -73,7 +75,7 @@ private:
     File waveTableFile;
     bool loadingTables = false;
     
-   
+    Oscillator *syncSource;
 };
 
 //==============================================================================
@@ -125,6 +127,7 @@ private:
     tWaveOscS wave[MAX_NUM_VOICES];
     
     float* sourceValues[MAX_NUM_UNIQUE_SKEWS];
+    
     float phaseReset;
     
     std::atomic<float>* afpShapeSet;
