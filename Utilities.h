@@ -65,7 +65,7 @@ public:
     float tick();
     float tickNoHooks();
     float tickNoHooksNoSmoothing();
-
+    void tickSkewsNoHooks();
 
     float get();
     float get(int i);

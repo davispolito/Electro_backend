@@ -63,6 +63,16 @@ float SmoothedParameter::tickNoHooksNoSmoothing()
     return value = raw->load(std::memory_order_relaxed);
 }
 
+void SmoothedParameter::tickSkewsNoHooks()
+{
+    smoothed.setTargetValue(raw->load(std::memory_order_relaxed));
+    value = smoothed.getNextValue();
+    for (int i = 0; i < processor.numInvParameterSkews; ++i)
+    {
+        float invSkew = processor.quickInvParameterSkews[i];
+        values[i] = powf(value, invSkew);
+    }
+}
 
 float SmoothedParameter::get()
 {
