@@ -102,7 +102,7 @@ void Envelope::tick()
         tADSRT_setRelease(&envs[v], release);
         tADSRT_setLeakFactor(&envs[v], 0.99995f + 0.00005f*(1.f-leak));
 
-        float value = tADSRT_tickNoInterp(&envs[v]);
+        float value = tADSRT_tick(&envs[v]);
         
         sourceValues[0][v] = value;
         for (int i = 1; i < processor.numInvParameterSkews; ++i)
