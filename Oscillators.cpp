@@ -310,8 +310,8 @@ MappingSourceModel(p, n, true, true, Colours::chartreuse)
     
     for (int i = 0; i < MAX_NUM_VOICES; i++)
     {
-        tMBSaw_init(&saw[i], &processor.leaf);
-        tMBPulse_init(&pulse[i], &processor.leaf);
+//        tIntPhasor_init(&saw[i], &processor.leaf);
+//        tSquareLFO_init(&pulse[i], &processor.leaf);
         tCycle_init(&sine[i], &processor.leaf);
         tMBTriangle_init(&tri[i], &processor.leaf);
         
@@ -335,8 +335,8 @@ LowFreqOscillator::~LowFreqOscillator()
     
     for (int i = 0; i < MAX_NUM_VOICES; i++)
     {
-        tMBSaw_free(&saw[i]);
-        tMBPulse_free(&pulse[i]);
+//        tIntPhasor_free(&saw[i]);
+//        tSquareLFO_free(&pulse[i]);
         tCycle_free(&sine[i]);
         tMBTriangle_free(&tri[i]);
         
@@ -352,8 +352,8 @@ void LowFreqOscillator::prepareToPlay (double sampleRate, int samplesPerBlock)
     AudioComponent::prepareToPlay(sampleRate, samplesPerBlock);
     for (int i = 0; i < MAX_NUM_VOICES; i++)
     {
-        tMBSaw_setSampleRate(&saw[i], sampleRate);
-        tMBPulse_setSampleRate(&pulse[i], sampleRate);
+        //tIntPhasor_setSampleRate(&saw[i], sampleRate);
+        //tSquareLFO_setSampleRate(&pulse[i], sampleRate);
         tCycle_setSampleRate(&sine[i], sampleRate);
         tMBTriangle_setSampleRate(&tri[i], sampleRate);
         
@@ -461,23 +461,23 @@ void LowFreqOscillator::triTick(float& sample, int v, float freq, float shape)
 
 void LowFreqOscillator::sawTick(float& sample, int v, float freq, float shape)
 {
-    tMBSaw_setFreq(&saw[v], freq);
-    sample += tMBSaw_tick(&saw[v]) * 2.f;;
+    tIntPhasor_setFreq(&saw[v], freq);
+    sample += tIntPhasor_tick(&saw[v]) * 2.f;;
 }
 
 void LowFreqOscillator::pulseTick(float& sample, int v, float freq, float shape)
 {
-    tMBPulse_setFreq(&pulse[v], freq);
-    tMBPulse_setWidth(&pulse[v], shape);
-    sample += tMBPulse_tick(&pulse[v]) * 2.f;;
+    tSquareLFO_setFreq(&pulse[v], freq);
+    tSquareLFO_setPulseWidth(&pulse[v], shape);
+    sample += tSquareLFO_tick(&pulse[v]) * 2.f;;
 }
 
 void LowFreqOscillator::noteOn(int voice, float velocity)
 {
     if (sync->getValue() > 0)
     {
-        tMBSaw_setPhase(&saw[voice], phaseReset);
-        tMBPulse_setPhase(&pulse[voice], phaseReset);
+        tIntPhasor_setPhase(&saw[voice], phaseReset);
+        tSquareLFO_setPulseWidth(&pulse[voice], phaseReset);
         tCycle_setPhase(&sine[voice], phaseReset);
         tMBTriangle_setPhase(&tri[voice], phaseReset);
         
