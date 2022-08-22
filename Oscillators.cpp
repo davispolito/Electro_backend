@@ -310,8 +310,8 @@ MappingSourceModel(p, n, true, true, Colours::chartreuse)
     
     for (int i = 0; i < MAX_NUM_VOICES; i++)
     {
-//        tIntPhasor_init(&saw[i], &processor.leaf);
-//        tSquareLFO_init(&pulse[i], &processor.leaf);
+        tIntPhasor_init(&saw[i], &processor.leaf);
+        tSquareLFO_init(&pulse[i], &processor.leaf);
         tCycle_init(&sine[i], &processor.leaf);
         tMBTriangle_init(&tri[i], &processor.leaf);
         
@@ -335,8 +335,8 @@ LowFreqOscillator::~LowFreqOscillator()
     
     for (int i = 0; i < MAX_NUM_VOICES; i++)
     {
-//        tIntPhasor_free(&saw[i]);
-//        tSquareLFO_free(&pulse[i]);
+        tIntPhasor_free(&saw[i]);
+        tSquareLFO_free(&pulse[i]);
         tCycle_free(&sine[i]);
         tMBTriangle_free(&tri[i]);
         
@@ -352,8 +352,8 @@ void LowFreqOscillator::prepareToPlay (double sampleRate, int samplesPerBlock)
     AudioComponent::prepareToPlay(sampleRate, samplesPerBlock);
     for (int i = 0; i < MAX_NUM_VOICES; i++)
     {
-        //tIntPhasor_setSampleRate(&saw[i], sampleRate);
-        //tSquareLFO_setSampleRate(&pulse[i], sampleRate);
+        tIntPhasor_setSampleRate(&saw[i], sampleRate);
+        tSquareLFO_setSampleRate(&pulse[i], sampleRate);
         tCycle_setSampleRate(&sine[i], sampleRate);
         tMBTriangle_setSampleRate(&tri[i], sampleRate);
         
