@@ -113,8 +113,8 @@ private:
     
     RangedAudioParameter* sync;
     
-    tMBSaw saw[MAX_NUM_VOICES];
-    tMBPulse pulse[MAX_NUM_VOICES];
+    tIntPhasor saw[MAX_NUM_VOICES];
+    tSquareLFO pulse[MAX_NUM_VOICES];
     tCycle sine[MAX_NUM_VOICES];
     tMBTriangle tri[MAX_NUM_VOICES];
     
