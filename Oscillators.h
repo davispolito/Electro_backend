@@ -116,13 +116,11 @@ private:
     tIntPhasor saw[MAX_NUM_VOICES];
     tSquareLFO pulse[MAX_NUM_VOICES];
     tCycle sine[MAX_NUM_VOICES];
-    tMBTriangle tri[MAX_NUM_VOICES];
+    tTriLFO tri[MAX_NUM_VOICES];
     
     // Using seperate objects for pairs to easily maintain phase relation
-    tMBSaw sawPaired[MAX_NUM_VOICES];
-    tMBPulse pulsePaired[MAX_NUM_VOICES];
-    tCycle sinePaired[MAX_NUM_VOICES];
-    tMBTriangle triPaired[MAX_NUM_VOICES];
+    tSineTriLFO sineTri[MAX_NUM_VOICES];
+    tSawSquareLFO sawSquare[MAX_NUM_VOICES];
     
     tWaveOscS wave[MAX_NUM_VOICES];
     

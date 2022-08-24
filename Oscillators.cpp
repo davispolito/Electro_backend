@@ -313,12 +313,10 @@ MappingSourceModel(p, n, true, true, Colours::chartreuse)
         tIntPhasor_init(&saw[i], &processor.leaf);
         tSquareLFO_init(&pulse[i], &processor.leaf);
         tCycle_init(&sine[i], &processor.leaf);
-        tMBTriangle_init(&tri[i], &processor.leaf);
+        tTriLFO_init(&tri[i], &processor.leaf);
         
-        tMBSaw_init(&sawPaired[i], &processor.leaf);
-        tMBPulse_init(&pulsePaired[i], &processor.leaf);
-        tCycle_init(&sinePaired[i], &processor.leaf);
-        tMBTriangle_init(&triPaired[i], &processor.leaf);
+        tSineTriLFO_init(&sineTri[i], &processor.leaf);
+        tSawSquareLFO_init(&sawSquare[i], &processor.leaf);
     }
     
     phaseReset = 0.0f;
@@ -338,12 +336,10 @@ LowFreqOscillator::~LowFreqOscillator()
         tIntPhasor_free(&saw[i]);
         tSquareLFO_free(&pulse[i]);
         tCycle_free(&sine[i]);
-        tMBTriangle_free(&tri[i]);
+        tTriLFO_free(&tri[i]);
         
-        tMBSaw_free(&sawPaired[i]);
-        tMBPulse_free(&pulsePaired[i]);
-        tCycle_free(&sinePaired[i]);
-        tMBTriangle_free(&triPaired[i]);
+        tSineTriLFO_free(&sineTri[i]);
+        tSawSquareLFO_free(&sawSquare[i]);
     }
 }
 
@@ -355,12 +351,10 @@ void LowFreqOscillator::prepareToPlay (double sampleRate, int samplesPerBlock)
         tIntPhasor_setSampleRate(&saw[i], sampleRate);
         tSquareLFO_setSampleRate(&pulse[i], sampleRate);
         tCycle_setSampleRate(&sine[i], sampleRate);
-        tMBTriangle_setSampleRate(&tri[i], sampleRate);
+        tTriLFO_setSampleRate(&tri[i], sampleRate);
         
-        tMBSaw_setSampleRate(&sawPaired[i], sampleRate);
-        tMBPulse_setSampleRate(&pulsePaired[i], sampleRate);
-        tCycle_setSampleRate(&sinePaired[i], sampleRate);
-        tMBTriangle_setSampleRate(&triPaired[i], sampleRate);
+        tSawSquareLFO_setSampleRate(&sawSquare[i], sampleRate);
+        tSineTriLFO_setSampleRate(&sineTri[i], sampleRate);
     }
 }
 
@@ -432,18 +426,16 @@ void LowFreqOscillator::tick()
 
 void LowFreqOscillator::sawSquareTick(float& sample, int v, float rate, float shape)
 {
-    tMBSaw_setFreq(&sawPaired[v], rate);
-    tMBPulse_setFreq(&pulsePaired[v], rate);
-    sample += tMBSaw_tick(&sawPaired[v]) * (1.0f - shape) * 2.f;;
-    sample += tMBPulse_tick(&pulsePaired[v]) * shape * 2.f;;
+    tSawSquareLFO_setFreq(&sawSquare[v], rate);
+    tSawSquareLFO_setShape(&sawSquare[v], shape);
+    sample += tSawSquareLFO_tick(&sawSquare[v]);
 }
 
 void LowFreqOscillator::sineTriTick(float& sample, int v, float rate, float shape)
 {
-    tCycle_setFreq(&sinePaired[v], rate);
-    tMBTriangle_setFreq(&triPaired[v], rate);
-    sample += tCycle_tick(&sinePaired[v]) * (1.0f - shape);
-    sample += tMBTriangle_tick(&triPaired[v]) * shape * 2.f;;
+    tSineTriLFO_setFreq(&sineTri[v], rate);
+    tSineTriLFO_setShape(&sineTri[v], shape);
+    sample += tSineTriLFO_tick(&sineTri[v]);
 }
 
 void LowFreqOscillator::sineTick(float& sample, int v, float freq, float shape)
@@ -454,22 +446,22 @@ void LowFreqOscillator::sineTick(float& sample, int v, float freq, float shape)
 
 void LowFreqOscillator::triTick(float& sample, int v, float freq, float shape)
 {
-    tMBTriangle_setFreq(&tri[v], freq);
-    tMBTriangle_setWidth(&tri[v], shape);
-    sample += tMBTriangle_tick(&tri[v]) * 2.f;;
+    tTriLFO_setFreq(&tri[v], freq);
+    //tTriLFO_setWidth(&tri[v], shape);
+    sample += tTriLFO_tick(&tri[v]);
 }
 
 void LowFreqOscillator::sawTick(float& sample, int v, float freq, float shape)
 {
     tIntPhasor_setFreq(&saw[v], freq);
-    sample += tIntPhasor_tick(&saw[v]) * 2.f;;
+    sample += tIntPhasor_tick(&saw[v]);
 }
 
 void LowFreqOscillator::pulseTick(float& sample, int v, float freq, float shape)
 {
     tSquareLFO_setFreq(&pulse[v], freq);
     tSquareLFO_setPulseWidth(&pulse[v], shape);
-    sample += tSquareLFO_tick(&pulse[v]) * 2.f;;
+    sample += tSquareLFO_tick(&pulse[v]);
 }
 
 void LowFreqOscillator::noteOn(int voice, float velocity)
@@ -479,12 +471,10 @@ void LowFreqOscillator::noteOn(int voice, float velocity)
         tIntPhasor_setPhase(&saw[voice], phaseReset);
         tSquareLFO_setPulseWidth(&pulse[voice], phaseReset);
         tCycle_setPhase(&sine[voice], phaseReset);
-        tMBTriangle_setPhase(&tri[voice], phaseReset);
+        tTriLFO_setPhase(&tri[voice], phaseReset);
         
-        tMBSaw_setPhase(&sawPaired[voice], phaseReset);
-        tMBPulse_setPhase(&pulsePaired[voice], phaseReset);
-        tCycle_setPhase(&sinePaired[voice], phaseReset);
-        tMBTriangle_setPhase(&triPaired[voice], phaseReset);
+        tSawSquareLFO_setPhase(&sawSquare[voice], phaseReset);
+        tSineTriLFO_setPhase(&sineTri[voice], phaseReset);
     }
 }
 
