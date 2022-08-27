@@ -33,8 +33,8 @@ Effect::Effect(const String& n, ElectroAudioProcessor& p,
         tVZFilter_setSampleRate(&bell1[i], getProcessor()->leaf.sampleRate * OVERSAMPLE);
         tCompressor_init(&comp[i], &getProcessor()->leaf);
         tLockhartWavefolder_init(&wf[i], &getProcessor()->leaf);
-        tHermiteDelay_init(&delay1[i], 6000.0f, 10000, &getProcessor()->leaf);
-        tHermiteDelay_init(&delay2[i], 6000.0f, 10000, &getProcessor()->leaf);
+        tHermiteDelay_init(&delay1[i], 4000.0f, 4096, &getProcessor()->leaf);
+        tHermiteDelay_init(&delay2[i], 4000.0f, 4096, &getProcessor()->leaf);
         tCycle_init(&mod1[i], &getProcessor()->leaf);
         tCycle_init(&mod2[i], &getProcessor()->leaf);
         tCycle_setFreq(&mod1[i], 0.2f);
@@ -118,22 +118,26 @@ Effect::EffectTick Effect::typeToTick(FXType type)
     }
 }
 
+//got the idea from https://ccrma.stanford.edu/~jatin/ComplexNonlinearities/Wavefolder.html  -JS
 float Effect::wavefolderTick(float sample, float param1, float param2, float param3, float param4, float param5, int v)
 {
     float gain = dbtoa(param1 * 12.0f);
     float offset = (param2 * 2.0f) - 1.0f;
-    sample = sample * gain;
-    
-    float temp = tLockhartWavefolder_tick(&wf[v],(sample + (offset * gain)));
-    
-    temp = tHighpass_tick(&dcBlock1[v], temp);
-    temp *= param3;
-    return temp;
+    sample = (sample * gain) + (offset * gain);
+    float curFB = param3;
+    float curFF = param4;
+    float ff = curFF * tanhf(sample) + ((1.0f - curFF) * sample);
+    float fb = curFB * tanhf(wfState[v]);
+    wfState[v] = (ff + fb) - param5 * sinf(TWO_PI * sample);
+    sample = wfState[v] / (1.0f + curFB);
+    sample = tHighpass_tick(&dcBlock1[v], sample);
+    //sample *= param5[v];
+    return sample;
 }
 
 float Effect::chorusTick(float sample, float param1, float param2, float param3, float param4, float param5, int v)
 {
-    float baseLength = param1 * 7000.0f + 10.0f;
+    float baseLength = param1 * 5780.0f + 10.0f;
     float modDepth = param2 * 0.1f;
     float modSpeed1 = param3 * 0.4f + 0.01f;
     float modSpeed2 = param4 * 0.4444444f + 0.01f;
