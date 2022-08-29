@@ -135,14 +135,34 @@ public:
     void setValue(double val);
     void setText (const String& newText, NotificationType notification);
     void setFont (const Font& newFont);
-    
+    void transferMappings(ElectroDial *dial)
+    {
+        int i = 0;
+        for (auto target : t)
+        {
+            
+            if(target->getModel().currentSource != nullptr)
+            {
+                dial->getTarget(i)->getModel().setMapping(target->getModel().currentSource,target->getModel().end, true);
+                if(target->getModel().currentScalarSource != nullptr)
+                {
+                    dial->getTarget(i)->getModel().setMappingScalar(target->getModel().currentScalarSource, true);
+                    target->removeScalar();
+                }
+                target->removeMapping();
+            }
+            
+        }
+        getParentComponent()->repaint();
+    }
     MappingTarget* getTarget(int index);
     OwnedArray<MappingTarget>& getTargets();
     MappingSource* getSource();
     
     Slider& getSlider() { return slider; }
     Label& getLabel() { return label; }
-    
+    String paramName;
+    ElectroAudioProcessorEditor& editor;
 private:
     
     Slider slider;

@@ -141,7 +141,7 @@ chooser(nullptr)
     outlineColour = Colours::darkgrey;
     
     // Pitch and freq dials should snap to ints
-    getDial(OscPitch)->setRange(-16., 16., 1.);
+    
     getDial(OscFreq)->setRange(-2000., 2000., 1.);
     pitchDialToggle.setLookAndFeel(&laf);
     pitchDialToggle.addListener(this);
@@ -171,12 +171,6 @@ chooser(nullptr)
     steppedToggle.setToggleState(true, dontSendNotification);
     addAndMakeVisible(steppedToggle);
     displayPitch();
-    getDial(OscPitch)->setRange(-16, 16., steppedToggle.getToggleState() ? 1 : 0.01 );
-    getDial(OscPitch)->setText("Harmonics", dontSendNotification);
-//    smoothingToggle.setLookAndFeel(&laf);
-//    smoothingToggle.addListener(this);
-//    smoothingToggle.setButtonText("Smoothed");
-//    addAndMakeVisible(smoothingToggle);
     buttonAttachments.add(new ButtonAttachment(vts, ac.getName() + " isHarmonic", pitchDialToggle));
     buttonAttachments.add(new ButtonAttachment(vts, ac.getName() + " isStepped", steppedToggle));
     buttonAttachments.add(new ButtonAttachment(vts, ac.getName() + " isSync", syncToggle));
@@ -232,7 +226,11 @@ chooser(nullptr)
     (editor, *editor.processor.getMappingSource(ac.getName()), ac.getName());
     addAndMakeVisible(s.get());
     
-    
+    getDial(OscHarm)->setVisible(true);
+    getDial(OscPitch)->setVisible(false);
+    getDial(OscPitch)->setRange(-24.,24., 1.);
+    getDial(OscHarm)->setRange(-24.,24., 1.);
+
 }
 
 OscModule::~OscModule()
@@ -272,13 +270,21 @@ void OscModule::resized()
     smoothingToggle.setBoundsRelative(0.0f, 0.41f, 0.04f, 0.15f);
     f1Label.setBoundsRelative(0.9f, 0.05f, 0.06f, 0.15f);
     f2Label.setBoundsRelative(0.9f, 0.80f, 0.06f, 0.15f);
+    
+    for (int i = 0; i < ac.getParamNames().size() - 1; ++i)
+    {
+        dials[i]->setBoundsRelative(relLeftMargin + (relDialWidth+relDialSpacing)*i, relTopMargin,
+                                    relDialWidth, relDialHeight);
+    }
+    dials[ac.getParamNames().size() - 1]->setBoundsRelative(relLeftMargin, relTopMargin,
+                                                             relDialWidth, relDialHeight);
 }
 
 void OscModule::sliderValueChanged(Slider* slider)
 {
     if (slider == &getDial(OscPitch)->getSlider() ||
         slider == &getDial(OscFine)->getSlider() ||
-        slider == &getDial(OscFreq)->getSlider())
+        slider == &getDial(OscFreq)->getSlider() || slider == &getDial(OscHarm)->getSlider())
     {
         displayPitch();
     }
@@ -303,13 +309,22 @@ void OscModule::buttonClicked(Button* button)
         if (!pitchDialToggle.getToggleState())
         {
             getDial(OscPitch)->setRange(-24, 24., steppedToggle.getToggleState() ? 1 : 0.01 );
-            getDial(OscPitch)->setText("Pitch", dontSendNotification);
+            //getDial(OscPitch)->setText("Pitch", dontSendNotification);
+            //addAndMakeVisible(getDial(OscPitch));
+            getDial(OscHarm)->setValue(0.0);
+            getDial(OscPitch)->setVisible(true);
+            getDial(OscHarm)->setVisible(false);
             pitchDialToggle.setButtonText("P");
+            getDial(OscHarm)->transferMappings(getDial(OscPitch));
         } else
         {
-            getDial(OscPitch)->setRange(-16, 16., steppedToggle.getToggleState() ? 1 : 0.01 );
-            getDial(OscPitch)->setText("Harmonics", dontSendNotification);
+            getDial(OscHarm)->setRange(-16, 16., steppedToggle.getToggleState() ? 1 : 0.01 );
+            //getDial(OscPitch)->setText("Harmonics", dontSendNotification);
+            getDial(OscPitch)->setValue(0.0f);
+            getDial(OscPitch)->setVisible(false);
+            getDial(OscHarm)->setVisible(true);
             pitchDialToggle.setButtonText("H");
+            getDial(OscPitch)->transferMappings(getDial(OscHarm));
         }
         
         if (!steppedToggle.getToggleState())
@@ -346,7 +361,7 @@ void OscModule::labelTextChanged(Label* label)
     else if (label == &harmonicsLabel)
     {
         auto value = harmonicsLabel.getText().getDoubleValue();
-        getDial(OscPitch)->getSlider().setValue(value, sendNotificationAsync);
+        getDial(OscHarm)->getSlider().setValue(value, sendNotificationAsync);
     }
 }
 
@@ -465,7 +480,7 @@ void OscModule::displayPitch()
 {
     
    
-    auto harm = getDial(OscPitch)->getSlider().getValue();
+    auto harm = getDial(OscHarm)->getSlider().getValue();
     harmonicsLabel.setColour(Label::textColourId, Colours::gold.withBrightness(0.95f));
     String t = harm >= 0 ? String(abs(harm + 1),3) : String("1/" + String(abs(harm-1),3));
     if (pitchDialToggle.getToggleState())

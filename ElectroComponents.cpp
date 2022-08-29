@@ -319,7 +319,9 @@ void MappingTarget::menuCallback(int result, MappingTarget* target)
 //==============================================================================
 //==============================================================================
 ElectroDial::ElectroDial(ElectroAudioProcessorEditor& editor, const String& paramName, const String& displayName, bool isSource, bool isTarget) :
-label(displayName, displayName)
+label(displayName, displayName),
+paramName(paramName),
+editor(editor)
 {
     slider.setLookAndFeel(&laf);
     slider.setSliderStyle(Slider::RotaryVerticalDrag);
@@ -327,7 +329,7 @@ label(displayName, displayName)
     slider.setRange(0., 1.);
     slider.addListener(this);
     addAndMakeVisible(&slider);
-
+  
     if (isSource)
     {
         s = std::make_unique<MappingSource>
@@ -578,6 +580,7 @@ void ElectroDial::setRange(double newMin, double newMax, double newInt)
 {
     slider.setRange(newMin, newMax, newInt);
 }
+
 
 
 void ElectroDial::setValue(double val)

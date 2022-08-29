@@ -91,7 +91,7 @@ public:
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock);
     void frame();
-    void tick();
+    float tick();
     
     //==============================================================================
     void noteOn(int voice, float velocity);
