@@ -17,17 +17,25 @@ Output::Output(const String& n, ElectroAudioProcessor& p,
 AudioComponent(n, p, vts, cOutputParams, false)
 {
     master = std::make_unique<SmoothedParameter>(processor, vts, "Master");
-
+    for (int i = 0; i < MAX_NUM_VOICES; i++)
+    {
+        tSVF_init(&lowpass[i], SVFTypeLowpass, 2000.f, 0.7f, &processor.leaf);
+    }
+    
 }
 
 Output::~Output()
 {
-   
+    for (int i = 0; i < MAX_NUM_VOICES; i++)
+    {
+        tSVF_free(&lowpass[i]);
+    }
 }
 
 void Output::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     AudioComponent::prepareToPlay(sampleRate, samplesPerBlock);
+    
 }
 
 void Output::frame()
@@ -42,13 +50,19 @@ void Output::tick(float input[MAX_NUM_VOICES])
     for (int v = 0; v < processor.numVoicesActive; ++v)
     {
         float amp = quickParams[OutputAmp][v]->tick();
+        float midiCutoff = quickParams[OutputTone][v]->tick();
+            
+        float cutoff = midiCutoff;
+        cutoff = fabsf(mtof(cutoff));
         amp = amp < 0.f ? 0.f : amp;
+        lowpassTick(input[v], v, cutoff);
         input[v] = input[v] * amp;
         
         // Porting over some code from
         // https://github.com/juce-framework/JUCE/blob/master/modules/juce_dsp/processors/juce_Panner.cpp
-       
+        
     }
+
     
     float pedGain = 1.f;
     if (processor.pedalControlsMaster)
@@ -70,3 +84,9 @@ void Output::tick(float input[MAX_NUM_VOICES])
     
     sampleInBlock++;
 }
+void Output::lowpassTick(float& sample, int v, float cutoff)
+    {
+        tSVF_setFreq(&lowpass[v], cutoff);
+        sample = tSVF_tick(&lowpass[v], sample);
+        sample *= dbtoa((1 * 24.0f) - 12.0f);
+    }
