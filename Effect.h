@@ -56,6 +56,7 @@ private:
     float wavefolderTick(float sample, float param1, float param2, float param3, float param4, float param5, int v);
     float chorusTick(float sample, float param1, float param2, float param3, float param4, float param5, int v);
     float inv_oversample;
+    float wfState[MAX_NUM_VOICES];
     std::atomic<float>* afpFXType;
     int sampleInBlock;
 };
