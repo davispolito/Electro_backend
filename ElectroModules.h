@@ -124,9 +124,12 @@ private:
     Label f2Label;
     
     TextButton syncToggle;
+    TextButton syncType;
     std::unique_ptr<MappingSource> s;
     
     FileChooser* chooser;
+    
+
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OscModule)
 };

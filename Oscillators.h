@@ -67,6 +67,7 @@ private:
     std::atomic<float>* isHarmonic_raw;
     std::atomic<float>* isStepped_raw;
     std::atomic<float>* isSync_raw;
+    std::atomic<float>* syncType_raw;
     std::atomic<float>* afpShapeSet;
     OscShapeSet currentShapeSet = OscShapeSetNil;
     

@@ -160,6 +160,15 @@ chooser(nullptr)
     syncToggle.setToggleState(true, dontSendNotification);
     addAndMakeVisible(syncToggle);
     
+    syncType.setLookAndFeel(&laf);
+    syncType.addListener(this);
+    syncType.setTitle("Sync Type");
+    syncType.setButtonText("Soft");
+    syncType.setToggleable(true);
+    syncType.setClickingTogglesState(true);
+    syncType.setToggleState(false, dontSendNotification);
+    addAndMakeVisible(syncType);
+    
     addAndMakeVisible(pitchDialToggle);
     steppedToggle.setLookAndFeel(&laf);
     steppedToggle.addListener(this);
@@ -171,9 +180,12 @@ chooser(nullptr)
     steppedToggle.setToggleState(true, dontSendNotification);
     addAndMakeVisible(steppedToggle);
     displayPitch();
+    
     buttonAttachments.add(new ButtonAttachment(vts, ac.getName() + " isHarmonic", pitchDialToggle));
     buttonAttachments.add(new ButtonAttachment(vts, ac.getName() + " isStepped", steppedToggle));
     buttonAttachments.add(new ButtonAttachment(vts, ac.getName() + " isSync", syncToggle));
+    buttonAttachments.add(new ButtonAttachment(vts, ac.getName() + " syncType", syncType));
+    
     harmonicsLabel.setLookAndFeel(&laf);
     harmonicsLabel.setEditable(true);
     harmonicsLabel.setJustificationType(Justification::centred);
@@ -250,7 +262,8 @@ void OscModule::resized()
                                      0.02f, relDialWidth+((relDialSpacing * 0.25f)), 0.16f);
     
     pitchDialToggle.setBoundsRelative(0.0f, 0.412f, 0.05f, 0.15f);
-    syncToggle.setBoundsRelative(0.0f, 0.7f, 0.05f, 0.15f);
+    syncToggle.setBoundsRelative(0.0f, 0.6f, 0.05f, 0.15f);
+    syncType.setBoundsRelative(0.0f, 0.75f, 0.05f, 0.15f);
     steppedToggle.setBoundsRelative(0.0f, 0.2f, 0.05f, 0.15f);
 
     
@@ -339,7 +352,22 @@ void OscModule::buttonClicked(Button* button)
     }
     else if (button == &syncToggle)
     {
-        
+        if(syncToggle.getToggleState())
+        {
+            syncType.setAlpha(1.0f);
+            syncType.setInterceptsMouseClicks(true,true);
+        }
+        else
+        {
+            syncType.setAlpha(0.5f);
+            syncType.setInterceptsMouseClicks(false,false);
+        }
+    } else if (button == &syncType)
+    {
+        if(syncType.getToggleState())
+            syncType.setButtonText("Hard");
+        else
+            syncType.setButtonText("Soft");
     }
 }
 
@@ -420,17 +448,29 @@ void OscModule::comboBoxChanged(ComboBox *comboBox)
             // than one waveform and set alpha accordingly
             getDial(OscShape)->setAlpha(1.f);
             getDial(OscShape)->setInterceptsMouseClicks(true, true);
+            syncToggle.setAlpha(0.5);
+            syncToggle.setInterceptsMouseClicks(false, false);
+            syncType.setAlpha(0.5f);
+            syncType.setInterceptsMouseClicks(false,false);
         }
         else if (shapeCB.getSelectedItemIndex() > SineTriOscShapeSet &&
-                 shapeCB.getSelectedItemIndex() != PulseOscShapeSet)
+                 shapeCB.getSelectedItemIndex() != PulseOscShapeSet && shapeCB.getSelectedItemIndex() != TriOscShapeSet)
         {
             getDial(OscShape)->setAlpha(0.5f);
             getDial(OscShape)->setInterceptsMouseClicks(false, false);
+            
         }
         else
         {
             getDial(OscShape)->setAlpha(1.f);
             getDial(OscShape)->setInterceptsMouseClicks(true, true);
+        }
+        if (shapeCB.getSelectedItemIndex() != SineOscShapeSet)
+        {
+            syncToggle.setAlpha(1.0);
+            syncToggle.setInterceptsMouseClicks(true, true);
+            syncType.setAlpha(1.0);
+            syncType.setInterceptsMouseClicks(true,true);
         }
     }
 }
