@@ -160,7 +160,6 @@ float Effect::shaperTick(float sample, float param1, float param2, float param3,
     sample = sample * gain;
     float temp = LEAF_shaper(sample + (offset * gain),param3);
     temp = tHighpass_tick(&dcBlock1[v], temp);
-    temp *= param4;
     return temp;
 }
 
@@ -177,7 +176,6 @@ float Effect::tiltFilterTick(float sample, float param1, float param2, float par
     sample = tVZFilter_tickEfficient(&shelf1[v], sample);
     sample = tVZFilter_tickEfficient(&shelf2[v], sample);
     sample = tVZFilter_tickEfficient(&bell1[v], sample);
-    sample *= param5;
     return sample;
 }
 
@@ -189,10 +187,12 @@ void Effect::oversample_tick(float* samples, int v)
     float param4 = quickParams[Param4][v]->tick();
     float param5 = quickParams[Param5][v]->tick();
     float mix = quickParams[Mix][v]->tick();
+    float postGain = quickParams[PostGain][v]->tick();
     for(int i = 0; i < OVERSAMPLE; i++)
     {
         float output = (this->*_tick)((samples[i]), param1, param2, param3, param4, param5, v);
         samples[i] = ((1.0f - mix) * (samples[i])) + (mix * output);
+        samples[i] *= dbtoa((postGain * 24.0f) - 12.0f);
     }
     sampleInBlock++;
 }
@@ -206,7 +206,6 @@ float Effect::tanhTick(float sample, float param1, float param2, float param3, f
     //need to do something with shape param
     float temp = tanhf(sample + (offset*gain));
     temp = tHighpass_tick(&dcBlock1[v], temp);
-    temp *= param4;
     temp = tanhf(temp);
     //temp = tHighpass_tick(&dcBlock2, temp);
     return temp;
@@ -232,7 +231,6 @@ float Effect::softClipTick(float sample, float param1, float param2, float param
     }
 
     sample = tHighpass_tick(&dcBlock1[v], sample);
-    sample *= param4;
     return sample;
 }
 
@@ -258,7 +256,6 @@ float Effect::hardClipTick(float sample, float param1, float param2, float param
     }
 
     sample = tHighpass_tick(&dcBlock1[v], sample);
-    sample *= param4;
     return sample;
 }
 
@@ -272,7 +269,6 @@ float Effect::satTick(float sample, float param1, float param2, float param3, fl
     temp = tHighpass_tick(&dcBlock1[v], temp);
     temp = tHighpass_tick(&dcBlock2[v], temp);
     temp = tanhf(temp);
-    temp *= param4;
     return temp;
 }
 

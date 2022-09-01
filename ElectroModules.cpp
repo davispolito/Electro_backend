@@ -1014,7 +1014,7 @@ void OutputModule::resized()
 
 FXModule::FXModule(ElectroAudioProcessorEditor& editor, AudioProcessorValueTreeState& vts,
                      AudioComponent& ac) :
-ElectroModule(editor, vts, ac, 0.03f, 0.14f, 0.025f, 0.17f, 0.80f)
+ElectroModule(editor, vts, ac, 0.03f, 0.115f, 0.025f, 0.17f, 0.80f)
 {
     RangedAudioParameter* set = vts.getParameter(ac.getName() + " FXType");
     fxCB.addItemList(FXTypeNames, 1);
@@ -1060,7 +1060,7 @@ void FXModule::comboBoxChanged(ComboBox *comboBox)
 
 void FXModule::setNamesAndDefaults(FXType effect)
 {
-    for (int i = 0; i < vFXInit.size() - 1; i++)
+    for (int i = 0; i < FXParam::Mix; i++)
     {
         getDial(i)->setText(FXParamNames[effect][i], dontSendNotification);
         getDial(i)->setValue(FXParamDefaults[effect][i]);
