@@ -195,7 +195,7 @@ public:
     }
 };
 //==============================================================================
-class TuningTab : public Component
+class TuningTab : public Component, public TextEditor::Listener, public TextButton::Listener
 {
 public:
     TuningTab(ElectroAudioProcessor& p, AudioProcessorValueTreeState& vts) :
@@ -204,27 +204,79 @@ public:
                   File::getSpecialLocation(File::userDocumentsDirectory)
                   )
     {
-        clearButton.setButtonText("Clear Tuning");
-        clearButton.setLookAndFeel(&laf);
-        clearButton.onClick = [this] {
-            for (int i = 0; i < 12; i++)
-            {
-                processor.centsDeviation[i] = 0;
-            }
-            processor.tuner.setIsMTS(false);
-            MTSButton.setToggleState(false, dontSendNotification);
-            };
-        addAndMakeVisible(clearButton);
+        
+//        clearButton.onClick = [this] {
+//            for (int i = 0; i < 12; i++)
+//            {
+//                processor.centsDeviation[i] = 0;
+//            }
+//            processor.tuner.setIsMTS(false);
+//            MTSButton.setToggleState(false, dontSendNotification);
+//            };
         importButton.setButtonText("Import .scl");
         importButton.setLookAndFeel(&laf);
-        importButton.onClick = [this] { importScala(); };
+        importButton.addListener(this);
+       // importButton.onClick = [this] { importScala(); };
         addAndMakeVisible(importButton);
         MTSButton.setButtonText("MTS On");
         MTSButton.setLookAndFeel(&laf);
-        MTSButton.onClick = [this] {
-            processor.tuner.setIsMTS(MTSButton.getToggleState());
-        };
+        MTSButton.addListener(this);
         addAndMakeVisible(MTSButton);
+//        MTSButton.onClick = [this] {
+//            processor.tuner.setIsMTS(MTSButton.getToggleState());
+//        };
+        // Scala editing
+        sclTextEditor.setMultiLine(true);
+        sclTextEditor.setReturnKeyStartsNewLine(true);
+        sclTextEditor.setReadOnly(false);
+        sclTextEditor.setScrollbarsShown(true);
+        sclTextEditor.setCaretVisible(true);
+        sclTextEditor.setPopupMenuEnabled(true);
+        sclTextEditor.setText(String());
+        sclTextEditor.setName("SCLTXT");
+        //sclTextEditor.setLookAndFeel(&laf);
+        kbmTextEditor.setMultiLine(true);
+        kbmTextEditor.setReturnKeyStartsNewLine(true);
+        kbmTextEditor.setReadOnly(false);
+        kbmTextEditor.setScrollbarsShown(true);
+        kbmTextEditor.setCaretVisible(true);
+        kbmTextEditor.setPopupMenuEnabled(true);
+        kbmTextEditor.setText(String());
+        kbmTextEditor.setName("KBMTXT");
+        //kbmTextEditor.setLookAndFeel(&laf);
+        
+        addAndMakeVisible (importButton);
+        importButton.setButtonText (TRANS("Import"));
+        importButton.setLookAndFeel(&laf);
+       // importButton.addListener (this);
+
+        addAndMakeVisible (importKBMButton);
+        importKBMButton.setButtonText (TRANS("Import"));
+        importKBMButton.setLookAndFeel(&laf);
+       // importKBMButton.addListener (this);
+
+        addAndMakeVisible (resetButton);
+        resetButton.setButtonText (TRANS("Reset"));
+        resetButton.setLookAndFeel(&laf);
+       // resetButton.addListener (this);
+
+        //addAndMakeVisible (applyButton);
+        applyButton.setButtonText (TRANS("Apply"));
+        applyButton.setLookAndFeel(&laf);
+        
+        //addAndMakeVisible (applyKBMButton);
+        applyKBMButton.setButtonText (TRANS("Apply"));
+        applyKBMButton.setLookAndFeel(&laf);
+        //applyButton.addListener (this);
+        
+        addAndMakeVisible(sclTextEditor);
+        addAndMakeVisible(kbmTextEditor);
+        currentScalaString = processor.tuner.getCurrentScalaString();
+        currentKBMString = processor.tuner.getCurrentKBMString();
+        sclTextEditor.setText(currentScalaString);
+        kbmTextEditor.setText(currentKBMString);
+        //sclTextEditor.addListener(this);
+        //kbmTextEditor.addListener(this);
     }
     
     ~TuningTab() override
@@ -242,46 +294,77 @@ public:
             String path = chooser.getResult().getFullPathName();
             if (path.isEmpty()) return;
 
-            processor.tuner.loadScala(path.toStdString(), processor.centsDeviation);
+            currentScalaString = processor.tuner.loadScala(path.toStdString(), processor.centsDeviation);
+            sclTextEditor.setText(currentScalaString);
         });
         processor.tuner.setIsMTS(false);
         MTSButton.setToggleState(false, dontSendNotification);
 
     }
     
+    //void textEditorTextChanged      (TextEditor&) override;
+    void textEditorFocusLost        (TextEditor&) override;
+    //void textEditorReturnKeyPressed (TextEditor&) override;
+    void textEditorEscapeKeyPressed (TextEditor&) override;
     
-    
+    void buttonClicked (Button *b) override;
     void resized() override
     {
-        Rectangle<int> area = getLocalBounds();
+        auto area = getLocalBounds().reduced(8.0f);
+     
+        const auto headerHeight = area.getHeight() / 15;
+        const auto textEditorHeight = area.getHeight()/2;
         
-        int h = area.getHeight();
-        //int w = area.getWidth();
-        //int r = area.getWidth() - w - 2;
+    
+        auto reset = area.removeFromTop(headerHeight);
+        reset.reduce(350, 1);
+        auto header = area.removeFromTop(headerHeight);
+        auto textbox = area.removeFromTop(textEditorHeight);
+        const FlexItem::Margin buttonMargin = FlexItem::Margin(2.0f, 8.0f,
+                                                               2.0f, 8.0f);
+        const FlexItem::Margin textboxMargin = FlexItem::Margin(4.0f);
+        FlexBox headerBox;
+        headerBox.flexWrap = FlexBox::Wrap::noWrap;
+        headerBox.flexDirection = FlexBox::Direction::row;
+        headerBox.justifyContent = FlexBox::JustifyContent::spaceAround;
+        headerBox.items.add(FlexItem(importButton).withFlex(2).withMargin(buttonMargin));
+        headerBox.items.add(FlexItem(applyButton).withFlex(2).withMargin(buttonMargin));
+        headerBox.items.add(FlexItem(importKBMButton).withFlex(2).withMargin(buttonMargin));
+        headerBox.items.add(FlexItem(applyKBMButton).withFlex(2).withMargin(buttonMargin));
+        headerBox.items.add(FlexItem(MTSButton).withFlex(2).withMargin(buttonMargin));
+        headerBox.performLayout(header.toFloat());
         
-        Rectangle<int> bottomArea = area.removeFromBottom((int)(h*0.15));
-        bottomArea.removeFromTop((int)(h*0.03));
-        Rectangle<int> upperBottomArea = bottomArea.removeFromTop((int)(h*0.06));
+        FlexBox resetBox;
+        resetBox.items.add(FlexItem(resetButton).withFlex(2).withMargin(buttonMargin));
+        resetBox.flexWrap = FlexBox::Wrap::noWrap;
+        resetBox.flexDirection = FlexBox::Direction::row;
+        resetBox.justifyContent = FlexBox::JustifyContent::center;
+        resetBox.performLayout(reset.toFloat());
         
-
-        upperBottomArea.removeFromRight(2);
-        bottomArea.removeFromRight(2);
-        
-        //importButton.setBounds(bottomArea.removeFromRight(w*4));
-        importButton.setBounds(0, 0, 200, 50);
-        clearButton.setBounds(200,0,200,50);
-        MTSButton.setBounds(400, 0, 200, 50);
+        FlexBox textEditorBox;
+        textEditorBox.flexWrap = FlexBox::Wrap::noWrap;
+        textEditorBox.flexDirection = FlexBox::Direction::row;
+        textEditorBox.justifyContent = FlexBox::JustifyContent::spaceAround;
+        textEditorBox.items.add(FlexItem(sclTextEditor).withFlex(2).withMargin(textboxMargin));
+        textEditorBox.items.add(FlexItem(kbmTextEditor).withFlex(2).withMargin(textboxMargin));
+        textEditorBox.performLayout(textbox.toFloat());
     }
     
 private:
     
     ElectroLookAndFeel laf;
-
+    TextEditor sclTextEditor;
+    TextEditor kbmTextEditor;
+    TextButton applyButton;
+    TextButton importKBMButton;
+    TextButton resetButton;
+    TextButton applyKBMButton;
+    String currentScalaString;
+    String currentKBMString;
     ElectroAudioProcessor& processor;
     TextButton importButton;
     ToggleButton MTSButton;
     FileChooser importChooser;
-    TextButton clearButton;
 
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TuningTab)

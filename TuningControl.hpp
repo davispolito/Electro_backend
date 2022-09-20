@@ -11,6 +11,7 @@
 
 #include "MTS-ESP/Client/libMTSClient.h"
 #include "Utilities.h"
+#include "tuning-library/include/Tunings.h"
 
 #include <stdio.h>
 /*
@@ -23,13 +24,15 @@ public:
     TuningControl() : client(nullptr), isMTS(false)
     {
         mtofptr = setMtoFFunction(isMTS);
+        currentScale = Tunings::evenTemperament12NoteScale();
+        currentKBM = Tunings::KeyboardMapping();
     }
     ~TuningControl()
     {
         if(MTS_HasMaster(client))
             MTS_DeregisterClient(client);
     }
-    void loadScala(std::string fname, float* arr);
+    String loadScala(std::string fname, float* arr);
     void setIsMTS(bool f)
     {
         isMTS = f;
@@ -38,6 +41,13 @@ public:
     };
     float mtof (float mn);
     auto const getIsMTS() {return isMTS;};
+    String getCurrentScalaString() {
+        return String(currentScale.rawText);
+    }
+    
+    String getCurrentKBMString() {
+        return String(currentKBM.rawText);
+    }
 private:
     typedef float (TuningControl::*MidiToFreq)(float);
     static MidiToFreq setMtoFFunction(bool);
@@ -47,6 +57,8 @@ private:
     MTSClient *client;
     bool isMTS;
     void MTSOnOff();
+    Tunings::Scale currentScale;
+    Tunings::KeyboardMapping currentKBM;
     
 
 };

@@ -25,8 +25,8 @@ Effect::Effect(const String& n, ElectroAudioProcessor& p,
         tCrusher_init(&bc[i],&getProcessor()->leaf);
         tHighpass_init(&dcBlock1[i], 5.0f,&getProcessor()->leaf);
         tHighpass_init(&dcBlock2[i], 5.0f,&getProcessor()->leaf);
-        tVZFilter_init(&shelf1[i], Lowshelf, 80.0f, 32.0f,  &getProcessor()->leaf);
-        tVZFilter_init(&shelf2[i], Highshelf, 12000.0f, 32.0f, &getProcessor()->leaf);
+        tVZFilter_init(&shelf1[i], Lowshelf, 80.0f, 6.0f,  &getProcessor()->leaf);
+        tVZFilter_init(&shelf2[i], Highshelf, 12000.0f, 6.0f, &getProcessor()->leaf);
         tVZFilter_init(&bell1[i], Bell, 1000.0f, 1.9f,  &getProcessor()->leaf);
         tVZFilter_setSampleRate(&shelf1[i], getProcessor()->leaf.sampleRate * OVERSAMPLE);
         tVZFilter_setSampleRate(&shelf2[i], getProcessor()->leaf.sampleRate * OVERSAMPLE);
@@ -39,7 +39,20 @@ Effect::Effect(const String& n, ElectroAudioProcessor& p,
         tCycle_init(&mod2[i], &getProcessor()->leaf);
         tCycle_setFreq(&mod1[i], 0.2f);
         tCycle_setFreq(&mod2[i], 0.22222222222f);
+        
+        
+        //filters
+        tSVF_init(&lowpass[i], SVFTypeLowpass, 2000.f, 0.7f, &processor.leaf);
+        tSVF_init(&highpass[i], SVFTypeHighpass, 2000.f, 0.7f, &processor.leaf);
+        tSVF_init(&bandpass[i], SVFTypeBandpass, 2000.f, 0.7f, &processor.leaf);
+        tDiodeFilter_init(&diodeFilters[i], 2000.f, 1.0f, &processor.leaf);
+        tVZFilter_init(&VZfilterPeak[i], Bell, 2000.f, 1.0f, &processor.leaf);
+        tVZFilter_init(&VZfilterLS[i], Lowshelf, 2000.f, 1.0f, &processor.leaf);
+        tVZFilter_init(&VZfilterHS[i], Highshelf, 2000.f, 1.0f, &processor.leaf);
+        tVZFilter_init(&VZfilterBR[i], BandReject, 2000.f, 1.0f, &processor.leaf);
+        tLadderFilter_init(&Ladderfilter[i], 2000.f, 1.0f, &processor.leaf);
     }
+    LEAF_generate_table_skew_non_sym(resTable, 0.01f, 10.0f, 0.5f, SCALE_TABLE_SIZE);
 }
 
 Effect::~Effect()
@@ -58,6 +71,17 @@ Effect::~Effect()
         tHermiteDelay_free(&delay2[i]);
         tCycle_free(&mod1[i]);
         tCycle_free(&mod2[i]);
+        
+        //filters
+        tSVF_free(&lowpass[i]);
+        tSVF_free(&highpass[i]);
+        tSVF_free(&bandpass[i]);
+        tDiodeFilter_free(&diodeFilters[i]);
+        tVZFilter_free(&VZfilterPeak[i]);
+        tVZFilter_free(&VZfilterLS[i]);
+        tVZFilter_free(&VZfilterHS[i]);
+        tVZFilter_free(&VZfilterBR[i]);
+        tLadderFilter_free(&Ladderfilter[i]);
     }
 }
 
@@ -111,6 +135,33 @@ Effect::EffectTick Effect::typeToTick(FXType type)
         break;
         case Wavefolder:
             return &Effect::wavefolderTick;
+        break;
+        case LpFilter:
+            return &Effect::lowpassTick;
+        break;
+        case HpFilter:
+            return &Effect::highpassTick;
+        break;
+        case BpFilter:
+            return &Effect::bandpassTick;
+        break;
+        case DLFilter:
+            return &Effect::diodeLowpassTick;
+        break;
+        case VZPFilter:
+            return &Effect::VZpeakTick;
+        break;
+        case VZLFilter:
+            return &Effect::VZlowshelfTick;
+        break;
+        case VZHFilter:
+            return &Effect::VZhighshelfTick;
+        break;
+        case VZBFilter:
+            return &Effect::VZbandrejectTick;
+        break;
+        case LLFilter:
+            return &Effect::LadderLowpassTick;
         break;
         case FXTypeNil:
             return &Effect::tick;
@@ -294,3 +345,74 @@ float Effect::compressorTick(float sample, float param1, float param2, float par
     return tCompressor_tick (&comp[v], sample);
 }
 
+
+
+float Effect::scaleFilterResonance(float input)
+{
+    //lookup table for filter res
+    input = LEAF_clip(0.1f, input, 1.0f);
+    //scale to lookup range
+    input *= 2047.0f;
+    int inputInt = (int)input;
+    float inputFloat = (float)inputInt - input;
+    int nextPos = LEAF_clip(0, inputInt + 1, 2047);
+    return LEAF_clip(0.1f, (resTable[inputInt] * (1.0f - inputFloat)) + (resTable[nextPos] * inputFloat), 10.0f);
+    //return
+}
+//filters
+float Effect::lowpassTick(float sample, float cutoff, float gain, float q, float param4,float param5, int v)
+{
+    
+    tSVF_setFreqAndQ(&lowpass[v], faster_mtof(cutoff * 127.f), scaleFilterResonance(q));
+    return tSVF_tick(&lowpass[v], sample);
+}
+
+float Effect::highpassTick(float sample, float cutoff, float gain, float q, float param4,float param5, int v)
+{
+    tSVF_setFreqAndQ(&highpass[v], faster_mtof(cutoff * 127.f), scaleFilterResonance(q));
+    return tSVF_tick(&highpass[v], sample);
+}
+
+float Effect::bandpassTick(float sample, float cutoff, float gain, float q, float param4,float param5, int v)
+{
+    tSVF_setFreqAndQ(&bandpass[v], faster_mtof(cutoff * 127.f),  scaleFilterResonance(q));
+    return tSVF_tick(&bandpass[v], sample);
+}
+
+float Effect::diodeLowpassTick(float sample, float cutoff, float gain, float q, float param4,float param5, int v)
+{
+    tDiodeFilter_setFreq(&diodeFilters[v], faster_mtof(cutoff * 127.f));
+    tDiodeFilter_setQ(&diodeFilters[v], scaleFilterResonance(q));
+    return tDiodeFilter_tick(&diodeFilters[v], sample);
+}
+
+float Effect::LadderLowpassTick(float sample, float cutoff, float gain, float q, float param4,float param5, int v)
+{
+    tLadderFilter_setFreq(&Ladderfilter[v], faster_mtof(cutoff * 127.f));
+    tLadderFilter_setQ(&Ladderfilter[v],  scaleFilterResonance(q));
+    return tLadderFilter_tick(&Ladderfilter[v], sample);
+}
+
+float Effect::VZlowshelfTick(float sample, float cutoff, float gain, float q, float param4,float param5, int v)
+{
+    tVZFilter_setFrequencyAndResonanceAndGain(&VZfilterLS[v], faster_mtof(cutoff * 127.f), scaleFilterResonance(q), fasterdbtoa((gain * 50.f) - 25.0f));
+    return tVZFilter_tickEfficient(&VZfilterLS[v], sample);
+}
+
+float Effect::VZhighshelfTick(float sample, float cutoff, float gain, float q, float param4,float param5, int v)
+{
+    tVZFilter_setFrequencyAndResonanceAndGain(&VZfilterHS[v], faster_mtof(cutoff * 127.f), scaleFilterResonance(q), fasterdbtoa((gain * 50.0f) - 25.0f));
+    return tVZFilter_tickEfficient(&VZfilterHS[v], sample);
+}
+
+float Effect::VZpeakTick(float sample, float cutoff, float gain, float q, float param4,float param5, int v)
+{
+    tVZFilter_setFrequencyAndBandwidthAndGain(&VZfilterPeak[v], faster_mtof(cutoff * 127.f),  scaleFilterResonance(q), dbtoa((gain * 50.f) - 25.f));
+    return tVZFilter_tickEfficient(&VZfilterPeak[v], sample);
+}
+
+float Effect::VZbandrejectTick(float sample, float cutoff, float gain, float q, float param4,float param5, int v)
+{
+    tVZFilter_setFrequencyAndResonanceAndGain(&VZfilterBR[v], faster_mtof(cutoff * 127.f), scaleFilterResonance(q), dbtoa((gain * 50.f) - 25.f));
+    return tVZFilter_tickEfficient(&VZfilterBR[v], sample);
+}

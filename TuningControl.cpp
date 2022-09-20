@@ -7,7 +7,6 @@
 //
 
 #include "TuningControl.hpp"
-#include "tuning-library/include/Tunings.h"
 TuningControl::MidiToFreq TuningControl::setMtoFFunction(bool isMTSOn)
 {
     if (isMTSOn)
@@ -49,39 +48,39 @@ void TuningControl::MTSOnOff()
     }
 }
 // ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ SCALA READING ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
-void TuningControl::loadScala(std::string fname, float* arr)
+String TuningControl::loadScala(std::string fname, float* arr)
 {
     Tunings::Scale s;
     try {
         s = Tunings::readSCLFile(fname);
     } catch (Tunings::TuningError t) {
         AlertWindow::showMessageBoxAsync(juce::MessageBoxIconType::WarningIcon, TRANS("Scala Loading Error"),TRANS(t.what()));
-        return;
+        return String(currentScale.rawText);
     }
+    currentScale = s;
+    //auto offsets = Array<float>(128);
 
-    auto offsets = Array<float>(12);
-
-    if (s.count != 12)
-    {
-        AlertWindow::showMessageBoxAsync(juce::MessageBoxIconType::WarningIcon, TRANS("Scala Loading Error"), TRANS("Only 12 note scales supported"));
-    }
-    if(s.count == 12)
-    {
+//    if (s.count != 12)
+//    {
+//        AlertWindow::showMessageBoxAsync(juce::MessageBoxIconType::WarningIcon, TRANS("Scala Loading Error"), TRANS("Only 12 note scales supported"));
+//    }
+//    if(s.count == 12)
+//    {
         //subtract from equal temperament to get fractional midi representation
-        Tunings::Scale et = Tunings::evenTemperament12NoteScale();
-        for (int i = 0; i < 12; i++)
-        {
-            float micro = s.tones[i].cents;
-            DBG("Micro" + String(micro));
-            float equal = et.tones[i].cents;
-            DBG("equal" + String(equal));
-            float offset = micro - equal;
-            arr[(i+1)%12] = offset / 100.f; //.scl format puts first interval as the first line so we shift the representation over
-            DBG("Cents Deviation " + String(arr[(i+1)%12]));
-        }
-        for (int i = 0; i < 12; i++)
-        {
-            DBG(String(i) + ":" + String(arr[i]));
-        }
+    Tunings::Tuning t(s,currentKBM);
+    for (int i = 0; i < NUM_MIDI_NOTES; i++)
+    {
+//            float micro = s.tones[i].cents;
+//            DBG("Micro" + String(micro));
+//            float equal = et.tones[i].cents;
+//            DBG("equal" + String(equal));
+//            float offset = micro - equal;
+//            arr[(i+1)%12] = offset / 100.f; //.scl format puts first interval as the first line so we shift the representation over
+//            DBG("Cents Deviation " + String(arr[(i+1)%12]));
+        arr[i] = ftom(t.frequencyForMidiNote(i));
+        DBG(String(i) + ":" + String(arr[i]));
     }
+  
+//    }
+    return String(currentScale.rawText);
 }

@@ -19,7 +19,7 @@ AudioComponent(n, p, vts, cOutputParams, false)
     master = std::make_unique<SmoothedParameter>(processor, vts, "Master");
     for (int i = 0; i < MAX_NUM_VOICES; i++)
     {
-        tSVF_init(&lowpass[i], SVFTypeLowpass, 2000.f, 0.7f, &processor.leaf);
+        tSVF_init(&lowpass[i], SVFTypeLowpass, 19000.f, 0.3f, &processor.leaf);
     }
     
 }
@@ -52,10 +52,10 @@ void Output::tick(float input[MAX_NUM_VOICES])
         float amp = quickParams[OutputAmp][v]->tick();
         float midiCutoff = quickParams[OutputTone][v]->tick();
             
-        float cutoff = midiCutoff;
-        cutoff = fabsf(mtof(cutoff));
+        //float cutoff = midiCutoff;
+        //cutoff = fabsf(mtof(cutoff));
         amp = amp < 0.f ? 0.f : amp;
-        lowpassTick(input[v], v, cutoff);
+        lowpassTick(input[v], v, midiCutoff);
         input[v] = input[v] * amp;
         
         // Porting over some code from
@@ -85,8 +85,9 @@ void Output::tick(float input[MAX_NUM_VOICES])
     sampleInBlock++;
 }
 void Output::lowpassTick(float& sample, int v, float cutoff)
-    {
-        tSVF_setFreq(&lowpass[v], cutoff);
+{
+    float in = LEAF_clip(0.0f,(((cutoff* 70.0f) + 58.0f)-16.0f) * 35.929824561403509f,4095.f);
+    tSVF_setFreqFast(&lowpass[v], in);
         sample = tSVF_tick(&lowpass[v], sample);
         sample *= dbtoa((1 * 24.0f) - 12.0f);
-    }
+}

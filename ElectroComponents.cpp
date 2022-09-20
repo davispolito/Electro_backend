@@ -611,3 +611,22 @@ MappingSource* ElectroDial::getSource()
 {
     return s.get();
 }
+
+
+void TuningTab::textEditorFocusLost (TextEditor&)
+{
+    
+}
+
+void TuningTab::textEditorEscapeKeyPressed (TextEditor&)
+{
+    
+}
+
+void TuningTab::buttonClicked (Button *b)
+{
+    if(b == &importButton)
+    {
+        importScala();
+    }
+}

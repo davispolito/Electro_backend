@@ -1064,6 +1064,7 @@ void FXModule::setNamesAndDefaults(FXType effect)
     {
         getDial(i)->setText(FXParamNames[effect][i], dontSendNotification);
         getDial(i)->setValue(FXParamDefaults[effect][i]);
+        
         if (FXParamNames[effect][i].isEmpty())
         {
             getDial(i)->setAlpha(0.5);
@@ -1076,6 +1077,11 @@ void FXModule::setNamesAndDefaults(FXType effect)
         
         
     }
+//    if (FXType > Wavefolder)
+//    {
+//        getDial(Param1)->getSlider()->setRange
+//        getDial(Param2)->getSlider()->setNormalisableRange();
+//    }
 }
 
 
