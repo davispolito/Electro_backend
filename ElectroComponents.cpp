@@ -629,4 +629,19 @@ void TuningTab::buttonClicked (Button *b)
     {
         importScala();
     }
+    else if (b == &resetButton)
+    {
+        sclTextEditor.setText(currentScalaString = processor.tuner.resetSCL(processor.centsDeviation));
+        kbmTextEditor.setText(currentKBMString = processor.tuner.resetKBM(processor.centsDeviation));
+        processor.tuner.setIsMTS(false);
+        MTSButton.setToggleState(false, dontSendNotification);
+    }
+    else if (b == &importKBMButton)
+    {
+        importKBM();
+    }
+    else if (b == &sendTuningButton)
+    {
+        processor.sendTuningMidiMessage();
+    }
 }

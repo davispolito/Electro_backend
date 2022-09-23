@@ -58,29 +58,56 @@ String TuningControl::loadScala(std::string fname, float* arr)
         return String(currentScale.rawText);
     }
     currentScale = s;
-    //auto offsets = Array<float>(128);
+    try
+    {
+        loadTuning(arr);
+    } catch (Tunings::TuningError t)
+    {
+        AlertWindow::showMessageBoxAsync(juce::MessageBoxIconType::WarningIcon, TRANS("Error"),TRANS(t.what()));
+        currentScale = Tunings::evenTemperament12NoteScale();
+    }
+    return String(currentScale.rawText);
+}
+String TuningControl::loadKBM(std::string fname, float* arr)
+{
+    Tunings::KeyboardMapping k;
+    try {
+        k = Tunings::readKBMFile(fname);
+    } catch (Tunings::TuningError t) {
+        AlertWindow::showMessageBoxAsync(juce::MessageBoxIconType::WarningIcon, TRANS("KBM Loading Error"),TRANS(t.what()));
+        return String(currentKBM.rawText);
+    }
+    currentKBM = k;
+    try
+    {
+        loadTuning(arr);
+    } catch (Tunings::TuningError t)
+    {
+        AlertWindow::showMessageBoxAsync(juce::MessageBoxIconType::WarningIcon, TRANS("Error"),TRANS(t.what()));
+        currentKBM = Tunings::KeyboardMapping();
+    }
+    return String(currentKBM.rawText);
+}
+void TuningControl::loadTuning(float *arr)
+{
+    Tunings::Tuning t(currentScale,currentKBM);
 
-//    if (s.count != 12)
-//    {
-//        AlertWindow::showMessageBoxAsync(juce::MessageBoxIconType::WarningIcon, TRANS("Scala Loading Error"), TRANS("Only 12 note scales supported"));
-//    }
-//    if(s.count == 12)
-//    {
-        //subtract from equal temperament to get fractional midi representation
-    Tunings::Tuning t(s,currentKBM);
     for (int i = 0; i < NUM_MIDI_NOTES; i++)
     {
-//            float micro = s.tones[i].cents;
-//            DBG("Micro" + String(micro));
-//            float equal = et.tones[i].cents;
-//            DBG("equal" + String(equal));
-//            float offset = micro - equal;
-//            arr[(i+1)%12] = offset / 100.f; //.scl format puts first interval as the first line so we shift the representation over
-//            DBG("Cents Deviation " + String(arr[(i+1)%12]));
         arr[i] = ftom(t.frequencyForMidiNote(i));
         DBG(String(i) + ":" + String(arr[i]));
     }
-  
-//    }
-    return String(currentScale.rawText);
+}
+String TuningControl::resetKBM(float *arr)
+{
+    currentKBM = Tunings::KeyboardMapping();
+    loadTuning(arr);
+    return currentKBM.rawText;
+}
+
+String TuningControl::resetSCL(float *arr)
+{
+    currentScale = Tunings::evenTemperament12NoteScale();
+    loadTuning(arr);
+    return currentScale.rawText;
 }

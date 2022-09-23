@@ -213,6 +213,12 @@ public:
 //            processor.tuner.setIsMTS(false);
 //            MTSButton.setToggleState(false, dontSendNotification);
 //            };
+        
+        sendTuningButton.setButtonText("Send tuning via MIDI");
+        sendTuningButton.setLookAndFeel(&laf);
+        sendTuningButton.addListener(this);
+        addAndMakeVisible(sendTuningButton);
+        //sendTuningButton.onClick = [this] { processor.sendTuningMidiMessage(); };
         importButton.setButtonText("Import .scl");
         importButton.setLookAndFeel(&laf);
         importButton.addListener(this);
@@ -245,20 +251,17 @@ public:
         kbmTextEditor.setName("KBMTXT");
         //kbmTextEditor.setLookAndFeel(&laf);
         
-        addAndMakeVisible (importButton);
-        importButton.setButtonText (TRANS("Import"));
-        importButton.setLookAndFeel(&laf);
-       // importButton.addListener (this);
+      
 
         addAndMakeVisible (importKBMButton);
-        importKBMButton.setButtonText (TRANS("Import"));
+        importKBMButton.setButtonText (TRANS("Import KBM"));
         importKBMButton.setLookAndFeel(&laf);
-       // importKBMButton.addListener (this);
+        importKBMButton.addListener (this);
 
         addAndMakeVisible (resetButton);
         resetButton.setButtonText (TRANS("Reset"));
         resetButton.setLookAndFeel(&laf);
-       // resetButton.addListener (this);
+        resetButton.addListener (this);
 
         //addAndMakeVisible (applyButton);
         applyButton.setButtonText (TRANS("Apply"));
@@ -302,6 +305,24 @@ public:
 
     }
     
+    void importKBM(void)
+    {
+        importChooser.launchAsync (FileBrowserComponent::openMode |
+                             FileBrowserComponent::canSelectFiles |
+                             FileBrowserComponent::canSelectDirectories,
+                             [this] (const FileChooser& chooser)
+                             {
+            String path = chooser.getResult().getFullPathName();
+            if (path.isEmpty()) return;
+
+            currentKBMString = processor.tuner.loadKBM(path.toStdString(), processor.centsDeviation);
+            kbmTextEditor.setText(currentKBMString);
+        });
+        processor.tuner.setIsMTS(false);
+        MTSButton.setToggleState(false, dontSendNotification);
+
+    }
+    
     //void textEditorTextChanged      (TextEditor&) override;
     void textEditorFocusLost        (TextEditor&) override;
     //void textEditorReturnKeyPressed (TextEditor&) override;
@@ -310,6 +331,18 @@ public:
     void buttonClicked (Button *b) override;
     void resized() override
     {
+        const FlexItem::Margin buttonMargin = FlexItem::Margin(2.0f, 8.0f,
+                                                               2.0f, 8.0f);
+        const FlexItem::Margin textboxMargin = FlexItem::Margin(4.0f);
+        auto area1 = getLocalBounds();
+        auto sendPresetButtonHeight = area1.getHeight()/15;
+        auto presetButton = area1.removeFromTop(sendPresetButtonHeight).removeFromRight(area1.getWidth()/4);
+        FlexBox presetBox;
+        presetBox.flexWrap = FlexBox::Wrap::noWrap;
+        presetBox.flexDirection = FlexBox::Direction::row;
+        presetBox.items.add(FlexItem(sendTuningButton).withFlex(2).withMargin(buttonMargin));
+        presetBox.performLayout(presetButton.toFloat());
+        //presetBox.justifyContent = FlexBox::JustifyContent::lef
         auto area = getLocalBounds().reduced(8.0f);
      
         const auto headerHeight = area.getHeight() / 15;
@@ -320,9 +353,7 @@ public:
         reset.reduce(350, 1);
         auto header = area.removeFromTop(headerHeight);
         auto textbox = area.removeFromTop(textEditorHeight);
-        const FlexItem::Margin buttonMargin = FlexItem::Margin(2.0f, 8.0f,
-                                                               2.0f, 8.0f);
-        const FlexItem::Margin textboxMargin = FlexItem::Margin(4.0f);
+       
         FlexBox headerBox;
         headerBox.flexWrap = FlexBox::Wrap::noWrap;
         headerBox.flexDirection = FlexBox::Direction::row;
@@ -359,6 +390,7 @@ private:
     TextButton importKBMButton;
     TextButton resetButton;
     TextButton applyKBMButton;
+    TextButton sendTuningButton;
     String currentScalaString;
     String currentKBMString;
     ElectroAudioProcessor& processor;

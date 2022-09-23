@@ -33,6 +33,7 @@ public:
             MTS_DeregisterClient(client);
     }
     String loadScala(std::string fname, float* arr);
+    String loadKBM(std::string fname, float* arr);
     void setIsMTS(bool f)
     {
         isMTS = f;
@@ -48,7 +49,13 @@ public:
     String getCurrentKBMString() {
         return String(currentKBM.rawText);
     }
+    
+    String resetKBM(float *arr);
+    
+    String resetSCL(float *arr);
+
 private:
+    void loadTuning(float *arr);
     typedef float (TuningControl::*MidiToFreq)(float);
     static MidiToFreq setMtoFFunction(bool);
     MidiToFreq mtofptr;
