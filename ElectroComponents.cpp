@@ -328,6 +328,7 @@ editor(editor)
     slider.setTextBoxStyle(Slider::NoTextBox, false, 4, 4);
     slider.setRange(0., 1.);
     slider.addListener(this);
+    slider.setName(paramName);
     addAndMakeVisible(&slider);
   
     if (isSource)

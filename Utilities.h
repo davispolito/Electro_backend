@@ -88,10 +88,10 @@ public:
     float getInvSkew() { return 1.f/range.skew; }
     NormalisableRange<float>& getRange() { return range; }
     float getRawValue() { return *raw; }
-    
+    String getName() {return name;}
 private:
     ElectroAudioProcessor& processor;
-    
+    String name;
     SmoothedValue<float, ValueSmoothingTypes::Linear> smoothed;
     std::atomic<float>* raw;
     RangedAudioParameter* parameter;
@@ -166,7 +166,7 @@ public:
     String name;
     MappingSourceModel* currentSource = nullptr;
     MappingSourceModel* currentScalarSource = nullptr;
-    OwnedArray<SmoothedParameter>& targetParameters;
+    OwnedArray<SmoothedParameter>& targetParameters; // per voice
     int index;
     float start, end;
     bool bipolar;
@@ -198,11 +198,11 @@ public:
     StringArray& getParamNames() { return paramNames; }
     
     MappingTargetModel* getTarget(int paramId, int index);
-    
+    ElectroAudioProcessor& processor;
 protected:
     String name;
         
-    ElectroAudioProcessor& processor;
+    
     AudioProcessorValueTreeState& vts;
     OwnedArray<OwnedArray<SmoothedParameter>> params;
     StringArray paramNames;
