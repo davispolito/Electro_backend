@@ -955,46 +955,18 @@ OutputModule::OutputModule(ElectroAudioProcessorEditor& editor, AudioProcessorVa
 ElectroModule(editor, vts, ac, 0.07f, 0.22f, 0.07f, 0.07f, 0.78f)
 {
     outlineColour = Colours::darkgrey;
-    meters.setChannelFormat(juce::AudioChannelSet::stereo());
-    masterDial = std::make_unique<ElectroDial>(editor, "Master", "Master", false, false);
-    sliderAttachments.add(new SliderAttachment(vts, "Master", masterDial->getSlider()));
+    //masterDial = std::make_unique<ElectroDial>(editor, "Master", "Master", false, false);
+    //sliderAttachments.add(new SliderAttachment(vts, "Master", masterDial->getSlider()));
   
-    addAndMakeVisible(masterDial.get());
-    sd::SoundMeter::Options meterOptions;
     
-    meterOptions.faderEnabled = false;  // Enable or disable the 'fader' overlay. Use the sd::SoundMeter::MetersComponent::FadersChangeListener to get the fader value updates.
-    meterOptions.headerEnabled         = true;           // Enable the 'header' part above the meter, displaying the channel ID.
-    meterOptions.valueEnabled          = true;           // Enable the 'value' part below the level, displaying the peak level.
-    meterOptions.refreshRate           = 30;  // Frequency of the meter updates (when using the internal timer).
-    meterOptions.useGradient           = true;            // Use gradients to fill the meter (hard segment boundaries otherwise).
-    meterOptions.showPeakHoldIndicator = false;           // Show the peak hold indicator (double click value to reset).
-    meterOptions.peakSegment_db        = -3.0f;           // -3.0 dB peak segment divider.
-    meterOptions.warningSegment_db     = -12.0f;          // -12.0 dB warning segment indicator.
-    meterOptions.tickMarksEnabled      = true;            // Enable tick-marks. Divider lines at certain levels on the meter and label strip.
-    meterOptions.tickMarksOnTop        = true;            // Put the tick-marks above the level readout.
-    meterOptions.tickMarks             = { -1.0f, -3.0f, -6.0f, -12.0f };  // Positions (in decibels) of the tick-marks.
-    meterOptions.decayTime_ms          = 1000.0f;                                          // The meter will take 1000 ms to decay to 0.
-     
-    meters.setOptions (meterOptions);
-    meters.setLabelStripPosition (sd::SoundMeter::LabelStripPosition::right);
-
     getDial(OutputAmp)->getTargets()[2]->setRemovable(false);
-    addAndMakeVisible (meters);
-    startTimerHz(30);
 }
 
-// The 'polling' timer.
-void OutputModule::timerCallback()
-{
-   // Loop through all meters (channels)...
-   for (int meterIndex = 0; meterIndex < meters.getNumChannels(); ++meterIndex)
-   {
-      // Get the level, of the specified meter (channel), from the audio processor...
-      meters.setInputLevel (meterIndex, editor.processor.getPeakLevel (meterIndex));
-   }
 
-   meters.refresh();
-}
+
+//void OutputModule::
+
+
 OutputModule::~OutputModule()
 {
     sliderAttachments.clear();
@@ -1002,12 +974,14 @@ OutputModule::~OutputModule()
     comboBoxAttachments.clear();
 }
 
+
 void OutputModule::resized()
 {
     ElectroModule::resized();
-    masterDial->setBoundsRelative(0.65f, relTopMargin, 0.17f, relDialHeight);
-    meters.setBoundsRelative(.83f, relTopMargin - 0.08f, 0.2f, relDialHeight*1.6f);
-    meters.setAlwaysOnTop(true);
+    //masterDial->setBoundsRelative(0.65f, relTopMargin, 0.17f, relDialHeight);
+   // meters.setBoundsRelative(.2f, relTopMargin - 0.08f, 0.2f, relDialHeight*1.6f);
+    //meters.setAlwaysOnTop(true);
+    //setVerticalRotatedWithBounds(meters, true, Rectangle<int>(masterDial->getX(), masterDial->getY(), masterDial->getHeight(), masterDial->getWidth()));
 }
 
 //==============================================================================

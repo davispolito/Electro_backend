@@ -231,7 +231,6 @@ private:
 //==============================================================================
 
 class OutputModule : public ElectroModule
-                    , private juce::Timer
 {
 public:
     
@@ -242,9 +241,6 @@ public:
     
 private:
     
-    sd::SoundMeter::MetersComponent meters;
-    std::unique_ptr<ElectroDial> masterDial;
-    void timerCallback() override;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OutputModule)
 };
 
