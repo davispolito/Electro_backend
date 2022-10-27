@@ -240,7 +240,9 @@ public:
     void resized() override;
     
 private:
-    
+    void updateFXOrder(TextButton *button);
+    TextButton fxPreButton {"FX PRE"};
+    TextButton fxPostButton {"FX POST"};
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OutputModule)
 };
 

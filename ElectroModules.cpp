@@ -957,14 +957,37 @@ ElectroModule(editor, vts, ac, 0.07f, 0.22f, 0.07f, 0.07f, 0.78f)
     outlineColour = Colours::darkgrey;
     //masterDial = std::make_unique<ElectroDial>(editor, "Master", "Master", false, false);
     //sliderAttachments.add(new SliderAttachment(vts, "Master", masterDial->getSlider()));
-  
+    fxPreButton.setRadioGroupId(1001);
+    fxPreButton.setClickingTogglesState(true);
+    fxPostButton.setRadioGroupId(1001);
+    fxPostButton.setClickingTogglesState(true);
+    //addAndMakeVisible(fxPreButton);
+    addAndMakeVisible(fxPostButton);
+    fxPreButton.setLookAndFeel(&laf);
+    fxPostButton.setLookAndFeel(&laf);
     
+    addAndMakeVisible(fxPreButton);
+    fxPreButton.onClick = [this] {updateFXOrder(&fxPreButton);};
+    fxPostButton.onClick = [this] {updateFXOrder(&fxPostButton);};
     getDial(OutputAmp)->getTargets()[2]->setRemovable(false);
+    fxPreButton.triggerClick();
+    
+    //updateFXOrder(<#TextButton *button#>)
 }
 
 
 
-//void OutputModule::
+void OutputModule::updateFXOrder(TextButton *button)
+{
+    if(button == &fxPreButton)
+    {
+        vts.getParameter("FX Order")->setValueNotifyingHost(!button->getToggleState());
+    }
+    else if(button == &fxPostButton)
+    {
+        vts.getParameter("FX Order")->setValueNotifyingHost(button->getToggleState());
+    }
+}
 
 
 OutputModule::~OutputModule()
@@ -978,7 +1001,11 @@ OutputModule::~OutputModule()
 void OutputModule::resized()
 {
     ElectroModule::resized();
-    //masterDial->setBoundsRelative(0.65f, relTopMargin, 0.17f, relDialHeight);
+    getDial(OutputTone)->setBoundsRelative(0.7f, relTopMargin, 0.17f, relDialHeight);
+    getDial(OutputAmp)->setBoundsRelative(0.3f, relTopMargin, 0.17f, relDialHeight);
+    
+    fxPostButton.setBoundsRelative(0.5f, relTopMargin + 0.2f, 0.17f, relDialHeight - 0.4f);
+    fxPreButton.setBoundsRelative(0.1f,relTopMargin + 0.2f, 0.17f, relDialHeight- 0.4f);
    // meters.setBoundsRelative(.2f, relTopMargin - 0.08f, 0.2f, relDialHeight*1.6f);
     //meters.setAlwaysOnTop(true);
     //setVerticalRotatedWithBounds(meters, true, Rectangle<int>(masterDial->getX(), masterDial->getY(), masterDial->getHeight(), masterDial->getWidth()));
@@ -1012,6 +1039,7 @@ void FXModule::resized()
     ElectroModule::resized();
     fxCB.setBoundsRelative(0.01f, 0.02f,
                               relDialWidth+0.6f*relDialSpacing, 0.16f);
+    
 }
 
 void FXModule::paint(Graphics &g)
