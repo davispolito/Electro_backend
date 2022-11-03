@@ -13,7 +13,8 @@
 
 SmoothedParameter::SmoothedParameter(ElectroAudioProcessor& processor, AudioProcessorValueTreeState& vts,
                                      String paramId) :
-processor(processor)
+processor(processor),
+name(paramId)
 {
     raw = vts.getRawParameterValue(paramId);
     parameter = vts.getParameter(paramId);
@@ -392,6 +393,7 @@ toggleable(toggleable)
         params.add(new OwnedArray<SmoothedParameter>());
         for (int v = 0; v < MAX_NUM_VOICES; ++v)
         {
+           
             params[i]->add(new SmoothedParameter(p, vts, pn));
             quickParams[i][v] = params[i]->getUnchecked(v);
         }

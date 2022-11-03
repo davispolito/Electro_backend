@@ -297,6 +297,29 @@ void OscModule::sliderValueChanged(Slider* slider)
 {
     if (slider == &getDial(OscPitch)->getSlider() ||
         slider == &getDial(OscFine)->getSlider() ||
+        slider == &getDial(OscFreq)->getSlider() || slider == &getDial(OscShape)->getSlider() || slider == &getDial(OscAmp)->getSlider() )
+    {
+        //SmoothedParameter* param = ac->processor->(slider->getName()
+        for (int j = 0; j < OscParamNil; j++)
+        {
+            
+                String name = slider->getName();
+                String _name = ac.getParameterArray(j).getFirst()->getName();
+                if(name == _name)
+                {
+                    for (int i = 0; i < ac.processor.numVoicesActive; i++)
+                    {
+                            ac.processor.addToKnobsToSmoothArray( ac.getParameterArray(j)[i]);
+                    }
+                    break;
+                }
+            
+        }
+        
+    }
+    
+    if (slider == &getDial(OscPitch)->getSlider() ||
+        slider == &getDial(OscFine)->getSlider() ||
         slider == &getDial(OscFreq)->getSlider() || slider == &getDial(OscHarm)->getSlider())
     {
         displayPitch();
@@ -306,6 +329,8 @@ void OscModule::sliderValueChanged(Slider* slider)
         dynamic_cast<ElectroDial*>(mt->getParentComponent())->sliderValueChanged(slider);
         displayPitchMapping(mt);
     }
+    
+    //ElectroModule.sliderValueChanged(slider);
 }
 
 void OscModule::buttonClicked(Button* button)
