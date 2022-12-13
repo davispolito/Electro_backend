@@ -19,6 +19,7 @@ name(paramId)
     raw = vts.getRawParameterValue(paramId);
     parameter = vts.getParameter(paramId);
     range = parameter->getNormalisableRange();
+    value = raw->load(std::memory_order_relaxed);
     for (int i = 0; i < 3; ++i)
     {
         hooks[i] = ParameterHook("", &value0, 0.0f, 0.0f, "", &value1);
@@ -38,6 +39,7 @@ float SmoothedParameter::tick()
 {
     // Well defined inter-thread behavior PROBABLY shouldn't be an issue here, so
     // the atomic is just slowing us down. memory_order_relaxed seems fastest, marginally
+    removeMe = false;
     float target = raw->load(std::memory_order_relaxed);
     //bool isSmoothed = false;
     for (int i = 0; i < numSmoothedHooks; ++i)
@@ -49,6 +51,13 @@ float SmoothedParameter::tick()
     for (int i = 0; i < numNonSmoothedHooks; ++i)
     {
         value += hooks[nonSmoothedHooks[i]].getValue();
+    }
+    if ((numSmoothedHooks != 0) && (numNonSmoothedHooks !=0))
+    {
+        if (value == target)
+        {
+            removeMe = true;
+        }
     }
     return value;
 }
@@ -286,6 +295,7 @@ void MappingTargetModel::setMapping(MappingSourceModel* source, float e, bool se
     {
         param->setHook(source->name, index, &sourceArray[i%n], start, end);
         i++;
+        processor.addToKnobsToSmoothArray(param);
     }
     
     if (onMappingChange != nullptr) onMappingChange(true, sendChangeEvent);

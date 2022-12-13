@@ -111,10 +111,10 @@ void Filter::tick(float* samples)
     
     for (int v = 0; v < processor.numVoicesActive; ++v)
     {
-        float midiCutoff = quickParams[FilterCutoff][v]->tick();
-        float keyFollow = quickParams[FilterKeyFollow][v]->tick();
-        float q = quickParams[FilterResonance][v]->tick();
-        float gain = quickParams[FilterGain][v]->tick();
+        float midiCutoff = quickParams[FilterCutoff][v]->read();
+        float keyFollow = quickParams[FilterKeyFollow][v]->read();
+        float q = quickParams[FilterResonance][v]->read();
+        float gain = quickParams[FilterGain][v]->read();
         
         LEAF_clip(0.f, keyFollow, 1.f);
         
@@ -125,8 +125,11 @@ void Filter::tick(float* samples)
         }
 
         float cutoff = midiCutoff + (follow * keyFollow);
-        cutoff = fabsf(mtof(cutoff));
-        
+        cutoff = LEAF_clip(0.0f, (cutoff-16.0f) * 35.929824561403509f, 4095.0f); //get in proper range for setFreqFast
+        if (isnan(cutoff))
+        {
+            cutoff = 60.0f;
+        }
         q = q < 0.1f ? 0.1f : q;
         
         (this->*filterTick)(samples[v], v, cutoff, q, keyFollow, gain);
@@ -137,9 +140,10 @@ void Filter::tick(float* samples)
 
 void Filter::lowpassTick(float& sample, int v, float cutoff, float q, float morph, float gain)
 {
-    tSVF_setFreqAndQ(&lowpass[v], cutoff, q);
+    tSVF_setFreqFast(&lowpass[v], cutoff);
+    tSVF_setQ(&lowpass[v], q);
     sample = tSVF_tick(&lowpass[v], sample);
-    sample *= dbtoa((gain * 24.0f) - 12.0f);
+    sample *= fasterdbtoa((gain * 24.0f) - 12.0f);
 }
 
 void Filter::highpassTick(float& sample, int v, float cutoff, float q, float morph, float gain)
@@ -147,9 +151,10 @@ void Filter::highpassTick(float& sample, int v, float cutoff, float q, float mor
     //tVZFilter_setMorphOnly(&filters[v], morph);
     //tVZFilter_setFreqAndBandwidth(&filters[v], cutoff + 200.0f, q + 0.01f);
     //sample = tVZFilter_tick(&filters[v], sample);
-    tSVF_setFreqAndQ(&highpass[v], cutoff, q);
+    tSVF_setFreqFast(&highpass[v], cutoff);
+    tSVF_setQ(&highpass[v], q);
     sample = tSVF_tick(&highpass[v], sample);
-    sample *= dbtoa((gain * 24.0f) - 12.0f);
+    sample *= fasterdbtoa((gain * 24.0f) - 12.0f);
 }
 
 void Filter::bandpassTick(float& sample, int v, float cutoff, float q, float morph, float gain)
@@ -157,53 +162,55 @@ void Filter::bandpassTick(float& sample, int v, float cutoff, float q, float mor
     //tVZFilter_setMorphOnly(&filters[v], morph);
     //tVZFilter_setFreqAndBandwidth(&filters[v], cutoff + 200.0f, q + 0.01f);
     //sample = tVZFilter_tick(&filters[v], sample);
-    tSVF_setFreqAndQ(&bandpass[v], cutoff, q);
+    tSVF_setFreqFast(&bandpass[v], cutoff);
+    tSVF_setQ(&bandpass[v], q);
     sample = tSVF_tick(&bandpass[v], sample);
-    sample *= dbtoa((gain * 24.0f) - 12.0f);
+    sample *= fasterdbtoa((gain * 24.0f) - 12.0f);
 }
 
 void Filter::diodeLowpassTick(float& sample, int v, float cutoff, float q, float morph, float gain)
 {
-    tDiodeFilter_setFreq(&diodeFilters[v], cutoff);
+    tDiodeFilter_setFreqFast(&diodeFilters[v], cutoff);
     tDiodeFilter_setQ(&diodeFilters[v], q);
     sample = tDiodeFilter_tick(&diodeFilters[v], sample);
-    sample *= dbtoa((gain * 24.0f) - 12.0f);
+    sample *= fasterdbtoa((gain * 24.0f) - 12.0f);
 }
 
 void Filter::VZpeakTick(float& sample, int v, float cutoff, float q, float morph, float gain)
 {
-    //tVZFilter_setMorphOnly(&filters[v], morph);
-    tVZFilter_setFrequencyAndBandwidthAndGain(&VZfilterPeak[v], cutoff, q, dbtoa((gain * 50.f) - 25.f));
+    tVZFilter_setFreqFast(&VZfilterPeak[v], cutoff);
+    tVZFilter_setBandwidth(&VZfilterPeak[v], q);
+    tVZFilter_setGain(&VZfilterPeak[v], fasterdbtoa((gain * 50.f) - 25.f));
     sample = tVZFilter_tickEfficient(&VZfilterPeak[v], sample);
 }
 
 void Filter::VZlowshelfTick(float& sample, int v, float cutoff, float q, float morph, float gain)
 {
-    //tVZFilter_setMorphOnly(&filters[v], morph);
-    //tVZFilter_setFreq(&VZfilterLS[v], cutoff);
-    tVZFilter_setFrequencyAndResonanceAndGain(&VZfilterLS[v], cutoff, q, fasterdbtoa((gain * 50.f) - 25.0f));
+    tVZFilter_setFreqFast(&VZfilterLS[v], cutoff);
+    tVZFilter_setBandwidth(&VZfilterLS[v], q);
+    tVZFilter_setGain(&VZfilterLS[v], fasterdbtoa((gain * 50.f) - 25.f));
     sample = tVZFilter_tickEfficient(&VZfilterLS[v], sample);
 }
 void Filter::VZhighshelfTick(float& sample, int v, float cutoff, float q, float morph, float gain)
 {
-    //tVZFilter_setMorphOnly(&filters[v], morph);
-    
-    tVZFilter_setFrequencyAndResonanceAndGain(&VZfilterHS[v], cutoff, q, fasterdbtoa((gain * 50.0f) - 25.0f));
+    tVZFilter_setFreqFast(&VZfilterPeak[v], cutoff);
+    tVZFilter_setBandwidth(&VZfilterPeak[v], q);
+    tVZFilter_setGain(&VZfilterPeak[v], fasterdbtoa((gain * 50.f) - 25.f));
     sample = tVZFilter_tickEfficient(&VZfilterHS[v], sample);
 }
 void Filter:: VZbandrejectTick(float& sample, int v, float cutoff, float q, float morph, float gain)
 {
-    //tVZFilter_setMorphOnly(&filters[v], morph);
-    tVZFilter_setFrequencyAndResonanceAndGain(&VZfilterBR[v], cutoff, q, 1);
+    tVZFilter_setFreqFast(&VZfilterPeak[v], cutoff);
+    tVZFilter_setResonance(&VZfilterPeak[v], q);
     sample = tVZFilter_tickEfficient(&VZfilterBR[v], sample);
-    sample *= dbtoa(gain);
+    sample *= fasterdbtoa(gain);
 }
 
 void Filter:: LadderLowpassTick(float& sample, int v, float cutoff, float q, float morph, float gain)
 {
     //tVZFilter_setMorphOnly(&filters[v], morph);
-    tLadderFilter_setFreq(&Ladderfilter[v], cutoff);
+    tLadderFilter_setFreqFast(&Ladderfilter[v], cutoff);
     tLadderFilter_setQ(&Ladderfilter[v], q);
     sample = tLadderFilter_tick(&Ladderfilter[v], sample);
-    sample *= dbtoa(gain);
+    sample *= fasterdbtoa(gain);
 }

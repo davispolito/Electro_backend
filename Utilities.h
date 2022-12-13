@@ -89,9 +89,12 @@ public:
     NormalisableRange<float>& getRange() { return range; }
     float getRawValue() { return *raw; }
     String getName() {return name;}
+    bool getRemoveMe(){return removeMe;}
+    float read(){return value;}
 private:
     ElectroAudioProcessor& processor;
     String name;
+    bool removeMe;
     SmoothedValue<float, ValueSmoothingTypes::Linear> smoothed;
     std::atomic<float>* raw;
     RangedAudioParameter* parameter;
@@ -190,7 +193,7 @@ public:
     
     //==============================================================================
     OwnedArray<SmoothedParameter>& getParameterArray(int p);
-    
+    int getParamArraySize() {return params.size();}
     bool isToggleable() { return toggleable; }
     bool isEnabled() { return enabled; }
 

@@ -145,12 +145,12 @@ void Oscillator::tick(float output[][MAX_NUM_VOICES])
     {
         if (!processor.voiceIsSounding[v]) continue;
         
-        float pitch = quickParams[OscPitch][v]->tick();
-        float harm = quickParams[OscHarm][v]->tick();
-        float fine = quickParams[OscFine][v]->tick();
-        float freq = quickParams[OscFreq][v]->tick();
-        float shape = quickParams[OscShape][v]->tick();
-        float amp = quickParams[OscAmp][v]->tick();
+        float pitch = quickParams[OscPitch][v]->read();
+        float harm = quickParams[OscHarm][v]->read();
+        float fine = quickParams[OscFine][v]->read();
+        float freq = quickParams[OscFreq][v]->read();
+        float shape = quickParams[OscShape][v]->read();
+        float amp = quickParams[OscAmp][v]->read();
         float harm_pitch = harm + pitch;
         amp = amp < 0.f ? 0.f : amp;
         float note = processor.voiceNote[v];
@@ -425,9 +425,9 @@ float LowFreqOscillator::tick()
     float r = 0.0f;
     for (int v = 0; v < processor.numVoicesActive; v++)
     {
-        float rate = quickParams[LowFreqRate][v]->tick();
-        float shape = quickParams[LowFreqShape][v]->tick();
-        phaseReset = quickParams[LowFreqPhase][v]->tick();
+        float rate = quickParams[LowFreqRate][v]->read();
+        float shape = quickParams[LowFreqShape][v]->read();
+        phaseReset = quickParams[LowFreqPhase][v]->read();
         // Even though our oscs can handle negative frequency I think allowing the rate to
         // go negative would be confusing behavior
         rate = rate < 0.f ? 0.f : rate;
@@ -600,10 +600,10 @@ void NoiseGenerator::tick(float output[][MAX_NUM_VOICES])
     
     for (int v = 0; v < processor.numVoicesActive; v++)
     {
-        float tilt = quickParams[NoiseTilt][v]->tick();
-        float gain = quickParams[NoiseGain][v]->tick();
-        float freq = quickParams[NoiseFreq][v]->tick();
-        float amp = quickParams[NoiseAmp][v]->tick();
+        float tilt = quickParams[NoiseTilt][v]->read();
+        float gain = quickParams[NoiseGain][v]->read();
+        float freq = quickParams[NoiseFreq][v]->read();
+        float amp = quickParams[NoiseAmp][v]->read();
         amp = amp < 0.f ? 0.f : amp;
         tVZFilter_setGain(&shelf1[v], fastdbtoa(-1.0f * ((tilt * 30.0f) - 15.0f)));
         tVZFilter_setGain(&shelf2[v], fastdbtoa((tilt * 30.0f) - 15.0f));

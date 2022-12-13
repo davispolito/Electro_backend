@@ -232,13 +232,13 @@ float Effect::tiltFilterTick(float sample, float param1, float param2, float par
 
 void Effect::oversample_tick(float* samples, int v)
 {
-    float param1 = quickParams[Param1][v]->tick();
-    float param2 = quickParams[Param2][v]->tick();
-    float param3 = quickParams[Param3][v]->tick();
-    float param4 = quickParams[Param4][v]->tick();
-    float param5 = quickParams[Param5][v]->tick();
-    float mix = quickParams[Mix][v]->tick();
-    float postGain = quickParams[PostGain][v]->tick();
+    float param1 = quickParams[Param1][v]->read();
+    float param2 = quickParams[Param2][v]->read();
+    float param3 = quickParams[Param3][v]->read();
+    float param4 = quickParams[Param4][v]->read();
+    float param5 = quickParams[Param5][v]->read();
+    float mix = quickParams[Mix][v]->read();
+    float postGain = quickParams[PostGain][v]->read();
     for(int i = 0; i < OVERSAMPLE; i++)
     {
         float output = (this->*_tick)((samples[i]), param1, param2, param3, param4, param5, v);
