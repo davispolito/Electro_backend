@@ -193,15 +193,15 @@ void Filter::VZlowshelfTick(float& sample, int v, float cutoff, float q, float m
 }
 void Filter::VZhighshelfTick(float& sample, int v, float cutoff, float q, float morph, float gain)
 {
-    tVZFilter_setFreqFast(&VZfilterPeak[v], cutoff);
-    tVZFilter_setBandwidth(&VZfilterPeak[v], q);
-    tVZFilter_setGain(&VZfilterPeak[v], fasterdbtoa((gain * 50.f) - 25.f));
+    tVZFilter_setFreqFast(&VZfilterHS[v], cutoff);
+    tVZFilter_setBandwidth(&VZfilterHS[v], q);
+    tVZFilter_setGain(&VZfilterHS[v], fasterdbtoa((gain * 50.f) - 25.f));
     sample = tVZFilter_tickEfficient(&VZfilterHS[v], sample);
 }
 void Filter:: VZbandrejectTick(float& sample, int v, float cutoff, float q, float morph, float gain)
 {
-    tVZFilter_setFreqFast(&VZfilterPeak[v], cutoff);
-    tVZFilter_setResonance(&VZfilterPeak[v], q);
+    tVZFilter_setFreqFast(&VZfilterBR[v], cutoff);
+    tVZFilter_setResonance(&VZfilterBR[v], q);
     sample = tVZFilter_tickEfficient(&VZfilterBR[v], sample);
     sample *= fasterdbtoa(gain);
 }
