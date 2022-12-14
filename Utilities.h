@@ -95,7 +95,6 @@ private:
     ElectroAudioProcessor& processor;
     String name;
     bool removeMe;
-    SmoothedValue<float, ValueSmoothingTypes::Linear> smoothed;
     std::atomic<float>* raw;
     RangedAudioParameter* parameter;
     NormalisableRange<float> range;
@@ -108,7 +107,8 @@ private:
     int numNonSmoothedHooks = 0;
     int smoothedHooks[3];
     int nonSmoothedHooks[3];
-    
+    SmoothedValue<float, ValueSmoothingTypes::Linear> smoothed;
+
     float value0 = 0.0f;
     float value1 = 1.0f;
 };

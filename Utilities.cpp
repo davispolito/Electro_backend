@@ -14,17 +14,20 @@
 SmoothedParameter::SmoothedParameter(ElectroAudioProcessor& processor, AudioProcessorValueTreeState& vts,
                                      String paramId) :
 processor(processor),
-name(paramId)
+name(paramId),
+raw(vts.getRawParameterValue(paramId)),
+parameter(vts.getParameter(paramId)),
+range(parameter->getNormalisableRange()),
+value(raw->load(std::memory_order_relaxed)),
+smoothed(value)
 {
-    raw = vts.getRawParameterValue(paramId);
-    parameter = vts.getParameter(paramId);
-    range = parameter->getNormalisableRange();
-    value = raw->load(std::memory_order_relaxed);
+    //DBG(paramId+" " + String(value));
     for (int i = 0; i < 3; ++i)
     {
         hooks[i] = ParameterHook("", &value0, 0.0f, 0.0f, "", &value1);
         smoothedHooks[i] = 0;
         nonSmoothedHooks[i] = 0;
+        
     }
     processor.params.add(this);
     
