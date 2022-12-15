@@ -178,39 +178,31 @@ void Filter::diodeLowpassTick(float& sample, int v, float cutoff, float q, float
 
 void Filter::VZpeakTick(float& sample, int v, float cutoff, float q, float morph, float gain)
 {
-    tVZFilter_setFreqFast(&VZfilterPeak[v], cutoff);
-    tVZFilter_setBandwidth(&VZfilterPeak[v], q);
-    tVZFilter_setGain(&VZfilterPeak[v], fasterdbtoa((gain * 50.f) - 25.f));
+    tVZFilter_setFastFrequencyAndResonanceAndGain(&VZfilterPeak[v], cutoff, q, fasterdbtoa((gain * 50.f) - 25.f));
     sample = tVZFilter_tickEfficient(&VZfilterPeak[v], sample);
 }
 
 void Filter::VZlowshelfTick(float& sample, int v, float cutoff, float q, float morph, float gain)
 {
-    tVZFilter_setFreqFast(&VZfilterLS[v], cutoff);
-    tVZFilter_setBandwidth(&VZfilterLS[v], q);
-    tVZFilter_setGain(&VZfilterLS[v], fasterdbtoa((gain * 50.f) - 25.f));
+    tVZFilter_setFastFrequencyAndResonanceAndGain(&VZfilterLS[v], cutoff, q, fasterdbtoa((gain * 50.f) - 25.f));
     sample = tVZFilter_tickEfficient(&VZfilterLS[v], sample);
 }
 void Filter::VZhighshelfTick(float& sample, int v, float cutoff, float q, float morph, float gain)
 {
-    tVZFilter_setFreqFast(&VZfilterHS[v], cutoff);
-    tVZFilter_setBandwidth(&VZfilterHS[v], q);
-    tVZFilter_setGain(&VZfilterHS[v], fasterdbtoa((gain * 50.f) - 25.f));
+    tVZFilter_setFastFrequencyAndResonanceAndGain(&VZfilterHS[v], cutoff, q, fasterdbtoa((gain * 50.f) - 25.f));
     sample = tVZFilter_tickEfficient(&VZfilterHS[v], sample);
 }
 void Filter:: VZbandrejectTick(float& sample, int v, float cutoff, float q, float morph, float gain)
 {
-    tVZFilter_setFreqFast(&VZfilterBR[v], cutoff);
-    tVZFilter_setResonance(&VZfilterBR[v], q);
+    tVZFilter_setFastFrequencyAndResonanceAndGain(&VZfilterBR[v], cutoff, q, fasterdbtoa((gain * 50.f) - 25.f));
     sample = tVZFilter_tickEfficient(&VZfilterBR[v], sample);
     sample *= fasterdbtoa(gain);
 }
 
 void Filter:: LadderLowpassTick(float& sample, int v, float cutoff, float q, float morph, float gain)
 {
-    //tVZFilter_setMorphOnly(&filters[v], morph);
     tLadderFilter_setFreqFast(&Ladderfilter[v], cutoff);
     tLadderFilter_setQ(&Ladderfilter[v], q);
     sample = tLadderFilter_tick(&Ladderfilter[v], sample);
-    sample *= fasterdbtoa(gain);
+    sample *= fasterdbtoa((gain * 50.f) - 25.f);
 }

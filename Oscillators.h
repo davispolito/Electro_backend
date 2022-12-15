@@ -37,7 +37,16 @@ public:
     OscShapeSet getCurrentShapeSet() { return currentShapeSet; }
     void setSyncSource(Oscillator* osc) {syncSource = osc;}
     float syncOut[MAX_NUM_VOICES];
-    
+    bool getEnabled()
+    {
+        if (afpEnabled == nullptr || *afpEnabled > 0)
+        {
+            return true;
+        } else
+        {
+            return false;
+        }
+    }
 private:
     void (Oscillator::*shapeTick)(float& sample, int v, float freq, float shape);
     void sawSquareTick(float& sample, int v, float freq, float shape);

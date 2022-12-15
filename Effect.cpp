@@ -330,7 +330,7 @@ float Effect::bcTick(float sample, float param1, float param2, float param3, flo
     float gain = dbtoa(param1 * 24.0f);
     sample = sample * gain;
     tCrusher_setQuality (&bc[v],param2);
-    tCrusher_setSamplingRatio (&bc[v],(param3* inv_oversample) + 0.01f);
+    tCrusher_setSamplingRatio (&bc[v],((1.0f - param3)* inv_oversample) + 0.01f);
     tCrusher_setRound(&bc[v], param4);
     tCrusher_setOperation(&bc[v], param5);
     float temp = tCrusher_tick(&bc[v], sample);

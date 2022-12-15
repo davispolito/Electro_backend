@@ -40,6 +40,7 @@ syncSource(nullptr)
     
     filterSend = std::make_unique<SmoothedParameter>(p, vts, n + " FilterSend");
     isHarmonic_raw = vts.getRawParameterValue(n + " isHarmonic");
+    isHarmonic_raw = vts.getRawParameterValue(n + " isEnabled");
     isStepped_raw = vts.getRawParameterValue(n + " isStepped");
     isSync_raw = vts.getRawParameterValue(n + " isSync");
     syncType_raw = vts.getRawParameterValue(n + " syncType");
@@ -166,7 +167,7 @@ void Oscillator::tick(float output[][MAX_NUM_VOICES])
         
         //DBG(ftom(processor.tuner.mtof(note) / (harm - 1)));
         //DBG(processor.tuner.mtof(note) / (harm - 1));
-        float finalFreq = processor.tuner.mtof(LEAF_clip(0, note + harm_pitch + fine*0.01f, 127)) + freq;
+        float finalFreq = processor.tuner.mtof(LEAF_clip(0.0f, note + harm_pitch + (fine * 0.01f), 127.0f)) + freq;
         //DBG(note);
         //freq = freq < 10.f ? 0.f : freq
         
@@ -187,7 +188,7 @@ void Oscillator::tick(float output[][MAX_NUM_VOICES])
         
         syncOut[v] = sample;
         
-        sample *= INV_NUM_OSCS;
+        sample *= processor.oscAmpMult;
         
         float f = filterSend->tickNoHooks();
         

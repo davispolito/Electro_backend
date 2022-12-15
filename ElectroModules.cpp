@@ -64,6 +64,8 @@ relDialHeight(relDialHeight)
         }
     }
     
+    
+    
     if (ac.isToggleable())
     {
         enabledToggle.addListener(this);
@@ -119,6 +121,7 @@ void ElectroModule::sliderValueChanged(Slider* slider)
                 String _name = ac.getParameterArray(j).getFirst()->getName();
                 if(name == _name)
                 {
+                    //TODO: This is a problem because if you change number of voices after changing some parameters, then the new voices don't update. Could make this always do all voices, but I tested that and it tanks performance. Probably best to update all parameters when number of voices changes... -JS
                     for (int i = 0; i < ac.processor.numVoicesActive; i++)
                     {
                             ac.processor.addToKnobsToSmoothArray( ac.getParameterArray(j)[i]);
@@ -341,6 +344,7 @@ void OscModule::buttonClicked(Button* button)
         f2Label.setAlpha(enabledToggle.getToggleState() ? 1. : 0.5);
         sendSlider.setEnabled(enabledToggle.getToggleState());
         sendSlider.setAlpha(enabledToggle.getToggleState() ? 1. : 0.5);
+        
     }
     else if (button == &pitchDialToggle || button == &steppedToggle)
     {
