@@ -243,7 +243,7 @@ void Effect::oversample_tick(float* samples, int v)
     {
         float output = (this->*_tick)((samples[i]), param1, param2, param3, param4, param5, v);
         samples[i] = ((1.0f - mix) * (samples[i])) + (mix * output);
-        samples[i] *= dbtoa((postGain * 24.0f) - 12.0f);
+        samples[i] *= fasterdbtoa((postGain * 24.0f) - 12.0f);
     }
     sampleInBlock++;
 }

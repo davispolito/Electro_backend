@@ -32,10 +32,10 @@ syncSource(nullptr)
         tCycle_init(&sine[i], &processor.leaf);
         tMBTriangle_init(&tri[i], &processor.leaf);
         
-        tMBSaw_init(&sawPaired[i], &processor.leaf);
-        tMBPulse_init(&pulsePaired[i], &processor.leaf);
-        tCycle_init(&sinePaired[i], &processor.leaf);
-        tMBTriangle_init(&triPaired[i], &processor.leaf);
+        tMBSawPulse_init(&sawPaired[i], &processor.leaf);
+        
+        tMBSineTri_init(&sinePaired[i], &processor.leaf);
+       
     }
     
     filterSend = std::make_unique<SmoothedParameter>(p, vts, n + " FilterSend");
@@ -60,11 +60,9 @@ Oscillator::~Oscillator()
         tMBPulse_free(&pulse[i]);
         tCycle_free(&sine[i]);
         tMBTriangle_free(&tri[i]);
-        
-        tMBSaw_free(&sawPaired[i]);
-        tMBPulse_free(&pulsePaired[i]);
-        tCycle_free(&sinePaired[i]);
-        tMBTriangle_free(&triPaired[i]);
+        tMBSawPulse_free(&sawPaired[i]);
+        tMBSineTri_free(&sinePaired[i]);
+
         
         if (waveTableFile.exists())
         {
@@ -84,10 +82,10 @@ void Oscillator::prepareToPlay (double sampleRate, int samplesPerBlock)
         tCycle_setSampleRate(&sine[i], sampleRate);
         tMBTriangle_setSampleRate(&tri[i], sampleRate);
         
-        tMBSaw_setSampleRate(&sawPaired[i], sampleRate);
-        tMBPulse_setSampleRate(&pulsePaired[i], sampleRate);
-        tCycle_setSampleRate(&sinePaired[i], sampleRate);
-        tMBTriangle_setSampleRate(&triPaired[i], sampleRate);
+        tMBSawPulse_setSampleRate(&sawPaired[i], sampleRate);
+        
+        tMBSineTri_setSampleRate(&sinePaired[i], sampleRate);
+       
         
         if (waveTableFile.exists())
         {
@@ -201,37 +199,34 @@ void Oscillator::tick(float output[][MAX_NUM_VOICES])
 
 void Oscillator::sawSquareTick(float& sample, int v, float freq, float shape)
 {
-    tMBSaw_setFreq(&sawPaired[v], freq);
-    tMBPulse_setFreq(&pulsePaired[v], freq);
+    tMBSawPulse_setFreq(&sawPaired[v], freq);
+    tMBSawPulse_setShape(&sawPaired[v], shape);
     if (isSync_raw == nullptr || *isSync_raw > 0)
     {
         if(syncType_raw != nullptr)
         {
-            tMBSaw_setSyncMode(&sawPaired[v], *syncType_raw);
-            tMBPulse_setSyncMode(&pulsePaired[v], *syncType_raw);
+            tMBSawPulse_setSyncMode(&sawPaired[v], !(*syncType_raw>0.5f));
         }
-        tMBSaw_sync(&sawPaired[v], syncSource->syncOut[v]);
-        tMBPulse_sync(&pulsePaired[v], syncSource->syncOut[v]);
-        
+        tMBSawPulse_sync(&sawPaired[v], syncSource->syncOut[v]);
     }
-    sample += tMBSaw_tick(&sawPaired[v]) * (1.0f - shape) * 2.f;
-    sample += tMBPulse_tick(&pulsePaired[v]) * shape * 2.f;
+    sample += tMBSawPulse_tick(&sawPaired[v]) * 2.f;
+
 }
 
 void Oscillator::sineTriTick(float& sample, int v, float freq, float shape)
 {
-    tCycle_setFreq(&sinePaired[v], freq);
-    tMBTriangle_setFreq(&triPaired[v], freq);
-    
+    tMBSineTri_setFreq(&sinePaired[v], freq);
+    tMBSineTri_setShape(&sinePaired[v], shape);
     if (isSync_raw == nullptr || *isSync_raw > 0)
     {
         if(syncType_raw != nullptr)
         {
-            tMBTriangle_setSyncMode(&triPaired[v], *syncType_raw);
+            tMBSineTri_setSyncMode(&sinePaired[v], !(*syncType_raw>0.5f));
         }
+        tMBSineTri_sync(&sinePaired[v], syncSource->syncOut[v]);
     }
-    sample += tCycle_tick(&sinePaired[v]) * (1.0f - shape);
-    sample += tMBTriangle_tick(&triPaired[v]) * shape * 2.f;;
+    sample += tMBSineTri_tick(&sinePaired[v]) * 2.0f;
+
 }
 
 void Oscillator::sawTick(float& sample, int v, float freq, float shape)
@@ -241,7 +236,7 @@ void Oscillator::sawTick(float& sample, int v, float freq, float shape)
     {
         if(syncType_raw != nullptr)
         {
-            tMBSaw_setSyncMode(&saw[v], *syncType_raw);
+            tMBSaw_setSyncMode(&saw[v], !(*syncType_raw>0.5f));
         }
         tMBSaw_sync(&saw[v], syncSource->syncOut[v]);
     }
@@ -256,7 +251,7 @@ void Oscillator::pulseTick(float& sample, int v, float freq, float shape)
     {
         if(syncType_raw != nullptr)
         {
-            tMBPulse_setSyncMode(&pulse[v], *syncType_raw);
+            tMBPulse_setSyncMode(&pulse[v], !(*syncType_raw>0.5f));
         }
         tMBPulse_sync(&pulse[v], syncSource->syncOut[v]);
     }
@@ -277,7 +272,7 @@ void Oscillator::triTick(float& sample, int v, float freq, float shape)
     {
         if(syncType_raw != nullptr)
         {
-            tMBTriangle_setSyncMode(&tri[v], *syncType_raw);
+            tMBTriangle_setSyncMode(&tri[v], !(*syncType_raw>0.5f));
         }
         tMBTriangle_sync(&tri[v], syncSource->syncOut[v]);
     }
