@@ -136,6 +136,45 @@ void Oscillator::frame()
     }
 }
 
+
+void Oscillator::setShape(int v, float shape)
+{
+    currentShapeSet = OscShapeSet(int(*afpShapeSet));
+    switch (currentShapeSet) {
+        case SawPulseOscShapeSet:
+            tMBSawPulse_setShape(&sawPaired[v], shape);
+            break;
+            
+        case SineTriOscShapeSet:
+            tMBSineTri_setShape(&sinePaired[v], shape);
+            break;
+            
+        case SawOscShapeSet:
+            //shapeTick = &Oscillator::sawTick;
+            break;
+            
+        case PulseOscShapeSet:
+            tMBPulse_setWidth(&pulse[v], shape);
+            break;
+            
+        case SineOscShapeSet:
+            //shapeTick = &Oscillator::sineTick;
+            break;
+            
+        case TriOscShapeSet:
+            tMBTriangle_setWidth(&tri[v], shape);
+            break;
+            
+        case UserOscShapeSet:
+            tWaveOscS_setIndex(&wave[v], shape);
+            break;
+            
+        default:
+            tMBSawPulse_setShape(&sawPaired[v], shape);
+            break;
+    }
+}
+
 void Oscillator::tick(float output[][MAX_NUM_VOICES])
 {
     //if (loadingTables || !enabled) return;
@@ -149,6 +188,10 @@ void Oscillator::tick(float output[][MAX_NUM_VOICES])
         float fine = quickParams[OscFine][v]->read();
         float freq = quickParams[OscFreq][v]->read();
         float shape = quickParams[OscShape][v]->read();
+        if(!quickParams[OscShape][v]->getRemoveMe())
+        {
+            setShape(v, shape);
+        }
         float amp = quickParams[OscAmp][v]->read();
         float harm_pitch = harm + pitch;
         amp = amp < 0.f ? 0.f : amp;
@@ -200,7 +243,7 @@ void Oscillator::tick(float output[][MAX_NUM_VOICES])
 void Oscillator::sawSquareTick(float& sample, int v, float freq, float shape)
 {
     tMBSawPulse_setFreq(&sawPaired[v], freq);
-    tMBSawPulse_setShape(&sawPaired[v], shape);
+    
     if (isSync_raw == nullptr || *isSync_raw > 0)
     {
         if(syncType_raw != nullptr)
@@ -216,7 +259,7 @@ void Oscillator::sawSquareTick(float& sample, int v, float freq, float shape)
 void Oscillator::sineTriTick(float& sample, int v, float freq, float shape)
 {
     tMBSineTri_setFreq(&sinePaired[v], freq);
-    tMBSineTri_setShape(&sinePaired[v], shape);
+    
     if (isSync_raw == nullptr || *isSync_raw > 0)
     {
         if(syncType_raw != nullptr)
@@ -246,7 +289,7 @@ void Oscillator::sawTick(float& sample, int v, float freq, float shape)
 void Oscillator::pulseTick(float& sample, int v, float freq, float shape)
 {
     tMBPulse_setFreq(&pulse[v], freq);
-    tMBPulse_setWidth(&pulse[v], shape);
+    
     if (isSync_raw == nullptr || *isSync_raw > 0)
     {
         if(syncType_raw != nullptr)
@@ -267,7 +310,7 @@ void Oscillator::sineTick(float& sample, int v, float freq, float shape)
 void Oscillator::triTick(float& sample, int v, float freq, float shape)
 {
     tMBTriangle_setFreq(&tri[v], freq);
-    tMBTriangle_setWidth(&tri[v], shape);
+    
     if (isSync_raw == nullptr || *isSync_raw > 0)
     {
         if(syncType_raw != nullptr)
@@ -282,7 +325,7 @@ void Oscillator::triTick(float& sample, int v, float freq, float shape)
 void Oscillator::userTick(float& sample, int v, float freq, float shape)
 {
     tWaveOscS_setFreq(&wave[v], freq);
-    tWaveOscS_setIndex(&wave[v], shape);
+    
     sample += tWaveOscS_tick(&wave[v]);
 }
 
@@ -414,6 +457,75 @@ void LowFreqOscillator::frame()
     }
 }
 
+void LowFreqOscillator::setShape(int v, float shape)
+{
+    currentShapeSet = LFOShapeSet(int(*afpShapeSet));
+    switch (currentShapeSet) {
+        case SineTriLFOShapeSet:
+            tSineTriLFO_setShape(&sineTri[v], shape);
+            break;
+            
+        case SawPulseLFOShapeSet:
+            tSawSquareLFO_setShape(&sawSquare[v], shape);
+            break;
+            
+        case SineLFOShapeSet:
+            //shapeTick = &LowFreqOscillator::sineTick;
+            break;
+            
+        case TriLFOShapeSet:
+            //tTriLFO_setWidth(&tri[v], shape);
+            break;
+            
+        case SawLFOShapeSet:
+            //shapeTick = &LowFreqOscillator::sawTick;
+            break;
+            
+        case PulseLFOShapeSet:
+            tSquareLFO_setPulseWidth(&pulse[v], shape);
+            break;
+            
+        default:
+            tSineTriLFO_setShape(&sineTri[v], shape);
+            break;
+    }
+}
+
+void LowFreqOscillator::setRate(int v, float rate)
+{
+    currentShapeSet = LFOShapeSet(int(*afpShapeSet));
+    switch (currentShapeSet) {
+        case SineTriLFOShapeSet:
+            tSineTriLFO_setFreq(&sineTri[v], rate);
+            
+            break;
+            
+        case SawPulseLFOShapeSet:
+            tSawSquareLFO_setFreq(&sawSquare[v], rate);
+            break;
+            
+        case SineLFOShapeSet:
+            tCycle_setFreq(&sine[v], rate);
+            break;
+            
+        case TriLFOShapeSet:
+            tTriLFO_setFreq(&tri[v], rate);
+            break;
+            
+        case SawLFOShapeSet:
+            tIntPhasor_setFreq(&saw[v], rate);
+            break;
+            
+        case PulseLFOShapeSet:
+            tSquareLFO_setFreq(&pulse[v], rate);
+            break;
+            
+        default:
+            tSineTriLFO_setFreq(&sineTri[v], rate);
+            break;
+    }
+}
+
 float LowFreqOscillator::tick()
 {
     if (!enabled) return 0.0f;
@@ -423,6 +535,15 @@ float LowFreqOscillator::tick()
     {
         float rate = quickParams[LowFreqRate][v]->read();
         float shape = quickParams[LowFreqShape][v]->read();
+        if (!quickParams[LowFreqRate][v]->getRemoveMe())
+        {
+            setShape(v,shape);
+        }
+        
+        if (!quickParams[LowFreqShape][v]->getRemoveMe())
+        {
+            setRate(v,rate);
+        }
         phaseReset = quickParams[LowFreqPhase][v]->read();
         // Even though our oscs can handle negative frequency I think allowing the rate to
         // go negative would be confusing behavior
@@ -430,7 +551,7 @@ float LowFreqOscillator::tick()
         shape = LEAF_clip(0.f, shape, 1.f);
         
         float sample = 0;
-        (this->*shapeTick)(sample, v, rate, shape);
+        (this->*shapeTick)(sample, v);
         float normSample = (sample + 1.f) * 0.5f;
         r = sample;
         sourceValues[0][v] = normSample;
@@ -444,43 +565,34 @@ float LowFreqOscillator::tick()
     return r;
 }
 
-void LowFreqOscillator::sawSquareTick(float& sample, int v, float rate, float shape)
+void LowFreqOscillator::sawSquareTick(float& sample, int v)
 {
-    tSawSquareLFO_setFreq(&sawSquare[v], rate);
-    tSawSquareLFO_setShape(&sawSquare[v], shape);
+
     sample += tSawSquareLFO_tick(&sawSquare[v]);
 }
 
-void LowFreqOscillator::sineTriTick(float& sample, int v, float rate, float shape)
+void LowFreqOscillator::sineTriTick(float& sample, int v)
 {
-    tSineTriLFO_setFreq(&sineTri[v], rate);
-    tSineTriLFO_setShape(&sineTri[v], shape);
     sample += tSineTriLFO_tick(&sineTri[v]);
 }
 
-void LowFreqOscillator::sineTick(float& sample, int v, float freq, float shape)
+void LowFreqOscillator::sineTick(float& sample, int v)
 {
-    tCycle_setFreq(&sine[v], freq);
     sample += tCycle_tick(&sine[v]);
 }
 
-void LowFreqOscillator::triTick(float& sample, int v, float freq, float shape)
+void LowFreqOscillator::triTick(float& sample, int v)
 {
-    tTriLFO_setFreq(&tri[v], freq);
-    //tTriLFO_setWidth(&tri[v], shape);
     sample += tTriLFO_tick(&tri[v]);
 }
 
-void LowFreqOscillator::sawTick(float& sample, int v, float freq, float shape)
+void LowFreqOscillator::sawTick(float& sample, int v)
 {
-    tIntPhasor_setFreq(&saw[v], freq);
     sample += tIntPhasor_tick(&saw[v]);
 }
 
-void LowFreqOscillator::pulseTick(float& sample, int v, float freq, float shape)
+void LowFreqOscillator::pulseTick(float& sample, int v)
 {
-    tSquareLFO_setFreq(&pulse[v], freq);
-    tSquareLFO_setPulseWidth(&pulse[v], shape);
     sample += tSquareLFO_tick(&pulse[v]);
 }
 
@@ -601,9 +713,21 @@ void NoiseGenerator::tick(float output[][MAX_NUM_VOICES])
         float freq = quickParams[NoiseFreq][v]->read();
         float amp = quickParams[NoiseAmp][v]->read();
         amp = amp < 0.f ? 0.f : amp;
-        tVZFilter_setGain(&shelf1[v], fastdbtoa(-1.0f * ((tilt * 30.0f) - 15.0f)));
-        tVZFilter_setGain(&shelf2[v], fastdbtoa((tilt * 30.0f) - 15.0f));
-        tVZFilter_setFrequencyAndResonanceAndGain(&bell1[v], faster_mtof(freq * 77.0f + 42.0f), 1.9f, fastdbtoa((gain* 34.0f) - 17.0f));
+        if(!quickParams[NoiseTilt][v]->getRemoveMe())
+        {
+            tVZFilter_setGain(&shelf1[v], fastdbtoa(-1.0f * ((tilt * 30.0f) - 15.0f)));
+            tVZFilter_setGain(&shelf2[v], fastdbtoa((tilt * 30.0f) - 15.0f));
+        }
+        if(!quickParams[NoiseGain][v]->getRemoveMe())
+        {
+            tVZFilter_setFreqFast(&bell1[v], faster_mtof(freq * 77.0f + 42.0f));
+        }
+        
+        if(!quickParams[NoiseGain][v]->getRemoveMe())
+        {
+            tVZFilter_setGain(&bell1[v],fastdbtoa((gain* 34.0f) - 17.0f));
+        }
+//        tVZFilter_setFrequencyAndResonanceAndGain(&bell1[v], faster_mtof(freq * 77.0f + 42.0f), 1.9f, fastdbtoa((gain* 34.0f) - 17.0f));
         
         
         //float sample = tSVF_tick(&bandpass[v], tNoise_tick(&noise[v])) * amp;

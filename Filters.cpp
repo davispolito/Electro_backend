@@ -58,7 +58,11 @@ void Filter::frame()
 {
     sampleInBlock = 0;
     enabled = afpEnabled == nullptr || *afpEnabled > 0;
-    
+    FilterType type = FilterType(int(*afpFilterType));
+    if (type != currentFilterType)
+    {
+        setAllVariables = true;
+    }
     currentFilterType = FilterType(int(*afpFilterType));
     switch (currentFilterType) {
         case LowpassFilter:
@@ -115,7 +119,20 @@ void Filter::tick(float* samples)
         float keyFollow = quickParams[FilterKeyFollow][v]->read();
         float q = quickParams[FilterResonance][v]->read();
         float gain = quickParams[FilterGain][v]->read();
-        
+        if (!quickParams[FilterResonance][v]->getRemoveMe())
+        {
+            setQ(q, v);
+        }
+        if (!quickParams[FilterGain][v]->getRemoveMe())
+        {
+            setGain(gain, v);
+        }
+        if (setAllVariables)
+        {
+            setQ(q, v);
+            setGain(gain, v);
+            setAllVariables = false;
+        }
         LEAF_clip(0.f, keyFollow, 1.f);
         
         float follow = processor.voiceNote[v];
@@ -141,9 +158,8 @@ void Filter::tick(float* samples)
 void Filter::lowpassTick(float& sample, int v, float cutoff, float q, float morph, float gain)
 {
     tSVF_setFreqFast(&lowpass[v], cutoff);
-    tSVF_setQ(&lowpass[v], q);
     sample = tSVF_tick(&lowpass[v], sample);
-    sample *= fasterdbtoa((gain * 24.0f) - 12.0f);
+    sample *= G;
 }
 
 void Filter::highpassTick(float& sample, int v, float cutoff, float q, float morph, float gain)
@@ -152,9 +168,8 @@ void Filter::highpassTick(float& sample, int v, float cutoff, float q, float mor
     //tVZFilter_setFreqAndBandwidth(&filters[v], cutoff + 200.0f, q + 0.01f);
     //sample = tVZFilter_tick(&filters[v], sample);
     tSVF_setFreqFast(&highpass[v], cutoff);
-    tSVF_setQ(&highpass[v], q);
     sample = tSVF_tick(&highpass[v], sample);
-    sample *= fasterdbtoa((gain * 24.0f) - 12.0f);
+    sample *= G;
 }
 
 void Filter::bandpassTick(float& sample, int v, float cutoff, float q, float morph, float gain)
@@ -163,46 +178,135 @@ void Filter::bandpassTick(float& sample, int v, float cutoff, float q, float mor
     //tVZFilter_setFreqAndBandwidth(&filters[v], cutoff + 200.0f, q + 0.01f);
     //sample = tVZFilter_tick(&filters[v], sample);
     tSVF_setFreqFast(&bandpass[v], cutoff);
-    tSVF_setQ(&bandpass[v], q);
+    
     sample = tSVF_tick(&bandpass[v], sample);
-    sample *= fasterdbtoa((gain * 24.0f) - 12.0f);
+    sample *= G;
 }
 
 void Filter::diodeLowpassTick(float& sample, int v, float cutoff, float q, float morph, float gain)
 {
     tDiodeFilter_setFreqFast(&diodeFilters[v], cutoff);
-    tDiodeFilter_setQ(&diodeFilters[v], q);
+    
     sample = tDiodeFilter_tick(&diodeFilters[v], sample);
-    sample *= fasterdbtoa((gain * 24.0f) - 12.0f);
+    sample *= G;
 }
 
 void Filter::VZpeakTick(float& sample, int v, float cutoff, float q, float morph, float gain)
 {
-    tVZFilter_setFastFrequencyAndResonanceAndGain(&VZfilterPeak[v], cutoff, q, fasterdbtoa((gain * 50.f) - 25.f));
+    tVZFilter_setFreqFast(&VZfilterPeak[v], cutoff);
     sample = tVZFilter_tickEfficient(&VZfilterPeak[v], sample);
+    //fasterdbtoa((gain * 50.f) - 25.f)
 }
 
 void Filter::VZlowshelfTick(float& sample, int v, float cutoff, float q, float morph, float gain)
 {
-    tVZFilter_setFastFrequencyAndResonanceAndGain(&VZfilterLS[v], cutoff, q, fasterdbtoa((gain * 50.f) - 25.f));
+    tVZFilter_setFreqFast(&VZfilterLS[v], cutoff);//, q, fasterdbtoa((gain * 50.f) - 25.f));
     sample = tVZFilter_tickEfficient(&VZfilterLS[v], sample);
 }
 void Filter::VZhighshelfTick(float& sample, int v, float cutoff, float q, float morph, float gain)
 {
-    tVZFilter_setFastFrequencyAndResonanceAndGain(&VZfilterHS[v], cutoff, q, fasterdbtoa((gain * 50.f) - 25.f));
+    tVZFilter_setFreqFast(&VZfilterHS[v], cutoff); //q, fasterdbtoa((gain * 50.f) - 25.f));
     sample = tVZFilter_tickEfficient(&VZfilterHS[v], sample);
 }
 void Filter:: VZbandrejectTick(float& sample, int v, float cutoff, float q, float morph, float gain)
 {
-    tVZFilter_setFastFrequencyAndResonanceAndGain(&VZfilterBR[v], cutoff, q, fasterdbtoa((gain * 50.f) - 25.f));
+    tVZFilter_setFreqFast(&VZfilterBR[v], cutoff);//, q, fasterdbtoa((gain * 50.f) - 25.f));
     sample = tVZFilter_tickEfficient(&VZfilterBR[v], sample);
-    sample *= fasterdbtoa(gain);
+    //sample *= fasterdbtoa(gain);
 }
 
 void Filter:: LadderLowpassTick(float& sample, int v, float cutoff, float q, float morph, float gain)
 {
     tLadderFilter_setFreqFast(&Ladderfilter[v], cutoff);
-    tLadderFilter_setQ(&Ladderfilter[v], q);
+    
     sample = tLadderFilter_tick(&Ladderfilter[v], sample);
-    sample *= fasterdbtoa((gain * 50.f) - 25.f);
+    sample *= G;
+}
+
+void Filter::setQ(float q, int v)
+{
+    switch (currentFilterType) {
+        case LowpassFilter:
+            tSVF_setQ(&lowpass[v], q);
+            break;
+            
+        case HighpassFilter:
+            tSVF_setQ(&highpass[v], q);
+            break;
+            
+        case BandpassFilter:
+            tSVF_setQ(&bandpass[v], q);
+            break;
+            
+        case DiodeLowpassFilter:
+            tDiodeFilter_setQ(&diodeFilters[v], q);
+            break;
+            
+        case VZPeakFilter:
+            tVZFilter_setResonance(&VZfilterPeak[v], q);
+            break;
+            
+        case VZLowshelfFilter:
+            tVZFilter_setResonance(&VZfilterLS[v], q);
+            break;
+            
+        case VZHighshelfFilter:
+            tVZFilter_setResonance(&VZfilterHS[v], q);
+            break;
+            
+        case VZBandrejectFilter:
+            tVZFilter_setResonance(&VZfilterBR[v], q);
+            break;
+            
+        case LadderLowpassFilter:
+            tLadderFilter_setQ(&Ladderfilter[v], q);
+            break;
+            
+        default:
+            break;
+    }
+}
+
+void Filter::setGain(float gain, int v)
+{
+    switch (currentFilterType) {
+        case LowpassFilter:
+            G = fasterdbtoa((gain * 24.0f) - 12.0f);
+            break;
+            
+        case HighpassFilter:
+            G = fasterdbtoa((gain * 24.0f) - 12.0f);
+            break;
+            
+        case BandpassFilter:
+            G = fasterdbtoa((gain * 24.0f) - 12.0f);
+            break;
+            
+        case DiodeLowpassFilter:
+            G = fasterdbtoa((gain * 24.0f) - 12.0f);
+            break;
+            
+        case VZPeakFilter:
+            tVZFilter_setGain(&VZfilterPeak[v], fasterdbtoa((gain * 50.f) - 25.f));
+            break;
+            
+        case VZLowshelfFilter:
+            tVZFilter_setGain(&VZfilterLS[v], fasterdbtoa((gain * 50.f) - 25.f));
+            break;
+            
+        case VZHighshelfFilter:
+            tVZFilter_setGain(&VZfilterHS[v], fasterdbtoa((gain * 50.f) - 25.f));
+            break;
+            
+        case VZBandrejectFilter:
+            tVZFilter_setGain(&VZfilterBR[v], fasterdbtoa((gain * 50.f) - 25.f));
+            break;
+            
+        case LadderLowpassFilter:
+            G = fasterdbtoa((gain * 50.f) - 25.f);
+            break;
+            
+        default:
+            break;
+    }
 }

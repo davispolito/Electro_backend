@@ -39,7 +39,8 @@ private:
     void VZhighshelfTick(float& sample, int v, float cutoff, float q, float morph, float gain);
     void VZpeakTick(float& sample, int v, float cutoff, float q, float morph, float gain);
     void VZbandrejectTick(float& sample, int v, float cutoff, float q, float morph, float gain);
-
+    void setQ(float q, int v);
+    void setGain(float gain, int v);
     
     tDiodeFilter diodeFilters[MAX_NUM_VOICES];
     tVZFilter VZfilterPeak[MAX_NUM_VOICES];
@@ -50,8 +51,8 @@ private:
     tSVF highpass[MAX_NUM_VOICES];
     tSVF bandpass[MAX_NUM_VOICES];
     tLadderFilter Ladderfilter[MAX_NUM_VOICES];
-    
-    
+    bool setAllVariables = false;
+    float G = 1.0f;
     std::atomic<float>* afpFilterType;
     FilterType currentFilterType = FilterTypeNil;
 };

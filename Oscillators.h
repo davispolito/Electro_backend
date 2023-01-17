@@ -47,6 +47,8 @@ public:
             return false;
         }
     }
+    
+    void setShape(int v, float shape);
 private:
     void (Oscillator::*shapeTick)(float& sample, int v, float freq, float shape);
     void sawSquareTick(float& sample, int v, float freq, float shape);
@@ -111,14 +113,16 @@ public:
     
 private:
     
-    void (LowFreqOscillator::*shapeTick)(float& sample, int v, float freq, float shape);
-    void sawSquareTick(float& sample, int v, float freq, float shape);
-    void sineTriTick(float& sample, int v, float freq, float shape);
-    void userTick(float& sample, int v, float freq, float shape);
-    void sawTick(float& sample, int v, float freq, float shape);
-    void pulseTick(float& sample, int v, float freq, float shape);
-    void sineTick(float& sample, int v, float freq, float shape);
-    void triTick(float& sample, int v, float freq, float shape);
+    void (LowFreqOscillator::*shapeTick)(float& sample, int v);
+    void sawSquareTick(float& sample, int v);
+    void sineTriTick(float& sample, int v);
+    void userTick(float& sample, int v);
+    void sawTick(float& sample, int v);
+    void pulseTick(float& sample, int v);
+    void sineTick(float& sample, int v);
+    void triTick(float& sample, int v);
+    void setRate(int v, float rate);
+    void setShape(int v, float shape);
     
     RangedAudioParameter* sync;
     

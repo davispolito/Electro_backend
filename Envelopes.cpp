@@ -81,26 +81,56 @@ void Envelope::tick()
     
     for (int v = 0; v < processor.numVoicesActive; v++)
     {
-        float attack = quickParams[EnvelopeAttack][v]->read();
-        float decay = quickParams[EnvelopeDecay][v]->read();
-        float sustain = quickParams[EnvelopeSustain][v]->read();
-        float release = quickParams[EnvelopeRelease][v]->read();
-        float leak = quickParams[EnvelopeLeak][v]->read();
-        attack = attack < 0.f ? 0.f : attack;
-        decay = decay < 0.f ? 0.f : decay;
-        sustain = sustain < 0.f ? 0.f : sustain;
-        release = release < 0.f ? 0.f : release;
-        leak = leak < 0.f ? 0.f : leak;
+        
+        
+        
+        
+       
+        
+        
+        
+        
+        
         
 //        tADSRT_setAttack(&envs[v], expBuffer[(int)(attack * expBufferSizeMinusOne)] * 8192.0f);
 //        tADSRT_setDecay(&envs[v], expBuffer[(int)(decay * expBufferSizeMinusOne)] * 8192.0f);
 //        tADSRT_setSustain(&envs[v], sustain);
 //        tADSRT_setRelease(&envs[v], expBuffer[(int)(release * expBufferSizeMinusOne)] * 8192.0f);
-        tADSRT_setAttack(&envs[v], attack);
-        tADSRT_setDecay(&envs[v], decay);
-        tADSRT_setSustain(&envs[v], sustain);
-        tADSRT_setRelease(&envs[v], release);
-        tADSRT_setLeakFactor(&envs[v], 0.99995f + 0.00005f*(1.f-leak));
+        if(!quickParams[EnvelopeAttack][v]->getRemoveMe())
+        {
+            float attack = quickParams[EnvelopeAttack][v]->read();
+            attack = attack < 0.f ? 0.f : attack;
+            tADSRT_setAttack(&envs[v], attack);
+        }
+        if(!quickParams[EnvelopeDecay][v]->getRemoveMe())
+        {
+            float decay = quickParams[EnvelopeDecay][v]->read();
+            decay = decay < 0.f ? 0.f : decay;
+            tADSRT_setDecay(&envs[v], decay);
+        }
+        if(!quickParams[EnvelopeSustain][v]->getRemoveMe())
+        {
+            float sustain = quickParams[EnvelopeSustain][v]->read();
+            sustain = sustain < 0.f ? 0.f : sustain;
+            tADSRT_setSustain(&envs[v], sustain);
+        }
+        if(!quickParams[EnvelopeRelease][v]->getRemoveMe())
+        {
+            float release = quickParams[EnvelopeRelease][v]->read();
+            release = release < 0.f ? 0.f : release;
+            tADSRT_setRelease(&envs[v], release);
+        }
+        if(!quickParams[EnvelopeLeak][v]->getRemoveMe())
+        {
+            float leak = quickParams[EnvelopeLeak][v]->read();
+            leak = leak < 0.f ? 0.f : leak;
+            tADSRT_setLeakFactor(&envs[v], 0.99995f + 0.00005f*(1.f-leak));
+        }
+        
+       
+        
+        
+        
 
         float value = tADSRT_tick(&envs[v]);
         
