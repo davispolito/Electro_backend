@@ -4,7 +4,6 @@
     ElectroModules.cpp
     Created: 2 Jul 2021 3:06:27pm
     Author:  Matthew Wang
-
   ==============================================================================
 */
 
@@ -67,7 +66,14 @@ relDialHeight(relDialHeight)
     if (ac.isToggleable())
     {
         enabledToggle.addListener(this);
-        enabledToggle.setToggleState(ac.isEnabled(), sendNotification);
+        if ((name == "Osc2") || (name == "Osc3"))
+        {
+            enabledToggle.setToggleState(false, sendNotification);
+        }
+        else
+        {
+            enabledToggle.setToggleState(ac.isEnabled(), sendNotification);
+        }
         if (name != "Filter1" && name != "Filter2")
             enabledToggle.setTooltip("Send to Filters On/Off");
         addAndMakeVisible(enabledToggle);
@@ -84,12 +90,27 @@ ElectroModule::~ElectroModule()
 
 void ElectroModule::resized()
 {
+    FlexBox oscDials;
+    Rectangle <float> centerBox = Rectangle<float>(61.0f, 1.0f, 300.0f, 20.0f);
+    oscDials.flexDirection = FlexBox::Direction::row;
+    oscDials.flexWrap = FlexBox::Wrap::noWrap;
+    oscDials.alignContent = FlexBox::AlignContent::flexStart;
+    oscDials.justifyContent = FlexBox::JustifyContent::spaceBetween;
+
+    //Array<FlexItem> centerArray;
+    //centerArray.add(FlexItem(50, 50, ac.getParamNames(0));
+    
     for (int i = 0; i < ac.getParamNames().size(); ++i)
     {
+        //centerArray.add(FlexItem(50.0f, 50.0f, dials[i]));
         dials[i]->setBoundsRelative(relLeftMargin + (relDialWidth+relDialSpacing)*i, relTopMargin,
                                     relDialWidth, relDialHeight);
     }
-    
+
+
+    //oscDials.items = centerArray;
+    //oscDials.performLayout(centerBox);
+
     if (ac.isToggleable())
     {
         enabledToggle.setBounds(0, 0, 25, 25);
@@ -139,15 +160,25 @@ chooser(nullptr)
     pitchDialToggle.setLookAndFeel(&laf);
     pitchDialToggle.addListener(this);
     pitchDialToggle.setTitle("Harmonic Dial");
-    pitchDialToggle.setButtonText("Harmonic");
+    pitchDialToggle.setButtonText("H");
     pitchDialToggle.setToggleable(true);
     pitchDialToggle.setClickingTogglesState(true);
     pitchDialToggle.setToggleState(true, dontSendNotification);
+    
+    syncToggle.setLookAndFeel(&laf);
+    syncToggle.addListener(this);
+    syncToggle.setTitle("Sync Toggle");
+    syncToggle.setButtonText("Sync");
+    syncToggle.setToggleable(true);
+    syncToggle.setClickingTogglesState(true);
+    syncToggle.setToggleState(true, dontSendNotification);
+    addAndMakeVisible(syncToggle);
+    
     addAndMakeVisible(pitchDialToggle);
     steppedToggle.setLookAndFeel(&laf);
     steppedToggle.addListener(this);
     steppedToggle.setTitle("Stepped Dial");
-    steppedToggle.setButtonText("Stepped");
+    steppedToggle.setButtonText("S");
     steppedToggle.changeWidthToFitText();
     steppedToggle.setToggleable(true);
     steppedToggle.setClickingTogglesState(true);
@@ -156,12 +187,13 @@ chooser(nullptr)
     displayPitch();
     getDial(OscPitch)->setRange(-16, 16., steppedToggle.getToggleState() ? 1 : 0.01 );
     getDial(OscPitch)->setText("Harmonics", dontSendNotification);
-//    smoothingToggle.setLookAndFeel(&laf);
-//    smoothingToggle.addListener(this);
-//    smoothingToggle.setButtonText("Smoothed");
-//    addAndMakeVisible(smoothingToggle);
+    //smoothingToggle.setLookAndFeel(&laf);
+    //smoothingToggle.addListener(this);
+    //smoothingToggle.setButtonText("Smoothed");
+    //addAndMakeVisible(smoothingToggle);
     buttonAttachments.add(new ButtonAttachment(vts, ac.getName() + " isHarmonic", pitchDialToggle));
     buttonAttachments.add(new ButtonAttachment(vts, ac.getName() + " isStepped", steppedToggle));
+    buttonAttachments.add(new ButtonAttachment(vts, ac.getName() + " isSync", syncToggle));
     harmonicsLabel.setLookAndFeel(&laf);
     harmonicsLabel.setEditable(true);
     harmonicsLabel.setJustificationType(Justification::centred);
@@ -200,13 +232,15 @@ chooser(nullptr)
     addAndMakeVisible(sendSlider);
     sliderAttachments.add(new SliderAttachment(vts, ac.getName() + " FilterSend", sendSlider));
     
+    //Took out justification because of flexbox allignment issues
+
     f1Label.setText("F1", dontSendNotification);
-    f1Label.setJustificationType(Justification::bottomRight);
+    //f1Label.setJustificationType(Justification::bottomRight);
     f1Label.setLookAndFeel(&laf);
     addAndMakeVisible(f1Label);
     
     f2Label.setText("F2", dontSendNotification);
-    f2Label.setJustificationType(Justification::topRight);
+    //f2Label.setJustificationType(Justification::topRight);
     f2Label.setLookAndFeel(&laf);
     addAndMakeVisible(f2Label);
     
@@ -228,31 +262,91 @@ void OscModule::resized()
 {
     ElectroModule::resized();
     
-    s->setBounds(4, 4, getWidth()*0.1f, enabledToggle.getHeight()-8);
-   
-    harmonicsLabel.setBoundsRelative(relLeftMargin + relDialWidth * 0.25,
-                                     0.02f, relDialWidth+relDialSpacing * 0.25, 0.16f);
-    
-    pitchDialToggle.setBoundsRelative(0.0f, 0.412f, 0.05f, 0.15f);
-    steppedToggle.setBoundsRelative(0.0f, 0.2f, 0.05f, 0.15f);
+    s->setBounds(4, 4, (int)(getWidth()*0.1f), enabledToggle.getHeight()-8);
+   //Flexbox for top row of osc module
+    FlexBox oscLabels;
+    Rectangle <float> topBox = Rectangle<float>(61.0f, 1.0f, 300.0f, 20.0f);
+    oscLabels.flexDirection = FlexBox::Direction::row;
+    oscLabels.flexWrap = FlexBox::Wrap::noWrap;
+    oscLabels.alignContent = FlexBox::AlignContent::flexStart;
+    oscLabels.justifyContent = FlexBox::JustifyContent::spaceBetween;
 
+    Array<FlexItem> topArray;
+    topArray.add(FlexItem(125, 15, harmonicsLabel));
+    topArray.add(FlexItem(125, 15, pitchLabel));
+    topArray.add(FlexItem(125, 15, shapeCB));
+
+    oscLabels.items = topArray;
+
+    oscLabels.performLayout(topBox);
     
+
+    //harmonicsLabel.setBoundsRelative(relLeftMargin + (relDialWidth * 0.25f),
+     //                                0.02f, relDialWidth+((relDialSpacing * 0.25f)), 0.16f);
+
+    //Flexbox for toggles along left side of osc module
+    FlexBox leftToggles;
+    Rectangle <float> leftTBox = Rectangle<float>(0.0f, 27.5f, 20.0f, 92.5f);
+    leftToggles.flexDirection = FlexBox::Direction::column;
+    leftToggles.flexWrap = FlexBox::Wrap::noWrap;
+    leftToggles.alignContent = FlexBox::AlignContent::center;
+    leftToggles.justifyContent = FlexBox::JustifyContent::spaceBetween;
+
+    Array<FlexItem> leftArray;
+    leftArray.add(FlexItem(20.0f, 20.0f, steppedToggle));
+    leftArray.add(FlexItem(20.0f, 20.0f, pitchDialToggle));
+    leftArray.add(FlexItem(20.0f, 20.0f, syncToggle));
+
+    leftToggles.items = leftArray;
+
+    leftToggles.performLayout(leftTBox);
+    /*
+    * pitchDialToggle.setBoundsRelative(0.0f, 0.412f, 0.05f, 0.15f);
+    syncToggle.setBoundsRelative(0.0f, 0.7f, 0.05f, 0.15f);
+    steppedToggle.setBoundsRelative(0.0f, 0.2f, 0.05f, 0.15f);
+    */
     
-    pitchLabel.setBoundsRelative(relLeftMargin+relDialWidth * 1.25,
+    /*
+    pitchLabel.setBoundsRelative(relLeftMargin+(relDialWidth * 1.25f),
                                  0.02f, relDialWidth+relDialSpacing, 0.16f);
     
-    freqLabel.setBoundsRelative(relLeftMargin+2*relDialWidth+1.5*relDialSpacing,
+    freqLabel.setBoundsRelative(relLeftMargin+2*relDialWidth+((1.5f*relDialSpacing)),
                                  0.02f, relDialWidth+relDialSpacing, 0.16f);
     
     shapeCB.setBoundsRelative(relLeftMargin+3*(relDialWidth+relDialSpacing), 0.02f,
                               relDialWidth+relDialSpacing, 0.16f);
+    */
+    //Flexbox for slider
+    FlexBox sendSliderBox;
+    Rectangle <float> sendSliderRect = Rectangle<float>(540.0f, 12.5f, 30.0f, 105.0f);
+    Array<FlexItem> sliderArray;
+    sliderArray.add(FlexItem(30.0f, 30.0f, sendSlider));
+    sendSliderBox.items = sliderArray;
+    sendSliderBox.performLayout(sendSliderRect);
     
-    sendSlider.setBoundsRelative(0.96f, 0.f, 0.04f, 1.0f);
+    //sendSlider.setBoundsRelative(0.96f, 0.f, 0.04f, 1.0f);
     
-    enabledToggle.setBoundsRelative(0.917f, 0.41f, 0.04f, 0.15f);
+    //enabledToggle.setBoundsRelative(0.917f, 0.41f, 0.04f, 0.15f);
     smoothingToggle.setBoundsRelative(0.0f, 0.41f, 0.04f, 0.15f);
-    f1Label.setBoundsRelative(0.9f, 0.05f, 0.06f, 0.15f);
-    f2Label.setBoundsRelative(0.9f, 0.80f, 0.06f, 0.15f);
+    //f1Label.setBoundsRelative(0.9f, 0.05f, 0.06f, 0.15f);
+    //f2Label.setBoundsRelative(0.9f, 0.80f, 0.06f, 0.15f);
+    //Flexbox for toggles along right side of osc module
+    FlexBox rightToggles;
+    Rectangle <float> rightTBox = Rectangle<float>(520.0f, 10.0f, 30.0f, 105.0f);
+    rightToggles.flexDirection = FlexBox::Direction::column;
+    rightToggles.flexWrap = FlexBox::Wrap::noWrap;
+    rightToggles.alignContent = FlexBox::AlignContent::flexEnd;
+    rightToggles.justifyContent = FlexBox::JustifyContent::spaceBetween;
+
+    Array<FlexItem> rightArray;
+    rightArray.add(FlexItem(20.0f, 20.0f, f1Label));
+    rightArray.add(FlexItem(30.0f, 30.0f, enabledToggle));
+    rightArray.add(FlexItem(20.0f, 20.0f, f2Label));
+
+
+    rightToggles.items = rightArray;
+
+    rightToggles.performLayout(rightTBox);
 }
 
 void OscModule::sliderValueChanged(Slider* slider)
@@ -285,23 +379,27 @@ void OscModule::buttonClicked(Button* button)
         {
             getDial(OscPitch)->setRange(-24, 24., steppedToggle.getToggleState() ? 1 : 0.01 );
             getDial(OscPitch)->setText("Pitch", dontSendNotification);
-            pitchDialToggle.setButtonText("Pitch");
+            pitchDialToggle.setButtonText("P");
         } else
         {
             getDial(OscPitch)->setRange(-16, 16., steppedToggle.getToggleState() ? 1 : 0.01 );
             getDial(OscPitch)->setText("Harmonics", dontSendNotification);
-            pitchDialToggle.setButtonText("Harmonic");
+            pitchDialToggle.setButtonText("H");
         }
         
         if (!steppedToggle.getToggleState())
         {
-            steppedToggle.setButtonText("Smooth");
+            steppedToggle.setButtonText("SM");
         }
         else
         {
-            steppedToggle.setButtonText("Stepped");
+            steppedToggle.setButtonText("ST");
         }
         displayPitch();
+    }
+    else if (button == &syncToggle)
+    {
+        
     }
 }
 
@@ -310,10 +408,10 @@ void OscModule::labelTextChanged(Label* label)
     if (label == &pitchLabel)
     {
         auto value = pitchLabel.getText().getDoubleValue();
-        int i = value;
+        int i = (int)value;
         double f = value-i;
         //getDial(OscPitch)->getSlider().setValue(i, sendNotificationAsync);
-        getDial(OscFine)->getSlider().setValue(f*100., sendNotificationAsync);
+        getDial(OscFine)->getSlider().setValue(f*100.0f, sendNotificationAsync);
     }
     else if (label == &freqLabel)
     {
@@ -560,7 +658,7 @@ void OscModule::displayPitchMapping(MappingTarget* mt)
 
 NoiseModule::NoiseModule(ElectroAudioProcessorEditor& editor, AudioProcessorValueTreeState& vts,
                      AudioComponent& ac) :
-ElectroModule(editor, vts, ac, 0.15f, 0.3f, 0.05f, 0.0f, 0.98f)
+ElectroModule(editor, vts, ac, 0.01f, 0.2f, 0.02f, 0.18f, 0.8f)
 {
     outlineColour = Colours::darkgrey;
     
@@ -595,12 +693,12 @@ void NoiseModule::resized()
 {
     ElectroModule::resized();
     
-    s->setBounds(4, 4, getWidth()*0.2f, enabledToggle.getHeight()-8);
+    s->setBounds(4, 4, (int)(getWidth()*0.2f), enabledToggle.getHeight()-8);
     s->toFront(false);
     
     sendSlider.setBoundsRelative(0.92f, 0.f, 0.08f, 1.0f);
     
-    enabledToggle.setBoundsRelative(0.84f, 0.4f, 0.1f, 0.18f);
+    enabledToggle.setBoundsRelative(0.86f, 0.4f, 0.1f, 0.18f);
 
     
     
@@ -644,6 +742,9 @@ ElectroModule(editor, vts, ac, 0.04f, 0.215f, 0.05f, 0.18f, 0.8f) //0.05f, 0.132
     typeCB.setLookAndFeel(&laf);
     addAndMakeVisible(typeCB);
     comboBoxAttachments.add(new ComboBoxAttachment(vts, ac.getName() + " Type", typeCB));
+    
+    typeCB.addMouseListener(this, true);
+    
 }
 
 FilterModule::~FilterModule()
@@ -664,7 +765,7 @@ void FilterModule::resized()
     }
     
 
-    typeCB.setBounds(enabledToggle.getRight(), 4, getWidth()*0.3f, enabledToggle.getHeight()-4);
+    typeCB.setBounds(enabledToggle.getRight(), 4, (int)(getWidth()*0.3f), enabledToggle.getHeight()-4);
 //    typeCB.setBoundsRelative(relLeftMargin, 0.01f, relDialWidth+relDialSpacing, 0.16f);
 }
 
@@ -718,6 +819,8 @@ void EnvModule::resized()
     
     velocityToggle.setBoundsRelative(relLeftMargin, 0.f, 2*relDialWidth+relDialSpacing, 0.16f);
 }
+
+
 
 //==============================================================================
 //==============================================================================
@@ -809,6 +912,8 @@ void LFOModule::comboBoxChanged(ComboBox *comboBox)
     }
 }
 
+
+
 void LFOModule::mouseEnter(const MouseEvent& e)
 {
     if (MappingTarget* mt = dynamic_cast<MappingTarget*>(e.originalComponent->getParentComponent()))
@@ -867,23 +972,35 @@ void LFOModule::displayRateMapping(MappingTarget* mt)
 
 OutputModule::OutputModule(ElectroAudioProcessorEditor& editor, AudioProcessorValueTreeState& vts,
                            AudioComponent& ac) :
-ElectroModule(editor, vts, ac, 0.07f, 0.22f, 0.07f, 0.11f, 0.78f)
+ElectroModule(editor, vts, ac, 0.07f, 0.22f, 0.07f, 0.07f, 0.78f)
 {
     outlineColour = Colours::darkgrey;
     meters.setChannelFormat(juce::AudioChannelSet::stereo());
-    sd::SoundMeter::Options meterOptions;
-    meterOptions.faderEnabled     = true;
-    meterOptions.headerEnabled    = true;
-    meterOptions.peakSegment_db    = -3.0f;
-    meterOptions.warningSegment_db = -12.0f;
-    meters.setOptions (meterOptions);
-    addAndMakeVisible (meters);
     masterDial = std::make_unique<ElectroDial>(editor, "Master", "Master", false, false);
     sliderAttachments.add(new SliderAttachment(vts, "Master", masterDial->getSlider()));
   
     addAndMakeVisible(masterDial.get());
-    startTimerHz (30);
+    sd::SoundMeter::Options meterOptions;
     
+    meterOptions.faderEnabled = false;  // Enable or disable the 'fader' overlay. Use the sd::SoundMeter::MetersComponent::FadersChangeListener to get the fader value updates.
+    meterOptions.headerEnabled         = true;           // Enable the 'header' part above the meter, displaying the channel ID.
+    meterOptions.valueEnabled          = true;           // Enable the 'value' part below the level, displaying the peak level.
+    meterOptions.refreshRate           = 30;  // Frequency of the meter updates (when using the internal timer).
+    meterOptions.useGradient           = true;            // Use gradients to fill the meter (hard segment boundaries otherwise).
+    meterOptions.showPeakHoldIndicator = false;           // Show the peak hold indicator (double click value to reset).
+    meterOptions.peakSegment_db        = -3.0f;           // -3.0 dB peak segment divider.
+    meterOptions.warningSegment_db     = -12.0f;          // -12.0 dB warning segment indicator.
+    meterOptions.tickMarksEnabled      = true;            // Enable tick-marks. Divider lines at certain levels on the meter and label strip.
+    meterOptions.tickMarksOnTop        = true;            // Put the tick-marks above the level readout.
+    meterOptions.tickMarks             = { -1.0f, -3.0f, -6.0f, -12.0f };  // Positions (in decibels) of the tick-marks.
+    meterOptions.decayTime_ms          = 1000.0f;                                          // The meter will take 1000 ms to decay to 0.
+     
+    meters.setOptions (meterOptions);
+    meters.setLabelStripPosition (sd::SoundMeter::LabelStripPosition::right);
+
+    getDial(OutputAmp)->getTargets()[2]->setRemovable(false);
+    addAndMakeVisible (meters);
+    startTimerHz(30);
 }
 
 // The 'polling' timer.
@@ -908,8 +1025,77 @@ OutputModule::~OutputModule()
 void OutputModule::resized()
 {
     ElectroModule::resized();
-    
-    masterDial->setBoundsRelative(0.65f, relTopMargin, 0.17f, relDialHeight);
-    meters.setBoundsRelative(0.8f, relTopMargin, 0.17f, relDialHeight);
+    masterDial->setBoundsRelative(0.4f, relTopMargin, 0.17f, relDialHeight);
+    meters.setBoundsRelative(.83f, relTopMargin - 0.05f, 0.2f, relDialHeight*1.6f);
+    meters.setAlwaysOnTop(true);
 }
+
+//==============================================================================
+
+FXModule::FXModule(ElectroAudioProcessorEditor& editor, AudioProcessorValueTreeState& vts,
+                     AudioComponent& ac) :
+ElectroModule(editor, vts, ac, 0.03f, 0.14f, 0.025f, 0.17f, 0.80f)
+{
+    RangedAudioParameter* set = vts.getParameter(ac.getName() + " FXType");
+    fxCB.addItemList(FXTypeNames, 1);
+    fxCB.setSelectedItemIndex(set->convertFrom0to1(set->getValue()), dontSendNotification);
+    fxCB.setLookAndFeel(&laf);
+    addAndMakeVisible(fxCB);
+    comboBoxAttachments.add(new ComboBoxAttachment(vts, ac.getName() + " FXType", fxCB));
+    fxCB.addListener(this);
+    fxCB.addMouseListener(this, true);
+}
+
+FXModule::~FXModule()
+{
+    sliderAttachments.clear();
+    buttonAttachments.clear();
+    comboBoxAttachments.clear();
+}
+
+void FXModule::resized()
+{
+    ElectroModule::resized();
+    fxCB.setBoundsRelative(0.01f, 0.02f,
+                              relDialWidth+0.6f*relDialSpacing, 0.16f);
+}
+
+void FXModule::paint(Graphics &g)
+{
+    ElectroModule::paint(g);
+    
+    auto bounds = getLocalBounds();
+    g.setColour(juce::Colours::grey);
+    g.drawRect(bounds,2);
+}
+
+
+void FXModule::comboBoxChanged(ComboBox *comboBox)
+{
+    if (comboBox == &fxCB)
+    {
+        setNamesAndDefaults((FXType)fxCB.getSelectedItemIndex());
+    }
+}
+
+void FXModule::setNamesAndDefaults(FXType effect)
+{
+    for (int i = 0; i < vFXInit.size() - 1; i++)
+    {
+        getDial(i)->setText(FXParamNames[effect][i], dontSendNotification);
+        getDial(i)->setValue(FXParamDefaults[effect][i]);
+        if (FXParamNames[effect][i].isEmpty())
+        {
+            getDial(i)->setAlpha(0.5);
+            getDial(i)->setEnabled(false);
+        } else
+        {
+            getDial(i)->setAlpha(1);
+            getDial(i)->setEnabled(true);
+        }
+        
+        
+    }
+}
+
 
