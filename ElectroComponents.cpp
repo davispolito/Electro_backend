@@ -643,6 +643,6 @@ void TuningTab::buttonClicked (Button *b)
     }
     else if (b == &sendTuningButton)
     {
-        processor.sendTuningMidiMessage();
+        processor.sendTuningMidiMessage(tuningNameEditor.getText(), tuningNumber.getValue());
     }
 }

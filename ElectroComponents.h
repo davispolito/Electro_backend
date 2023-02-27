@@ -280,6 +280,33 @@ public:
         kbmTextEditor.setText(currentKBMString);
         //sclTextEditor.addListener(this);
         //kbmTextEditor.addListener(this);
+        
+        addAndMakeVisible(tuningNamelabel);
+        addAndMakeVisible(tuningNameEditor);
+        addAndMakeVisible(tuningNumber);
+        addAndMakeVisible(tuningNumberlabel);
+        tuningNameEditor.setTitle("tuning Name");
+        //tuningNameEditor.onFocusLost = [this] {processor.setTuningName(tuningNameEditor.getText());};
+        tuningNameEditor.setInputRestrictions(14);
+        tuningNamelabel.setText("Name", dontSendNotification);
+        tuningNumberlabel.setText("Number", dontSendNotification);
+        tuningNumber.setRange(1, 99, 1);
+        //tuningNumber.setMouseDragSensitivity(12000);
+        tuningNumber.setSliderSnapsToMousePosition(false);
+        //tuningNumber.onValueChange = [this] {processor.setTuningNumber(tuningNumber.getValue());};
+        tuningNumber.setSliderStyle(Slider::SliderStyle::IncDecButtons);
+        tuningNumber.setIncDecButtonsMode(juce::Slider::incDecButtonsNotDraggable);
+        tuningNumberlabel.setLookAndFeel(&laf);
+        tuningNamelabel.setLookAndFeel(&laf);
+        //tuningNumber.setMouseDragSensitivity(200);
+        tuningNumber.setTextValueSuffix(""); //EBSPECIFIC
+        tuningNumber.setTitle("tuning Number");
+        tuningNumber.setName("tuning Number");
+        tuningNumber.setLookAndFeel(&laf);
+        tuningNumber.setColour(Slider::backgroundColourId, Colours::darkgrey.withBrightness(0.2f));
+        tuningNumber.setColour(Slider::textBoxOutlineColourId, Colours::transparentBlack);
+        tuningNumber.setColour(Slider::textBoxTextColourId, Colours::gold.withBrightness(0.95f));
+        
     }
     
     ~TuningTab() override
@@ -335,17 +362,29 @@ public:
                                                                2.0f, 8.0f);
         const FlexItem::Margin textboxMargin = FlexItem::Margin(4.0f);
         auto area1 = getLocalBounds();
-        auto sendPresetButtonHeight = area1.getHeight()/15;
-        auto presetButton = area1.removeFromTop(sendPresetButtonHeight).removeFromRight(area1.getWidth()/4);
+        auto sendPresetButtonHeight = area1.getHeight()/9;
+        auto presetButton = area1.removeFromTop(sendPresetButtonHeight).removeFromRight(area1.getWidth()/3);
+        FlexBox name;
+        name.flexWrap = FlexBox::Wrap::noWrap;
+        name.flexDirection = FlexBox::Direction::row;
+        name.items.add(FlexItem(tuningNamelabel).withFlex(2));
+        name.items.add(FlexItem(tuningNameEditor).withFlex(2));
+        FlexBox number;
+        name.flexWrap = FlexBox::Wrap::noWrap;
+        name.flexDirection = FlexBox::Direction::row;
+        name.items.add(FlexItem(tuningNumberlabel).withFlex(2));
+        name.items.add(FlexItem(tuningNumber).withFlex(2));
         FlexBox presetBox;
         presetBox.flexWrap = FlexBox::Wrap::noWrap;
-        presetBox.flexDirection = FlexBox::Direction::row;
-        presetBox.items.add(FlexItem(sendTuningButton).withFlex(2).withMargin(buttonMargin));
+        presetBox.flexDirection = FlexBox::Direction::column;
+        presetBox.items.add(FlexItem(number).withFlex(2).withMargin(buttonMargin));
+        presetBox.items.add(FlexItem(name).withFlex(2).withMargin(buttonMargin));
+        presetBox.items.add(FlexItem(sendTuningButton).withFlex(2));
         presetBox.performLayout(presetButton.toFloat());
         //presetBox.justifyContent = FlexBox::JustifyContent::lef
         auto area = getLocalBounds().reduced(8.0f);
      
-        const auto headerHeight = area.getHeight() / 15;
+        const auto headerHeight = area.getHeight() / 10;
         const auto textEditorHeight = area.getHeight()/2;
         
     
@@ -397,7 +436,10 @@ private:
     TextButton importButton;
     ToggleButton MTSButton;
     FileChooser importChooser;
-
+    TextEditor tuningNameEditor;
+    Slider tuningNumber;
+    Label tuningNamelabel;
+    Label tuningNumberlabel;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TuningTab)
 };
