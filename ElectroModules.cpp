@@ -197,7 +197,7 @@ chooser(nullptr)
     steppedToggle.setLookAndFeel(&laf);
     steppedToggle.addListener(this);
     steppedToggle.setTitle("Stepped Dial");
-    steppedToggle.setButtonText("S");
+    steppedToggle.setButtonText("ST");
     steppedToggle.changeWidthToFitText();
     steppedToggle.setToggleable(true);
     steppedToggle.setClickingTogglesState(true);
@@ -265,7 +265,7 @@ chooser(nullptr)
     getDial(OscHarm)->setVisible(true);
     getDial(OscPitch)->setVisible(false);
     getDial(OscPitch)->setRange(-24.,24., 1.);
-    getDial(OscHarm)->setRange(-24.,24., 1.);
+    getDial(OscHarm)->setRange(-16.,16., 1.);
 
 }
 
