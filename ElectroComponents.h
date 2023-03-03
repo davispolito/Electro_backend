@@ -195,7 +195,7 @@ public:
     }
 };
 //==============================================================================
-class TuningTab : public Component, public TextEditor::Listener, public TextButton::Listener
+class TuningTab : public Component, public TextEditor::Listener, public TextButton::Listener, public Label::Listener
 {
 public:
     TuningTab(ElectroAudioProcessor& p, AudioProcessorValueTreeState& vts) :
@@ -204,6 +204,13 @@ public:
                   File::getSpecialLocation(File::userDocumentsDirectory)
                   )
     {
+        for (int i = 0; i < 4; i++)
+        {
+            openStringLabel.add(new Label());
+            openStringEditor.add(new Label());
+        }
+        
+        
         
 //        clearButton.onClick = [this] {
 //            for (int i = 0; i < 12; i++)
@@ -306,7 +313,23 @@ public:
         tuningNumber.setColour(Slider::backgroundColourId, Colours::darkgrey.withBrightness(0.2f));
         tuningNumber.setColour(Slider::textBoxOutlineColourId, Colours::transparentBlack);
         tuningNumber.setColour(Slider::textBoxTextColourId, Colours::gold.withBrightness(0.95f));
-        
+      
+        for (int i = 0; i < 4; i++)
+        {
+            addAndMakeVisible(*openStringEditor.getUnchecked(i));
+            addAndMakeVisible(*openStringLabel.getUnchecked(i));
+            openStringLabel.getUnchecked(i)->setText("String " + String(i), dontSendNotification);
+            openStringEditor.getUnchecked(i)->setText(String(28 + i * 5), sendNotification);
+            openStringLabel.getUnchecked(i)->setLookAndFeel(&laf);
+            openStringEditor.getUnchecked(i)->setLookAndFeel(&laf);
+            openStringEditor.getUnchecked(i)->setEditable(true);
+            openStringEditor.getUnchecked(i)->setColour(juce::Label::textColourId,Colours::grey);
+            openStringEditor.getUnchecked(i)->addListener(this);
+        }
+        addAndMakeVisible(sendOpenStrings);
+        sendOpenStrings.setLookAndFeel(&laf);
+        sendOpenStrings.addListener(this);
+        sendOpenStrings.setButtonText(TRANS("Send Open Strings"));
     }
     
     ~TuningTab() override
@@ -356,6 +379,30 @@ public:
     void textEditorEscapeKeyPressed (TextEditor&) override;
     
     void buttonClicked (Button *b) override;
+    void editorShown (Label *l, TextEditor &e) override
+    {
+        e.setInputRestrictions(6, String("0123456789."));
+    }
+    void labelTextChanged(Label *l ) override
+    {
+        if (l == openStringEditor.getUnchecked(0))
+        {
+            processor.setOpenString((float)std::atoi(l->getText().toStdString().c_str()), 0);
+        }
+        else if (l == openStringEditor.getUnchecked(1))
+        {
+            processor.setOpenString((float)std::atoi(l->getText().toStdString().c_str()), 1);
+        }
+        else if (l == openStringEditor.getUnchecked(2))
+        {
+            processor.setOpenString((float)std::atoi(l->getText().toStdString().c_str()), 2);
+        }
+        else if (l == openStringEditor.getUnchecked(3))
+        {
+            processor.setOpenString((float)std::atoi(l->getText().toStdString().c_str()), 3);
+        }
+        
+    }
     void resized() override
     {
         const FlexItem::Margin buttonMargin = FlexItem::Margin(2.0f, 8.0f,
@@ -369,15 +416,16 @@ public:
         name.flexDirection = FlexBox::Direction::row;
         name.items.add(FlexItem(tuningNamelabel).withFlex(2));
         name.items.add(FlexItem(tuningNameEditor).withFlex(2));
-        FlexBox number;
+        //FlexBox number;
         name.flexWrap = FlexBox::Wrap::noWrap;
         name.flexDirection = FlexBox::Direction::row;
         name.items.add(FlexItem(tuningNumberlabel).withFlex(2));
         name.items.add(FlexItem(tuningNumber).withFlex(2));
+        name.items.add(FlexItem(*openStringLabel.getUnchecked(0)).withFlex(2));
         FlexBox presetBox;
         presetBox.flexWrap = FlexBox::Wrap::noWrap;
         presetBox.flexDirection = FlexBox::Direction::column;
-        presetBox.items.add(FlexItem(number).withFlex(2).withMargin(buttonMargin));
+        //presetBox.items.add(FlexItem(number).withFlex(2).withMargin(buttonMargin));
         presetBox.items.add(FlexItem(name).withFlex(2).withMargin(buttonMargin));
         presetBox.items.add(FlexItem(sendTuningButton).withFlex(2));
         presetBox.performLayout(presetButton.toFloat());
@@ -392,7 +440,7 @@ public:
         reset.reduce(350, 1);
         auto header = area.removeFromTop(headerHeight);
         auto textbox = area.removeFromTop(textEditorHeight);
-       
+        auto stringBox = area.removeFromTop(headerHeight*2/3);
         FlexBox headerBox;
         headerBox.flexWrap = FlexBox::Wrap::noWrap;
         headerBox.flexDirection = FlexBox::Direction::row;
@@ -418,10 +466,29 @@ public:
         textEditorBox.items.add(FlexItem(sclTextEditor).withFlex(2).withMargin(textboxMargin));
         textEditorBox.items.add(FlexItem(kbmTextEditor).withFlex(2).withMargin(textboxMargin));
         textEditorBox.performLayout(textbox.toFloat());
+        
+        
+   
+        FlexBox string;
+        string.flexWrap = FlexBox::Wrap::noWrap;
+        string.flexDirection = FlexBox::Direction::row;
+        for (int i = 0; i < 4; i++)
+        {
+            
+            
+            string.items.add(FlexItem(*openStringLabel.getUnchecked(i)).withFlex(2));
+            string.items.add(FlexItem(*openStringEditor.getUnchecked(i)).withFlex(2));
+            
+            
+        }
+        string.items.add(FlexItem(sendOpenStrings).withFlex(2));
+        string.performLayout(stringBox.toFloat());
     }
     
 private:
-    
+    TextButton      sendOpenStrings;
+    OwnedArray<Label> openStringEditor;
+    OwnedArray<Label> openStringLabel;
     ElectroLookAndFeel laf;
     TextEditor sclTextEditor;
     TextEditor kbmTextEditor;
@@ -1034,3 +1101,180 @@ private:
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (CopedentTable)
 };
+
+
+////==============================================================================
+//// This is a custom Label component, which we use for the table's editable text columns.
+//class EditableMidiLabel : public Label
+//{
+//public:
+//    
+//    EditableTextCustomComponent (CopedentTable& td)  : owner (td)
+//    {
+//        // double click to edit the label text; single click handled below
+//        setEditable (true, true, false);
+//        setJustificationType(Justification::centred);
+//        setColour(Label::backgroundColourId, Colours::darkgrey.withBrightness(0.1f));
+//    }
+//    
+//    String midiDataToText (double value) const
+//    {
+//        // Not really important since tuning shouldn't matter much at precision this high,
+//        // but this will stop any potential ugly numbers from displaying
+//        value = round( value * 1000. ) / 1000.;
+//        
+//        String text = String();
+//        
+//            
+//        int n = (int)round(value);
+//        double f = value - n;
+//        if (f == -0.5)
+//        {
+//            n -= 1;
+//            f += 1.;
+//        }
+//        
+//        bool useSharps = true;//(n % 12 != 3) && (n % 12 != 10);
+//        
+//        text += MidiMessage::getMidiNoteName(n, useSharps, true, 4);
+//        if (f > 0.0) text += "+" + String(f);
+//        else if (f < 0.0) text += String(f);
+//       
+//       
+//        return text;
+//    }
+//    
+//    void setDataFromText (String newText)
+//    {
+//        String text = newText.toUpperCase().removeCharacters(" ");
+//        
+//        
+//        
+//        double value;
+//        if (text.isEmpty()) value = 0.0f;
+//        else if (!text.containsAnyOf("CDEFGAB"))
+//        {
+//            return;
+//        }
+//        else if (!text.containsOnly("0123456789CDEFGAB#+-."))
+//        {
+//            return;
+//        }
+//        else
+//        {
+//            int i = text.indexOfAnyOf("CDEFGAB");
+//            value = 0.0;
+//            // Start by getting the basic pitch class number
+//            if (text[i] == 'C') value = 0.;
+//            else if (text[i] == 'D') value = 2.;
+//            else if (text[i] == 'E') value = 4.;
+//            else if (text[i] == 'F') value = 5.;
+//            else if (text[i] == 'G') value = 7.;
+//            else if (text[i] == 'A') value = 9.;
+//            else if (text[i] == 'B') value = 11.;
+//            i++;
+//            
+//            // Adjust for sharps and flats
+//            for (; i < text.length(); i++)
+//            {
+//                if (text[i] == '#') value++;
+//                else if (text[i] == 'B') value--;
+//                else break;
+//            }
+//            
+//            int fineIndex = text.indexOfAnyOf("+-", i);
+//            if (fineIndex >= 0) value += text.substring(fineIndex).getDoubleValue();
+//            else fineIndex = text.length();
+//                
+//            // Check for octave
+//            String withoutFine = text.substring(0, fineIndex);
+//            int octave = withoutFine.getTrailingIntValue();
+//            
+//            // Use it if we have it
+//            if (withoutFine.endsWith(String(octave)))
+//            {
+//                value += octave * 12 + 12;
+//            }
+//            else // Otherwise use the current fundamental octave
+//            {
+//                value += int(copedentArray[0][rowNumber] / 12) * 12;
+//                
+//                // Get the value as an offset from the fundamental
+//                double offset = value - copedentArray[0][rowNumber];
+//                
+//                // Make sure the offset is in the right direction if specified
+//                // and if not specified, minimize the offset size
+//                if (text.startsWith("-"))
+//                {
+//                    if (offset > 0.) value -= 12;
+//                }
+//                else if (text.startsWith("+"))
+//                {
+//                    if (offset < 0.) value += 12;
+//                }
+//                else if (offset > 6.) value -= 12;
+//                else if (offset < -6.) value += 12;
+//            }
+//            
+//            // Change value to an offset if not string column
+//            if (columnNumber > 1)
+//            {
+//                value -= copedentArray[0][rowNumber];
+//            }
+//        }
+//        if (columnNumber == 0)
+//        {
+//            fundamental = (float)value;
+//        }
+//        else
+//            copedentArray.getReference(columnNumber-1).set(rowNumber, value);
+//        if (columnNumber == 1) resized();
+//    }
+//    void mouseDown (const MouseEvent& event) override
+//    {
+//        //            // single click on the label should simply select the row
+//        //            owner.table.selectRowsBasedOnModifierKeys (row, event.mods, false);
+//        //
+//        Label::mouseDown (event);
+//    }
+//    
+//    void textWasEdited() override
+//    {
+//        owner.setDataFromText (columnId, row, getText());
+//        setText (owner.getTextFromData(columnId, row, true), dontSendNotification);
+//    }
+//    
+//    // Our demo code will call this when we may need to update our contents
+//    void setRowAndColumn (const int newRow, const int newColumn)
+//    {
+//        row = newRow;
+//        columnId = newColumn;
+//        setText (owner.getTextFromData(columnId, row, true), dontSendNotification);
+//    }
+//    
+//    void paint (Graphics& g) override
+//    {
+//        auto& lf = getLookAndFeel();
+//        if (! dynamic_cast<LookAndFeel_V4*> (&lf))
+//            lf.setColour (textColourId, Colours::black);
+//        
+//        Label::paint (g);
+//        g.setColour(Colours::lightgrey);
+//        
+//        if (columnId > 0)
+//        {
+//            g.fillRect(0, getHeight()-1, getWidth(), 1);
+//            if (columnId != 1 && columnId != 4 &&
+//                columnId != 9 && columnId != 11)
+//                g.fillRect(getWidth()-1, 0, 1, getHeight());
+//        }
+//        
+//        if (TextEditor* editor = getCurrentTextEditor())
+//            editor->setJustification(Justification::centredLeft);
+//    }
+//    
+//private:
+//    CopedentTable& owner;
+//    int row, columnId;
+//    Colour textColour;
+//};

@@ -645,4 +645,8 @@ void TuningTab::buttonClicked (Button *b)
     {
         processor.sendTuningMidiMessage(tuningNameEditor.getText(), tuningNumber.getValue());
     }
+    else if (b==& sendOpenStrings)
+    {
+        processor.sendOpenStringMidiMessage();
+    }
 }
