@@ -26,6 +26,7 @@ public:
     void prepareToPlay (double sampleRate, int samplesPerBlock);
     void frame();
     void tick(float* samples);
+    void loadAll(int);
     
 private:
     

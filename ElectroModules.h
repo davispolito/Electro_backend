@@ -81,7 +81,6 @@ protected:
     OwnedArray<ButtonAttachment> buttonAttachments;
     OwnedArray<ComboBoxAttachment> comboBoxAttachments;
     
-    ElectroLookAndFeel laf;
     
 private:
     

@@ -24,7 +24,6 @@ model(m)
 {
     addMouseListener(&editor, true);
     
-    label.setLookAndFeel(&laf);
     label.setJustificationType(Justification::centredLeft);
     label.setColour(Label::outlineColourId, model.colour);
     label.setColour(Label::textColourId, model.colour);
@@ -45,7 +44,6 @@ model(m)
 {
     addMouseListener(&editor, true);
     
-    label.setLookAndFeel(&laf);
     label.setJustificationType(Justification::centredLeft);
     label.setColour(Label::outlineColourId, model.colour);
     label.setColour(Label::textColourId, model.colour);
@@ -80,7 +78,6 @@ text(""),
 sliderEnabled(false),
 removable(true)
 {    
-    setLookAndFeel(&laf);
     setDoubleClickReturnValue(true, 0.);
     setSliderStyle(SliderStyle::LinearBarVertical);
     setTextBoxIsEditable(false);
@@ -123,7 +120,6 @@ void MappingTarget::paint(Graphics& g)
     
 //    if (model.currentScalarSource != nullptr)
 //    {
-//        g.setFont(laf.getPopupMenuFont());
 //        g.setColour(model.currentScalarSource->colour);
         
 //        Justification just =
@@ -152,7 +148,6 @@ void MappingTarget::mouseDown(const MouseEvent& event)
         {
             if (removable) {
                 PopupMenu menu;
-                menu.setLookAndFeel(&laf);
                 menu.addItem(1, "Remove");
                 if (model.currentScalarSource != nullptr)
                 {
@@ -323,7 +318,6 @@ label(displayName, displayName),
 paramName(paramName),
 editor(editor)
 {
-    slider.setLookAndFeel(&laf);
     slider.setSliderStyle(Slider::RotaryVerticalDrag);
     slider.setTextBoxStyle(Slider::NoTextBox, false, 4, 4);
     slider.setRange(0., 1.);
@@ -341,7 +335,6 @@ editor(editor)
     {
         label.setJustificationType(Justification::centred);
         label.setBorderSize(BorderSize<int>(0));
-        label.setLookAndFeel(&laf);
         addAndMakeVisible(&label);
         
         for (int i = 0; i < numTargets; ++i)
@@ -357,7 +350,6 @@ editor(editor)
     else
     {
         label.setJustificationType(Justification::centred);
-        label.setLookAndFeel(&laf);
         addAndMakeVisible(&label);
     }
 }
@@ -428,7 +420,7 @@ void ElectroDial::paint(Graphics& g)
             g.drawVerticalLine(x+w, y, t[i]->getY());
             g.drawHorizontalLine(y, x, x+w);
             
-            g.setFont(laf.getPopupMenuFont().withHeight(h));
+            g.setFont(ElectroLookAndFeel::getInstance()->getPopupMenuFont().withHeight(h));
             g.setColour(t[i]->getScalarColour());
             g.drawFittedText(text, x+1, y+1, w-1, h-1,
                              Justification::centred, 1);

@@ -12,7 +12,7 @@
 
 #include <JuceHeader.h>
 
-class ElectroLookAndFeel : public LookAndFeel_V4
+class ElectroLookAndFeel : public LookAndFeel_V4, public DeletedAtShutdown
 {
 public:
     ElectroLookAndFeel();
@@ -54,6 +54,7 @@ public:
                                 const String& columnName, int /*columnId*/,
                                 int width, int height, bool isMouseOver, bool isMouseDown,
                                 int columnFlags) override;
+    JUCE_DECLARE_SINGLETON(ElectroLookAndFeel, false)
 protected:
     
     Typeface::Ptr tp;
@@ -67,3 +68,4 @@ public:
     Font getTextButtonFont (TextButton& b, int buttonHeight);
     Font getLabelFont (Label& label);
 };
+

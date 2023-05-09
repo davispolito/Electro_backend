@@ -167,7 +167,6 @@ chooser(nullptr)
     // Pitch and freq dials should snap to ints
     
     getDial(OscFreq)->setRange(-2000., 2000., 1.);
-    pitchDialToggle.setLookAndFeel(&laf);
     pitchDialToggle.addListener(this);
     pitchDialToggle.setTitle("Harmonic Dial");
     pitchDialToggle.setButtonText("H");
@@ -175,7 +174,6 @@ chooser(nullptr)
     pitchDialToggle.setClickingTogglesState(true);
     pitchDialToggle.setToggleState(true, dontSendNotification);
     
-    syncToggle.setLookAndFeel(&laf);
     syncToggle.addListener(this);
     syncToggle.setTitle("Sync Toggle");
     syncToggle.setButtonText("Sync");
@@ -184,7 +182,6 @@ chooser(nullptr)
     syncToggle.setToggleState(true, dontSendNotification);
     addAndMakeVisible(syncToggle);
     
-    syncType.setLookAndFeel(&laf);
     syncType.addListener(this);
     syncType.setTitle("Sync Type");
     syncType.setButtonText("Soft");
@@ -194,7 +191,6 @@ chooser(nullptr)
     addAndMakeVisible(syncType);
     
     addAndMakeVisible(pitchDialToggle);
-    steppedToggle.setLookAndFeel(&laf);
     steppedToggle.addListener(this);
     steppedToggle.setTitle("Stepped Dial");
     steppedToggle.setButtonText("ST");
@@ -210,21 +206,18 @@ chooser(nullptr)
     buttonAttachments.add(new ButtonAttachment(vts, ac.getName() + " isSync", syncToggle));
     buttonAttachments.add(new ButtonAttachment(vts, ac.getName() + " syncType", syncType));
     
-    harmonicsLabel.setLookAndFeel(&laf);
     harmonicsLabel.setEditable(true);
     harmonicsLabel.setJustificationType(Justification::centred);
     harmonicsLabel.setColour(Label::backgroundColourId, Colours::darkgrey.withBrightness(0.2f));
     harmonicsLabel.addListener(this);
     addAndMakeVisible(harmonicsLabel);
     
-    pitchLabel.setLookAndFeel(&laf);
     pitchLabel.setEditable(true);
     pitchLabel.setJustificationType(Justification::centred);
     pitchLabel.setColour(Label::backgroundColourId, Colours::darkgrey.withBrightness(0.2f));
     pitchLabel.addListener(this);
     addAndMakeVisible(pitchLabel);
     
-    freqLabel.setLookAndFeel(&laf);
     freqLabel.setEditable(true);
     freqLabel.setJustificationType(Justification::centred);
     freqLabel.setColour(Label::backgroundColourId, Colours::darkgrey.withBrightness(0.2f));
@@ -236,7 +229,6 @@ chooser(nullptr)
     RangedAudioParameter* set = vts.getParameter(ac.getName() + " ShapeSet");
     updateShapeCB();
     shapeCB.setSelectedItemIndex(set->convertFrom0to1(set->getValue()), dontSendNotification);
-    shapeCB.setLookAndFeel(&laf);
     shapeCB.addListener(this);
     shapeCB.addMouseListener(this, true);
     addAndMakeVisible(shapeCB);
@@ -250,12 +242,10 @@ chooser(nullptr)
     
     f1Label.setText("F1", dontSendNotification);
     f1Label.setJustificationType(Justification::bottomRight);
-    f1Label.setLookAndFeel(&laf);
     addAndMakeVisible(f1Label);
     
     f2Label.setText("F2", dontSendNotification);
     f2Label.setJustificationType(Justification::topRight);
-    f2Label.setLookAndFeel(&laf);
     addAndMakeVisible(f2Label);
     
     s = std::make_unique<MappingSource>
@@ -678,12 +668,10 @@ ElectroModule(editor, vts, ac, 0.01f, 0.2f, 0.02f, 0.18f, 0.8f)
     
     f1Label.setText("F1", dontSendNotification);
     f1Label.setJustificationType(Justification::bottomRight);
-    f1Label.setLookAndFeel(&laf);
     addAndMakeVisible(f1Label);
     
     f2Label.setText("F2", dontSendNotification);
     f2Label.setJustificationType(Justification::topRight);
-    f2Label.setLookAndFeel(&laf);
     addAndMakeVisible(f2Label);
     
     s = std::make_unique<MappingSource>
@@ -738,7 +726,6 @@ ElectroModule(editor, vts, ac, 0.04f, 0.215f, 0.05f, 0.18f, 0.8f) //0.05f, 0.132
     
     //double cutoff = getDial(FilterCutoff)->getSlider().getValue();
 //    cutoffLabel.setText(String(cutoff, 2), dontSendNotification);
-//    cutoffLabel.setLookAndFeel(&laf);
 //    cutoffLabel.setEditable(true);
 //    cutoffLabel.setJustificationType(Justification::centred);
 //    cutoffLabel.setColour(Label::backgroundColourId, Colours::darkgrey.withBrightness(0.2f));
@@ -748,7 +735,6 @@ ElectroModule(editor, vts, ac, 0.04f, 0.215f, 0.05f, 0.18f, 0.8f) //0.05f, 0.132
     RangedAudioParameter* set = vts.getParameter(ac.getName() + " Type");
     typeCB.addItemList(filterTypeNames, 1);
     typeCB.setSelectedItemIndex(set->convertFrom0to1(set->getValue()), dontSendNotification);
-    typeCB.setLookAndFeel(&laf);
     addAndMakeVisible(typeCB);
     comboBoxAttachments.add(new ComboBoxAttachment(vts, ac.getName() + " Type", typeCB));
     
@@ -843,7 +829,6 @@ chooser("Select wavetable file or folder...",
 {
     double rate = getDial(LowFreqRate)->getSlider().getValue();
     rateLabel.setText(String(rate, 2) + " Hz", dontSendNotification);
-    rateLabel.setLookAndFeel(&laf);
     rateLabel.setEditable(true);
     rateLabel.setJustificationType(Justification::centred);
     rateLabel.setColour(Label::backgroundColourId, Colours::darkgrey.withBrightness(0.2f));
@@ -853,7 +838,6 @@ chooser("Select wavetable file or folder...",
     RangedAudioParameter* set = vts.getParameter(ac.getName() + " ShapeSet");
     shapeCB.addItemList(lfoShapeSetNames, 1);
     shapeCB.setSelectedItemIndex(set->convertFrom0to1(set->getValue()), dontSendNotification);
-    shapeCB.setLookAndFeel(&laf);
     addAndMakeVisible(shapeCB);
     comboBoxAttachments.add(new ComboBoxAttachment(vts, ac.getName() + " ShapeSet", shapeCB));
     
@@ -994,8 +978,6 @@ ElectroModule(editor, vts, ac, 0.07f, 0.22f, 0.07f, 0.07f, 0.78f)
     fxPostButton.setClickingTogglesState(true);
     //addAndMakeVisible(fxPreButton);
     addAndMakeVisible(fxPostButton);
-    fxPreButton.setLookAndFeel(&laf);
-    fxPostButton.setLookAndFeel(&laf);
     
     addAndMakeVisible(fxPreButton);
     fxPreButton.onClick = [this] {updateFXOrder(&fxPreButton);};
@@ -1051,7 +1033,6 @@ ElectroModule(editor, vts, ac, 0.03f, 0.115f, 0.025f, 0.17f, 0.80f)
     RangedAudioParameter* set = vts.getParameter(ac.getName() + " FXType");
     fxCB.addItemList(FXTypeNames, 1);
     fxCB.setSelectedItemIndex(set->convertFrom0to1(set->getValue()), dontSendNotification);
-    fxCB.setLookAndFeel(&laf);
     addAndMakeVisible(fxCB);
     comboBoxAttachments.add(new ComboBoxAttachment(vts, ac.getName() + " FXType", fxCB));
     fxCB.addListener(this);

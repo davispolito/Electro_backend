@@ -41,7 +41,6 @@ public:
     
 private:
     
-    ElectroLookAndFeel laf;
     ElectroAudioProcessorEditor& editor;
     ElectroAudioProcessor& processor;
     OwnedArray<FXModule> fxModules;

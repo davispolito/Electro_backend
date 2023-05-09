@@ -39,6 +39,7 @@ ElectroLookAndFeel::ElectroLookAndFeel()
 
 ElectroLookAndFeel::~ElectroLookAndFeel()
 {
+    clearSingletonInstance();
 }
 
 Font ElectroLookAndFeel::getPopupMenuFont (void)
@@ -419,3 +420,4 @@ void ElectroLookAndFeel::drawTableHeaderColumn (Graphics& g, TableHeaderComponen
 }
 
 
+JUCE_IMPLEMENT_SINGLETON(ElectroLookAndFeel)

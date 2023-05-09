@@ -27,6 +27,7 @@ public:
     void prepareToPlay (double sampleRate, int samplesPerBlock);
     void frame();
     void tick();
+    void loadAll(int);
     
     //==============================================================================
     void noteOn(int voice, float velocity);

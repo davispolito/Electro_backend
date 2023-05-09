@@ -29,7 +29,7 @@ public:
     void prepareToPlay (double sampleRate, int samplesPerBlock);
     void frame();
     void tick(float output[][MAX_NUM_VOICES]);
-    
+    void loadAll(int);
     //==============================================================================
     void setWaveTables(File file);
     File& getWaveTableFile() { return waveTableFile; }
@@ -103,6 +103,7 @@ public:
     void prepareToPlay (double sampleRate, int samplesPerBlock);
     void frame();
     float tick();
+    void loadAll(int);
     
     //==============================================================================
     void noteOn(int voice, float velocity);
@@ -159,7 +160,7 @@ public:
     void prepareToPlay (double sampleRate, int samplesPerBlock);
     void frame();
     void tick(float output[][MAX_NUM_VOICES]);
-    
+    void loadAll(int);
 private:
     // noise tilt
     tVZFilter shelf1[MAX_NUM_VOICES], shelf2[MAX_NUM_VOICES], bell1[MAX_NUM_VOICES];

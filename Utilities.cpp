@@ -55,7 +55,7 @@ float SmoothedParameter::tick()
     {
         value += hooks[nonSmoothedHooks[i]].getValue();
     }
-    if ((numSmoothedHooks != 0) && (numNonSmoothedHooks !=0))
+    if ((numSmoothedHooks == 0) && (numNonSmoothedHooks == 0))
     {
         if (value == target)
         {

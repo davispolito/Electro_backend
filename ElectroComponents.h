@@ -41,7 +41,6 @@ private:
 
     std::unique_ptr<Drawable> image;
     
-    ElectroLookAndFeel laf;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MappingSource)
 };
@@ -109,7 +108,6 @@ private:
     double lastProportionalValue;
     double lastProportionalParentValue;
     
-    ElectroLookAndFeel laf;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MappingTarget)
 };
@@ -171,7 +169,6 @@ private:
     Label label;
     double lastSliderValue = DBL_MAX;
     
-    ElectroLookAndFeel laf;
     
     static const int numTargets = 3;
     
@@ -222,17 +219,14 @@ public:
 //            };
         
         sendTuningButton.setButtonText("Send tuning via MIDI");
-        sendTuningButton.setLookAndFeel(&laf);
         sendTuningButton.addListener(this);
         addAndMakeVisible(sendTuningButton);
         //sendTuningButton.onClick = [this] { processor.sendTuningMidiMessage(); };
         importButton.setButtonText("Import .scl");
-        importButton.setLookAndFeel(&laf);
         importButton.addListener(this);
        // importButton.onClick = [this] { importScala(); };
         addAndMakeVisible(importButton);
         MTSButton.setButtonText("MTS On");
-        MTSButton.setLookAndFeel(&laf);
         MTSButton.addListener(this);
         addAndMakeVisible(MTSButton);
 //        MTSButton.onClick = [this] {
@@ -247,7 +241,6 @@ public:
         sclTextEditor.setPopupMenuEnabled(true);
         sclTextEditor.setText(String());
         sclTextEditor.setName("SCLTXT");
-        //sclTextEditor.setLookAndFeel(&laf);
         kbmTextEditor.setMultiLine(true);
         kbmTextEditor.setReturnKeyStartsNewLine(true);
         kbmTextEditor.setReadOnly(false);
@@ -256,28 +249,20 @@ public:
         kbmTextEditor.setPopupMenuEnabled(true);
         kbmTextEditor.setText(String());
         kbmTextEditor.setName("KBMTXT");
-        //kbmTextEditor.setLookAndFeel(&laf);
         
       
 
         addAndMakeVisible (importKBMButton);
         importKBMButton.setButtonText (TRANS("Import KBM"));
-        importKBMButton.setLookAndFeel(&laf);
         importKBMButton.addListener (this);
 
         addAndMakeVisible (resetButton);
         resetButton.setButtonText (TRANS("Reset"));
-        resetButton.setLookAndFeel(&laf);
         resetButton.addListener (this);
 
-        //addAndMakeVisible (applyButton);
         applyButton.setButtonText (TRANS("Apply"));
-        applyButton.setLookAndFeel(&laf);
         
-        //addAndMakeVisible (applyKBMButton);
         applyKBMButton.setButtonText (TRANS("Apply"));
-        applyKBMButton.setLookAndFeel(&laf);
-        //applyButton.addListener (this);
         
         addAndMakeVisible(sclTextEditor);
         addAndMakeVisible(kbmTextEditor);
@@ -303,13 +288,10 @@ public:
         //tuningNumber.onValueChange = [this] {processor.setTuningNumber(tuningNumber.getValue());};
         tuningNumber.setSliderStyle(Slider::SliderStyle::IncDecButtons);
         tuningNumber.setIncDecButtonsMode(juce::Slider::incDecButtonsNotDraggable);
-        tuningNumberlabel.setLookAndFeel(&laf);
-        tuningNamelabel.setLookAndFeel(&laf);
         //tuningNumber.setMouseDragSensitivity(200);
         tuningNumber.setTextValueSuffix(""); //EBSPECIFIC
         tuningNumber.setTitle("tuning Number");
         tuningNumber.setName("tuning Number");
-        tuningNumber.setLookAndFeel(&laf);
         tuningNumber.setColour(Slider::backgroundColourId, Colours::darkgrey.withBrightness(0.2f));
         tuningNumber.setColour(Slider::textBoxOutlineColourId, Colours::transparentBlack);
         tuningNumber.setColour(Slider::textBoxTextColourId, Colours::gold.withBrightness(0.95f));
@@ -320,14 +302,11 @@ public:
             addAndMakeVisible(*openStringLabel.getUnchecked(i));
             openStringLabel.getUnchecked(i)->setText("String " + String(i), dontSendNotification);
             openStringEditor.getUnchecked(i)->setText(String(28 + i * 5), sendNotification);
-            openStringLabel.getUnchecked(i)->setLookAndFeel(&laf);
-            openStringEditor.getUnchecked(i)->setLookAndFeel(&laf);
             openStringEditor.getUnchecked(i)->setEditable(true);
             openStringEditor.getUnchecked(i)->setColour(juce::Label::textColourId,Colours::grey);
             openStringEditor.getUnchecked(i)->addListener(this);
         }
         addAndMakeVisible(sendOpenStrings);
-        sendOpenStrings.setLookAndFeel(&laf);
         sendOpenStrings.addListener(this);
         sendOpenStrings.setButtonText(TRANS("Send Open Strings"));
     }
@@ -489,7 +468,6 @@ private:
     TextButton      sendOpenStrings;
     OwnedArray<Label> openStringEditor;
     OwnedArray<Label> openStringLabel;
-    ElectroLookAndFeel laf;
     TextEditor sclTextEditor;
     TextEditor kbmTextEditor;
     TextButton applyButton;
@@ -546,22 +524,18 @@ public:
         }
         
         stringTable.setModel (this);
-        stringTable.setLookAndFeel(&laf);
         stringTable.setColour (ListBox::outlineColourId, Colours::grey);
         stringTable.setOutlineThickness (1);
         
         leftTable.setModel (this);
-        leftTable.setLookAndFeel(&laf);
         leftTable.setColour (ListBox::outlineColourId, Colours::grey);
         leftTable.setOutlineThickness (1);
         
         pedalTable.setModel (this);
-        pedalTable.setLookAndFeel(&laf);
         pedalTable.setColour (ListBox::outlineColourId, Colours::grey);
         pedalTable.setOutlineThickness (1);
         
         rightTable.setModel (this);
-        rightTable.setLookAndFeel(&laf);
         rightTable.setColour (ListBox::outlineColourId, Colours::grey);
         rightTable.setOutlineThickness (1);
         
@@ -590,44 +564,35 @@ public:
         addAndMakeVisible (rightTable);
         
         fundamentalField.setRowAndColumn(0, 0);
-        fundamentalField.setLookAndFeel(&laf);
         addAndMakeVisible (fundamentalField);
         
         fundamentalLabel.setText("Fundamental", dontSendNotification);
         fundamentalLabel.setJustificationType(Justification::centred);
-        fundamentalLabel.setLookAndFeel(&laf);
         addAndMakeVisible (fundamentalLabel);
         
         exportButton.setButtonText("Export .xml");
-        exportButton.setLookAndFeel(&laf);
         exportButton.onClick = [this] { exportXml(); };
         addAndMakeVisible(exportButton);
         
         importButton.setButtonText("Import .xml");
-        importButton.setLookAndFeel(&laf);
         importButton.onClick = [this] { importXml(); };
         addAndMakeVisible(importButton);
         
         numberLabel.setText("#", dontSendNotification);
         numberLabel.setJustificationType(Justification::centred);
-        numberLabel.setLookAndFeel(&laf);
         addAndMakeVisible (numberLabel);
         
         numberField.setRowAndColumn(0, -1);
-        numberField.setLookAndFeel(&laf);
         addAndMakeVisible (numberField);
         
         nameLabel.setText("Name", dontSendNotification);
         nameLabel.setJustificationType(Justification::centred);
-        nameLabel.setLookAndFeel(&laf);
         addAndMakeVisible (nameLabel);
         
         nameField.setRowAndColumn(0, -2);
-        nameField.setLookAndFeel(&laf);
         addAndMakeVisible (nameField);
         
         sendOutButton.setButtonText("Send copedent via MIDI");
-        sendOutButton.setLookAndFeel(&laf);
         sendOutButton.onClick = [this] { processor.sendCopedentMidiMessage(); };
         addAndMakeVisible(sendOutButton);
     }
@@ -1097,7 +1062,6 @@ private:
     FileChooser exportChooser;
     FileChooser importChooser;
     
-    ElectroLookAndFeel laf;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (CopedentTable)
 };

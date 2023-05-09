@@ -18,7 +18,7 @@ public:
     //==============================================================================
     Effect(const String&, ElectroAudioProcessor&, AudioProcessorValueTreeState&);
     ~Effect();
-    
+    void loadAll(int);
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock)
     {

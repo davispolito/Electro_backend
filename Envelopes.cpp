@@ -74,6 +74,26 @@ void Envelope::frame()
     enabled = processor.sourceMappingCounts[getName()] > 0;
 }
 
+
+void Envelope::loadAll(int v)
+{
+    float attack = quickParams[EnvelopeAttack][v]->read();
+    attack = attack < 0.f ? 0.f : attack;
+    tADSRT_setAttack(&envs[v], attack);
+    float decay = quickParams[EnvelopeDecay][v]->read();
+    decay = decay < 0.f ? 0.f : decay;
+    tADSRT_setDecay(&envs[v], decay);
+    float sustain = quickParams[EnvelopeSustain][v]->read();
+    sustain = sustain < 0.f ? 0.f : sustain;
+    tADSRT_setSustain(&envs[v], sustain);
+    float release = quickParams[EnvelopeRelease][v]->read();
+    release = release < 0.f ? 0.f : release;
+    tADSRT_setRelease(&envs[v], release);
+    float leak = quickParams[EnvelopeLeak][v]->read();
+    leak = leak < 0.f ? 0.f : leak;
+    tADSRT_setLeakFactor(&envs[v], 0.99995f + 0.00005f*(1.f-leak));
+}
+
 void Envelope::tick()
 {
     if (!enabled) return;
@@ -82,20 +102,6 @@ void Envelope::tick()
     for (int v = 0; v < processor.numVoicesActive; v++)
     {
         
-        
-        
-        
-       
-        
-        
-        
-        
-        
-        
-//        tADSRT_setAttack(&envs[v], expBuffer[(int)(attack * expBufferSizeMinusOne)] * 8192.0f);
-//        tADSRT_setDecay(&envs[v], expBuffer[(int)(decay * expBufferSizeMinusOne)] * 8192.0f);
-//        tADSRT_setSustain(&envs[v], sustain);
-//        tADSRT_setRelease(&envs[v], expBuffer[(int)(release * expBufferSizeMinusOne)] * 8192.0f);
         if(!quickParams[EnvelopeAttack][v]->getRemoveMe())
         {
             float attack = quickParams[EnvelopeAttack][v]->read();

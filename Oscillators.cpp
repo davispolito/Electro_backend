@@ -240,6 +240,11 @@ void Oscillator::tick(float output[][MAX_NUM_VOICES])
     sampleInBlock++;
 }
 
+void Oscillator::loadAll(int v)
+{
+    setShape(v, quickParams[OscShape][v]->read());
+}
+
 void Oscillator::sawSquareTick(float& sample, int v, float freq, float shape)
 {
     tMBSawPulse_setFreq(&sawPaired[v], freq);
@@ -565,6 +570,12 @@ float LowFreqOscillator::tick()
     return r;
 }
 
+void LowFreqOscillator::loadAll(int v)
+{
+    setShape(v, quickParams[LowFreqShape][v]->read());
+    setRate(v, quickParams[LowFreqRate][v]->read());
+}
+
 void LowFreqOscillator::sawSquareTick(float& sample, int v)
 {
 
@@ -693,12 +704,21 @@ void NoiseGenerator::frame()
 //
 //        case PulseLFOShapeSet:
 //            shapeTick = &LowFreqOscillator::pulseTick;
+    
 //            break;
 //
 //        default:
 //            shapeTick = &LowFreqOscillator::sineTriTick;
 //            break;
 //    }
+}
+void NoiseGenerator::loadAll(int v)
+{
+    tVZFilter_setGain(&shelf1[v], fastdbtoa(-1.0f * ((quickParams[NoiseTilt][v]->read() * 30.0f) - 15.0f)));
+    tVZFilter_setGain(&shelf2[v], fastdbtoa((quickParams[NoiseTilt][v]->read() * 30.0f) - 15.0f));
+    tVZFilter_setFreqFast(&bell1[v], faster_mtof(quickParams[NoiseTilt][v]->read()  * 77.0f + 42.0f));
+    tVZFilter_setGain(&bell1[v],fastdbtoa((quickParams[NoiseGain][v]->read() * 34.0f) - 17.0f));
+
 }
 
 void NoiseGenerator::tick(float output[][MAX_NUM_VOICES])
