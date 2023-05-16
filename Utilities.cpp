@@ -19,7 +19,8 @@ raw(vts.getRawParameterValue(paramId)),
 parameter(vts.getParameter(paramId)),
 range(parameter->getNormalisableRange()),
 value(raw->load(std::memory_order_relaxed)),
-smoothed(value)
+smoothed(value),
+removeMe(true)
 {
     //DBG(paramId+" " + String(value));
     for (int i = 0; i < 3; ++i)
@@ -298,6 +299,7 @@ void MappingTargetModel::setMapping(MappingSourceModel* source, float e, bool se
     {
         param->setHook(source->name, index, &sourceArray[i%n], start, end);
         i++;
+        DBG(source->name);
         processor.addToKnobsToSmoothArray(param);
     }
     

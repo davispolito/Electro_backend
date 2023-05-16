@@ -77,6 +77,11 @@ void Envelope::frame()
 
 void Envelope::loadAll(int v)
 {
+    quickParams[EnvelopeAttack][v]->setValueToRaw();
+    quickParams[EnvelopeDecay][v]->setValueToRaw();
+    quickParams[EnvelopeSustain][v]->setValueToRaw();
+    quickParams[EnvelopeRelease][v]->setValueToRaw();
+    quickParams[EnvelopeLeak][v]->setValueToRaw();
     float attack = quickParams[EnvelopeAttack][v]->read();
     attack = attack < 0.f ? 0.f : attack;
     tADSRT_setAttack(&envs[v], attack);
@@ -102,31 +107,31 @@ void Envelope::tick()
     for (int v = 0; v < processor.numVoicesActive; v++)
     {
         
-        if(!quickParams[EnvelopeAttack][v]->getRemoveMe())
+        if(processor.knobsToSmooth.contains(quickParams[EnvelopeAttack][v]))
         {
             float attack = quickParams[EnvelopeAttack][v]->read();
             attack = attack < 0.f ? 0.f : attack;
             tADSRT_setAttack(&envs[v], attack);
         }
-        if(!quickParams[EnvelopeDecay][v]->getRemoveMe())
+        if(processor.knobsToSmooth.contains(quickParams[EnvelopeDecay][v]))
         {
             float decay = quickParams[EnvelopeDecay][v]->read();
             decay = decay < 0.f ? 0.f : decay;
             tADSRT_setDecay(&envs[v], decay);
         }
-        if(!quickParams[EnvelopeSustain][v]->getRemoveMe())
+        if(processor.knobsToSmooth.contains(quickParams[EnvelopeSustain][v]))
         {
             float sustain = quickParams[EnvelopeSustain][v]->read();
             sustain = sustain < 0.f ? 0.f : sustain;
             tADSRT_setSustain(&envs[v], sustain);
         }
-        if(!quickParams[EnvelopeRelease][v]->getRemoveMe())
+        if(processor.knobsToSmooth.contains(quickParams[EnvelopeRelease][v]))
         {
             float release = quickParams[EnvelopeRelease][v]->read();
             release = release < 0.f ? 0.f : release;
             tADSRT_setRelease(&envs[v], release);
         }
-        if(!quickParams[EnvelopeLeak][v]->getRemoveMe())
+        if(processor.knobsToSmooth.contains(quickParams[EnvelopeLeak][v]))
         {
             float leak = quickParams[EnvelopeLeak][v]->read();
             leak = leak < 0.f ? 0.f : leak;

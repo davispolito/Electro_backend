@@ -188,7 +188,7 @@ void Oscillator::tick(float output[][MAX_NUM_VOICES])
         float fine = quickParams[OscFine][v]->read();
         float freq = quickParams[OscFreq][v]->read();
         float shape = quickParams[OscShape][v]->read();
-        if(!quickParams[OscShape][v]->getRemoveMe())
+        if(processor.knobsToSmooth.contains(quickParams[OscShape][v]))
         {
             setShape(v, shape);
         }
@@ -242,6 +242,12 @@ void Oscillator::tick(float output[][MAX_NUM_VOICES])
 
 void Oscillator::loadAll(int v)
 {
+    quickParams[OscShape][v]->setValueToRaw();
+    quickParams[OscAmp][v]->setValueToRaw();
+    quickParams[OscFine][v]->setValueToRaw();
+    quickParams[OscHarm][v]->setValueToRaw();
+    quickParams[OscFreq][v]->setValueToRaw();
+    quickParams[OscPitch][v]->setValueToRaw();
     setShape(v, quickParams[OscShape][v]->read());
 }
 
@@ -540,12 +546,12 @@ float LowFreqOscillator::tick()
     {
         float rate = quickParams[LowFreqRate][v]->read();
         float shape = quickParams[LowFreqShape][v]->read();
-        if (!quickParams[LowFreqRate][v]->getRemoveMe())
+        if (processor.knobsToSmooth.contains(quickParams[LowFreqShape][v]))
         {
             setShape(v,shape);
         }
         
-        if (!quickParams[LowFreqShape][v]->getRemoveMe())
+        if (processor.knobsToSmooth.contains(quickParams[LowFreqRate][v]))
         {
             setRate(v,rate);
         }
@@ -572,6 +578,9 @@ float LowFreqOscillator::tick()
 
 void LowFreqOscillator::loadAll(int v)
 {
+    quickParams[LowFreqShape][v]->setValueToRaw();
+    quickParams[LowFreqRate][v]->setValueToRaw();
+    quickParams[LowFreqPhase][v]->setValueToRaw();
     setShape(v, quickParams[LowFreqShape][v]->read());
     setRate(v, quickParams[LowFreqRate][v]->read());
 }
@@ -714,6 +723,10 @@ void NoiseGenerator::frame()
 }
 void NoiseGenerator::loadAll(int v)
 {
+    quickParams[NoiseGain][v]->setValueToRaw();
+    quickParams[NoiseAmp][v]->setValueToRaw();
+    quickParams[NoiseFreq][v]->setValueToRaw();
+    quickParams[NoiseTilt][v]->setValueToRaw();
     tVZFilter_setGain(&shelf1[v], fastdbtoa(-1.0f * ((quickParams[NoiseTilt][v]->read() * 30.0f) - 15.0f)));
     tVZFilter_setGain(&shelf2[v], fastdbtoa((quickParams[NoiseTilt][v]->read() * 30.0f) - 15.0f));
     tVZFilter_setFreqFast(&bell1[v], faster_mtof(quickParams[NoiseTilt][v]->read()  * 77.0f + 42.0f));
@@ -733,17 +746,17 @@ void NoiseGenerator::tick(float output[][MAX_NUM_VOICES])
         float freq = quickParams[NoiseFreq][v]->read();
         float amp = quickParams[NoiseAmp][v]->read();
         amp = amp < 0.f ? 0.f : amp;
-        if(!quickParams[NoiseTilt][v]->getRemoveMe())
+        if(processor.knobsToSmooth.contains(quickParams[NoiseTilt][v]))
         {
             tVZFilter_setGain(&shelf1[v], fastdbtoa(-1.0f * ((tilt * 30.0f) - 15.0f)));
             tVZFilter_setGain(&shelf2[v], fastdbtoa((tilt * 30.0f) - 15.0f));
         }
-        if(!quickParams[NoiseGain][v]->getRemoveMe())
+        if(processor.knobsToSmooth.contains(quickParams[NoiseFreq][v]))
         {
             tVZFilter_setFreqFast(&bell1[v], faster_mtof(freq * 77.0f + 42.0f));
         }
         
-        if(!quickParams[NoiseGain][v]->getRemoveMe())
+        if(processor.knobsToSmooth.contains(quickParams[NoiseGain][v]))
         {
             tVZFilter_setGain(&bell1[v],fastdbtoa((gain* 34.0f) - 17.0f));
         }

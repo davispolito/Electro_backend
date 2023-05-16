@@ -90,7 +90,13 @@ public:
     float getRawValue() { return *raw; }
     String getName() {return name;}
     bool getRemoveMe(){return removeMe;}
+    void setRemoveMe(bool val){removeMe = val;}
+
     float read(){return value;}
+    void setValueToRaw()
+    {
+        value = *raw;
+    }
 private:
     ElectroAudioProcessor& processor;
     String name;
