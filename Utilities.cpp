@@ -84,8 +84,9 @@ void SmoothedParameter::tickSkewsNoHooks()
     for (int i = 0; i < processor.numInvParameterSkews; ++i)
     {
         float invSkew = processor.quickInvParameterSkews[i];
-        values[i] = powf(value, invSkew);
+        values[i] = value;//powf(value, invSkew);
     }
+   // values[0] = value;
 }
 
 float SmoothedParameter::get()

@@ -149,8 +149,9 @@ void Envelope::tick()
         for (int i = 1; i < processor.numInvParameterSkews; ++i)
         {
             float invSkew = processor.quickInvParameterSkews[i];
-            sourceValues[i][v] = powf(value, invSkew);
+            sourceValues[i][v] = value;//powf(value, invSkew);
         }
+        //sourceValues[0][v] = value;
         if (isAmpEnv)
         {
 //            if (processor.strings[0]->numVoices > 1)

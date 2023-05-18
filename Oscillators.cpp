@@ -224,7 +224,7 @@ void Oscillator::tick(float output[][MAX_NUM_VOICES])
         for (int i = 1; i < processor.numInvParameterSkews; ++i)
         {
             float invSkew = processor.quickInvParameterSkews[i];
-            sourceValues[i][v] = powf(normSample, invSkew);
+            sourceValues[i][v] = normSample;//powf(normSample, invSkew);
         }
         
         syncOut[v] = sample;
@@ -569,7 +569,7 @@ float LowFreqOscillator::tick()
         for (int i = 1; i < processor.numInvParameterSkews; ++i)
         {
             float invSkew = processor.quickInvParameterSkews[i];
-            sourceValues[i][v] = powf(normSample, invSkew);
+            sourceValues[i][v] = normSample;//powf(normSample, invSkew);
         }
     }
     sampleInBlock++;
@@ -775,7 +775,7 @@ void NoiseGenerator::tick(float output[][MAX_NUM_VOICES])
         for (int i = 1; i < processor.numInvParameterSkews; ++i)
         {
             float invSkew = processor.quickInvParameterSkews[i];
-            sourceValues[i][v] = powf(normSample, invSkew);
+            sourceValues[i][v] = normSample;//powf(normSample, invSkew);
         }
         
         float f = filterSend->tickNoHooks();

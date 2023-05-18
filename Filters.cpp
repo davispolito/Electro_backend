@@ -127,7 +127,7 @@ void Filter::tick(float* samples)
         {
             setGain(gain, v);
         }
-        LEAF_clip(0.f, keyFollow, 1.f);
+        //LEAF_clip(0.f, keyFollow, 1.f);
         
         float follow = processor.voiceNote[v];
         if (isnan(follow))
@@ -154,8 +154,8 @@ void Filter::loadAll(int v)
     quickParams[FilterCutoff][v]->setValueToRaw();
     quickParams[FilterResonance][v]->setValueToRaw();
     quickParams[FilterGain][v]->setValueToRaw();
-    setQ(v,quickParams[FilterResonance][v]->read());
-    setGain(v, quickParams[FilterGain][v]->read());
+    setQ(quickParams[FilterResonance][v]->read(),v);
+    setGain(quickParams[FilterGain][v]->read(),v);
 }
 
 void Filter::lowpassTick(float& sample, int v, float cutoff, float q, float morph, float gain)
