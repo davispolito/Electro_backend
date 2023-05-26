@@ -13,6 +13,7 @@
 Effect::Effect(const String& n, ElectroAudioProcessor& p,
                AudioProcessorValueTreeState& vts) : AudioComponent(n, p, vts, cFXParams, false)
 {
+    setParams();
     _tick = typeToTick(Softclip);
     int temp = processor.leaf.clearOnAllocation;
     getProcessor()->leaf.clearOnAllocation = 1;

@@ -68,6 +68,8 @@ private:
     float VZbandrejectTick(float sample, float cutoff, float gain, float q, float param4,float param5, int v);
     float inv_oversample;
     float wfState[MAX_NUM_VOICES];
+    float wfGainState[MAX_NUM_VOICES];
+    float wfOffsetState[MAX_NUM_VOICES];
     std::atomic<float>* afpFXType;
     tDiodeFilter diodeFilters[MAX_NUM_VOICES];
     tVZFilter VZfilterPeak[MAX_NUM_VOICES];

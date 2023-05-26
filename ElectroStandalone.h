@@ -711,10 +711,10 @@ public:
         loadStateButton ("Load"),
         resetStateButton ("Reset to default")
     {
-        audioSettingsButton.setLookAndFeel(new LookAndFeel_V4());
-        saveStateButton.setLookAndFeel(new LookAndFeel_V4());
-        loadStateButton.setLookAndFeel(new LookAndFeel_V4());
-        resetStateButton.setLookAndFeel(new LookAndFeel_V4());
+        audioSettingsButton.setLookAndFeel(&laf);
+        saveStateButton.setLookAndFeel(&laf);
+        loadStateButton.setLookAndFeel(&laf);
+        resetStateButton.setLookAndFeel(&laf);
         setConstrainer (&decoratorConstrainer);
 
        #if JUCE_IOS || JUCE_ANDROID
@@ -862,6 +862,7 @@ public:
     std::unique_ptr<StandalonePluginHolder> pluginHolder;
 
 private:
+    LookAndFeel_V4 laf;
     void updateContent()
     {
         auto* content = new MainContentComponent (*this);

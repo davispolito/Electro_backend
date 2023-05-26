@@ -27,6 +27,7 @@ public:
     void frame();
     void tick(float* samples);
     void loadAll(int);
+    void setParams() override;
     
 private:
     

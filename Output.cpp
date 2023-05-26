@@ -16,6 +16,7 @@ Output::Output(const String& n, ElectroAudioProcessor& p,
                AudioProcessorValueTreeState& vts) :
 AudioComponent(n, p, vts, cOutputParams, false)
 {
+    setParams();
     master = std::make_unique<SmoothedParameter>(processor, vts, "Master");
     for (int i = 0; i < MAX_NUM_VOICES; i++)
     {

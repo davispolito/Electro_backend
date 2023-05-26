@@ -15,7 +15,8 @@
 Filter::Filter(const String& n, ElectroAudioProcessor& p,
                              AudioProcessorValueTreeState& vts) :
 AudioComponent(n, p, vts, cFilterParams, true)
-{    
+{
+    setParams();
     for (int i = 0; i < MAX_NUM_VOICES; i++)
     {
         tSVF_init(&lowpass[i], SVFTypeLowpass, 2000.f, 0.7f, &processor.leaf);
@@ -127,7 +128,7 @@ void Filter::tick(float* samples)
         {
             setGain(gain, v);
         }
-        LEAF_clip(0.f, keyFollow, 1.f);
+        //LEAF_clip(0.f, keyFollow, 1.f);
         
         float follow = processor.voiceNote[v];
         if (isnan(follow))
@@ -154,8 +155,8 @@ void Filter::loadAll(int v)
     quickParams[FilterCutoff][v]->setValueToRaw();
     quickParams[FilterResonance][v]->setValueToRaw();
     quickParams[FilterGain][v]->setValueToRaw();
-    setQ(v,quickParams[FilterResonance][v]->read());
-    setGain(v, quickParams[FilterGain][v]->read());
+    setQ(quickParams[FilterResonance][v]->read(),v);
+    setGain(quickParams[FilterGain][v]->read(),v);
 }
 
 void Filter::lowpassTick(float& sample, int v, float cutoff, float q, float morph, float gain)
@@ -311,5 +312,60 @@ void Filter::setGain(float gain, int v)
             
         default:
             break;
+    }
+}
+
+
+void Filter::setParams()
+{
+//    "Cutoff",
+//    "Gain",
+//    "Resonance",
+//    "KeyFollow"
+    for (int i = 0; i < 2; ++i)
+    {
+        String pn = AudioComponent::name + " " + paramNames[i];
+        params.add(new OwnedArray<SmoothedParameter>());
+        for (int v = 0; v < MAX_NUM_VOICES; ++v)
+        {
+           
+            params[i]->add(new SmoothedParameter(processor, vts, pn));
+            quickParams[i][v] = params[i]->getUnchecked(v);
+        }
+        for (int t = 0; t < 3; ++t)
+        {
+            String targetName = pn + " T" + String(t+1);
+            targets.add(new MappingTargetModel(processor, targetName, *params.getLast(), t));
+            processor.addMappingTarget(targets.getLast());
+        }
+    }
+    String pn = AudioComponent::name + " " + paramNames[2];
+    params.add(new OwnedArray<SmoothedParameter>());
+    for (int v = 0; v < MAX_NUM_VOICES; ++v)
+    {
+       
+        params[2]->add(new SkewedParameter(processor, vts, pn, 0.01f, 10.0f, 0.5f));
+        quickParams[2][v] = params[2]->getUnchecked(v);
+    }
+    for (int t = 0; t < 3; ++t)
+    {
+        String targetName = pn + " T" + String(t+1);
+        targets.add(new MappingTargetModel(processor, targetName, *params.getLast(), t));
+        processor.addMappingTarget(targets.getLast());
+    }
+    
+    pn = AudioComponent::name + " " + paramNames[3];
+    params.add(new OwnedArray<SmoothedParameter>());
+    for (int v = 0; v < MAX_NUM_VOICES; ++v)
+    {
+       
+        params[3]->add(new SmoothedParameter(processor, vts, pn));
+        quickParams[3][v] = params[3]->getUnchecked(v);
+    }
+    for (int t = 0; t < 3; ++t)
+    {
+        String targetName = pn + " T" + String(t+1);
+        targets.add(new MappingTargetModel(processor, targetName, *params.getLast(), t));
+        processor.addMappingTarget(targets.getLast());
     }
 }

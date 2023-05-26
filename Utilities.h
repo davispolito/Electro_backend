@@ -62,15 +62,11 @@ public:
                       String paramId);
     ~SmoothedParameter() {};
     //==============================================================================
-    float tick();
+    virtual float tick();
     float tickNoHooks();
     float tickNoHooksNoSmoothing();
-    void tickSkewsNoHooks();
 
     float get();
-    float get(int i);
-    float** getValuePointerArray();
-    float** getValuePointerArray(int i);
     
     ParameterHook& getHook(int index);
     void setHook(const String& sourceName, int index,
@@ -97,7 +93,11 @@ public:
     {
         value = *raw;
     }
-private:
+   float* getValuePointer()
+    {
+       return valuePointer;
+    }
+protected:
     ElectroAudioProcessor& processor;
     String name;
     bool removeMe;
@@ -106,8 +106,6 @@ private:
     NormalisableRange<float> range;
     float value = 0.f;
     float* valuePointer = &value;
-    float values[MAX_NUM_UNIQUE_SKEWS];
-    float* valuePointers[MAX_NUM_UNIQUE_SKEWS];
     ParameterHook hooks[3];
     int numSmoothedHooks = 0;
     int numNonSmoothedHooks = 0;
@@ -119,6 +117,62 @@ private:
     float value1 = 1.0f;
 };
 
+class SkewedParameter : public SmoothedParameter
+{
+public:
+    SkewedParameter(ElectroAudioProcessor& processor, AudioProcessorValueTreeState& vts,
+                 String paramId, float start, float end, float center)
+    : SmoothedParameter(processor, vts, paramId)
+    {
+
+         LEAF_generate_table_skew_non_sym(skewTable, start, end, center, 2048);
+    }
+    
+    float tick() override
+    {
+        
+        // Well defined inter-thread behavior PROBABLY shouldn't be an issue here, so
+        // the atomic is just slowing us down. memory_order_relaxed seems fastest, marginally
+        removeMe = false;
+        float target = raw->load(std::memory_order_relaxed);
+        //bool isSmoothed = false;
+        for (int i = 0; i < numSmoothedHooks; ++i)
+        {
+            target += scale(hooks[smoothedHooks[i]].getValue());
+        }
+        smoothed.setTargetValue(target);
+        value = smoothed.getNextValue();
+        for (int i = 0; i < numNonSmoothedHooks; ++i)
+        {
+            value += scale(hooks[nonSmoothedHooks[i]].getValue());
+        }
+        if ((numSmoothedHooks == 0) && (numNonSmoothedHooks == 0))
+        {
+            if (value == target)
+            {
+                removeMe = true;
+            }
+        }
+        return value;
+        
+    }
+    
+private:
+    float skewTable[2048];
+    float scale(float input)
+    {
+        //lookup table for env times
+        input = LEAF_clip(0.0f, input, 1.0f);
+        //scale to lookup range
+        input *= 2047.0f;
+        int inputInt = (int)input;
+        float inputFloat = (float)inputInt - input;
+        int nextPos = LEAF_clip(0, inputInt + 1, 2047);
+        return (skewTable[inputInt] * (1.0f - inputFloat)) + (skewTable[nextPos] * inputFloat);
+
+        //return
+    }
+};
 //==============================================================================
 //==============================================================================
 
@@ -131,7 +185,7 @@ public:
     
     bool isBipolar() { return bipolar; }
 
-    float** getValuePointerArray(int i);
+    float* getValuePointerArray();
     int getNumSourcePointers();
     
     String name;
@@ -139,7 +193,7 @@ public:
     int numSourcePointers;
     bool bipolar;
     Colour colour;
-    float** sources[MAX_NUM_UNIQUE_SKEWS];
+    float* source;
 private:
     ElectroAudioProcessor& modelProcessor;
     
@@ -196,7 +250,8 @@ public:
     
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock);
-    
+    void virtual setParams();
+
     //==============================================================================
     OwnedArray<SmoothedParameter>& getParameterArray(int p);
     int getParamArraySize() {return params.size();}

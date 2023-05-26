@@ -24,6 +24,7 @@ public:
     ~Envelope();
     
     //==============================================================================
+    void setParams() override;
     void prepareToPlay (double sampleRate, int samplesPerBlock);
     void frame();
     void tick();
@@ -37,8 +38,6 @@ private:
     RangedAudioParameter* useVelocity;
     bool isAmpEnv = false;
     tADSRT envs[MAX_NUM_VOICES];
-    
-    float* sourceValues[MAX_NUM_UNIQUE_SKEWS];
     
     float expBuffer[EXP_BUFFER_SIZE];
     float expBufferSizeMinusOne;

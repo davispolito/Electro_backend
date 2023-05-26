@@ -32,11 +32,6 @@ removeMe(true)
     }
     processor.params.add(this);
     
-    for (int i = 0; i < processor.numInvParameterSkews; ++i)
-    {
-        values[i] = value;
-        valuePointers[i] = &values[i];
-    }
 }
 
 float SmoothedParameter::tick()
@@ -77,36 +72,12 @@ float SmoothedParameter::tickNoHooksNoSmoothing()
     return value = raw->load(std::memory_order_relaxed);
 }
 
-void SmoothedParameter::tickSkewsNoHooks()
-{
-    smoothed.setTargetValue(raw->load(std::memory_order_relaxed));
-    value = smoothed.getNextValue();
-    for (int i = 0; i < processor.numInvParameterSkews; ++i)
-    {
-        float invSkew = processor.quickInvParameterSkews[i];
-        values[i] = powf(value, invSkew);
-    }
-}
 
 float SmoothedParameter::get()
 {
     return value;
 }
 
-float SmoothedParameter::get(int i)
-{
-    return values[i];
-}
-
-float** SmoothedParameter::getValuePointerArray()
-{
-    return &valuePointer;
-}
-
-float** SmoothedParameter::getValuePointerArray(int i)
-{
-    return &valuePointers[i];
-}
 
 ParameterHook& SmoothedParameter::getHook(int index)
 {
@@ -226,17 +197,20 @@ bipolar(bipolar),
 colour(colour),
 modelProcessor(p)
 {
+    source = (float*) leaf_alloc(&p.leaf, sizeof(float) * MAX_NUM_VOICES);
     p.addMappingSource(this);
 }
 
 MappingSourceModel::~MappingSourceModel()
 {
-    
+    if (source != nullptr)
+        leaf_free(&modelProcessor.leaf, (char*)source);
+    source = nullptr;
 }
 
-float** MappingSourceModel::getValuePointerArray(int i)
+float* MappingSourceModel::getValuePointerArray()
 {
-    return sources[i];
+    return source;
 }
 
 int MappingSourceModel::getNumSourcePointers()
@@ -255,7 +229,7 @@ name(name),
 targetParameters(targetParameters),
 index(index)
 {
-    invSkew = targetParameters[0]->getInvSkew();
+    //invSkew = targetParameters[0]->getInvSkew();
 }
 
 MappingTargetModel::~MappingTargetModel()
@@ -294,7 +268,7 @@ void MappingTargetModel::setMapping(MappingSourceModel* source, float e, bool se
     }
     
     float* sourceArray =
-    *source->getValuePointerArray(processor.invParameterSkews.indexOf(invSkew));
+    source->getValuePointerArray();
     for (auto param : targetParameters)
     {
         param->setHook(source->name, index, &sourceArray[i%n], start, end);
@@ -346,7 +320,7 @@ void MappingTargetModel::setMappingScalar(MappingSourceModel* source, bool sendC
     int i = 0;
     int n = source->getNumSourcePointers();
     
-    float* sourceArray = *source->getValuePointerArray(0);
+    float* sourceArray = source->getValuePointerArray();
     for (auto param : targetParameters)
     {
         param->setHookScalar(source->name, index, &sourceArray[i%n]);
@@ -402,23 +376,6 @@ vts(vts),
 paramNames(s),
 toggleable(toggleable)
 {
-    for (int i = 0; i < paramNames.size(); ++i)
-    {
-        String pn = name + " " + paramNames[i];
-        params.add(new OwnedArray<SmoothedParameter>());
-        for (int v = 0; v < MAX_NUM_VOICES; ++v)
-        {
-           
-            params[i]->add(new SmoothedParameter(p, vts, pn));
-            quickParams[i][v] = params[i]->getUnchecked(v);
-        }
-        for (int t = 0; t < 3; ++t)
-        {
-            String targetName = pn + " T" + String(t+1);
-            targets.add(new MappingTargetModel(processor, targetName, *params.getLast(), t));
-            processor.addMappingTarget(targets.getLast());
-        }
-    }
     
     if (toggleable)
     {
@@ -433,6 +390,28 @@ toggleable(toggleable)
 AudioComponent::~AudioComponent()
 {
 }
+
+void AudioComponent::setParams()
+{
+    for (int i = 0; i < paramNames.size(); ++i)
+    {
+        String pn = name + " " + paramNames[i];
+        params.add(new OwnedArray<SmoothedParameter>());
+        for (int v = 0; v < MAX_NUM_VOICES; ++v)
+        {
+           
+            params[i]->add(new SmoothedParameter(processor, vts, pn));
+            quickParams[i][v] = params[i]->getUnchecked(v);
+        }
+        for (int t = 0; t < 3; ++t)
+        {
+            String targetName = pn + " T" + String(t+1);
+            targets.add(new MappingTargetModel(processor, targetName, *params.getLast(), t));
+            processor.addMappingTarget(targets.getLast());
+        }
+    }
+}
+
 
 void AudioComponent::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
