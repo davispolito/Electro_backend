@@ -635,10 +635,10 @@ void TuningTab::buttonClicked (Button *b)
     }
     else if (b == &sendTuningButton)
     {
-        processor.sendTuningMidiMessage(tuningNameEditor.getText(), tuningNumber.getValue());
+//        processor.sendTuningMidiMessage(tuningNameEditor.getText(), tuningNumber.getValue());
     }
     else if (b==& sendOpenStrings)
     {
-        processor.sendOpenStringMidiMessage();
+        //processor.sendOpenStringMidiMessage();
     }
 }
