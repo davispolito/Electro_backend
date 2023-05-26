@@ -17,12 +17,7 @@ Envelope::Envelope(const String& n, ElectroAudioProcessor& p,
 AudioComponent(n, p, vts, cEnvelopeParams, false),
 MappingSourceModel(p, n, true, false, Colours::deepskyblue)
 {
-    for (int i = 0; i < processor.numInvParameterSkews; ++i)
-    {
-        sourceValues[i] = (float*) leaf_alloc(&processor.leaf, sizeof(float) * MAX_NUM_VOICES);
-        sources[i] = &sourceValues[i];
-    }
-    
+    setParams();
     useVelocity = vts.getParameter(n + " Velocity");
     
     //exponential buffer rising from 0 to 1
@@ -47,11 +42,6 @@ MappingSourceModel(p, n, true, false, Colours::deepskyblue)
 
 Envelope::~Envelope()
 {
-    for (int i = 0; i < processor.numInvParameterSkews; ++i)
-    {
-        leaf_free(&processor.leaf, (char*)sourceValues[i]);
-    }
-    
     for (int i = 0; i < MAX_NUM_VOICES; i++)
     {
         tADSRT_free(&envs[i]);
@@ -145,30 +135,19 @@ void Envelope::tick()
 
         float value = tADSRT_tick(&envs[v]);
         
-        sourceValues[0][v] = value;
-        for (int i = 1; i < processor.numInvParameterSkews; ++i)
-        {
-            float invSkew = processor.quickInvParameterSkews[i];
-            sourceValues[i][v] = value;//powf(value, invSkew);
-        }
-        //sourceValues[0][v] = value;
+        source[v] = value;
         if (isAmpEnv)
         {
-//            if (processor.strings[0]->numVoices > 1)
-//            {
                 if (processor.strings[0]->voices[v][0] == -2)
                 {
                     if (envs[v]->whichStage == env_idle)
                     {
                         tSimplePoly_deactivateVoice(&processor.strings[0], v);
                         processor.voiceIsSounding[v] = false;
-                        //DBG("Voice Ended");
                     }
                 }
-//            }
         }
     }
-//    sampleInBlock++;
 }
 
 void Envelope::noteOn(int voice, float velocity)
@@ -182,4 +161,76 @@ void Envelope::noteOff(int voice, float velocity)
 {
     
     tADSRT_off(&envs[voice]);
+}
+
+void Envelope::setParams()
+{
+    //        "Attack",
+    //        "Decay",
+    //        "Sustain",
+    //        "Release",
+    //        "Leak"
+    for (int i = 0; i < 2; ++i)
+    {
+        String pn = AudioComponent::name + " " + paramNames[i];
+        params.add(new OwnedArray<SmoothedParameter>());
+        for (int v = 0; v < MAX_NUM_VOICES; ++v)
+        {
+            
+            params[i]->add(new SkewedParameter(processor, vts, pn, 0.0f, 30.0f, 2.0f));
+            quickParams[i][v] = params[i]->getUnchecked(v);
+        }
+        for (int t = 0; t < 3; ++t)
+        {
+            String targetName = pn + " T" + String(t+1);
+            targets.add(new MappingTargetModel(processor, targetName, *params.getLast(), t));
+            processor.addMappingTarget(targets.getLast());
+        }
+    }
+    //sustain
+    String pn = AudioComponent::name + " " + paramNames[2];
+    params.add(new OwnedArray<SmoothedParameter>());
+    for (int v = 0; v < MAX_NUM_VOICES; ++v)
+    {
+       
+        params[2]->add(new SmoothedParameter(processor, vts, pn));
+        quickParams[2][v] = params[2]->getUnchecked(v);
+    }
+    for (int t = 0; t < 3; ++t)
+    {
+        String targetName = pn + " T" + String(t+1);
+        targets.add(new MappingTargetModel(processor, targetName, *params.getLast(), t));
+        processor.addMappingTarget(targets.getLast());
+    }
+    //release
+    pn = AudioComponent::name + " " + paramNames[3];
+    params.add(new OwnedArray<SmoothedParameter>());
+    for (int v = 0; v < MAX_NUM_VOICES; ++v)
+    {
+        
+        params[3]->add(new SkewedParameter(processor, vts, pn,  0.0f, 20000.0f, 4000.0f));
+        quickParams[3][v] = params[3]->getUnchecked(v);
+    }
+    for (int t = 0; t < 3; ++t)
+    {
+        String targetName = pn + " T" + String(t+1);
+        targets.add(new MappingTargetModel(processor, targetName, *params.getLast(), t));
+        processor.addMappingTarget(targets.getLast());
+    }
+    // leak
+    pn = AudioComponent::name + " " + paramNames[4];
+    params.add(new OwnedArray<SmoothedParameter>());
+    for (int v = 0; v < MAX_NUM_VOICES; ++v)
+    {
+       
+        params[4]->add(new SmoothedParameter(processor, vts, pn));
+        quickParams[4][v] = params[4]->getUnchecked(v);
+    }
+    for (int t = 0; t < 3; ++t)
+    {
+        String targetName = pn + " T" + String(t+1);
+        targets.add(new MappingTargetModel(processor, targetName, *params.getLast(), t));
+        processor.addMappingTarget(targets.getLast());
+    }
+     
 }

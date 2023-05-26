@@ -19,11 +19,7 @@ AudioComponent(n, p, vts, cOscParams, true),
 MappingSourceModel(p, n, true, true, Colours::darkorange),
 syncSource(nullptr)
 {
-    for (int i = 0; i < processor.numInvParameterSkews; ++i)
-    {
-        sourceValues[i] = (float*) leaf_alloc(&p.leaf, sizeof(float) * MAX_NUM_VOICES);
-        sources[i] = &sourceValues[i];
-    }
+    setParams();
     
     for (int i = 0; i < MAX_NUM_VOICES; i++)
     {
@@ -49,11 +45,6 @@ syncSource(nullptr)
 
 Oscillator::~Oscillator()
 {
-    for (int i = 0; i < processor.numInvParameterSkews; ++i)
-    {
-        leaf_free(&processor.leaf, (char*)sourceValues[i]);
-    }
-    
     for (int i = 0; i < MAX_NUM_VOICES; i++)
     {
         tMBSaw_free(&saw[i]);
@@ -220,12 +211,7 @@ void Oscillator::tick(float output[][MAX_NUM_VOICES])
         sample *= amp;
         
         float normSample = (sample + 1.f) * 0.5f;
-        sourceValues[0][v] = normSample;
-        for (int i = 1; i < processor.numInvParameterSkews; ++i)
-        {
-            float invSkew = processor.quickInvParameterSkews[i];
-            sourceValues[i][v] = normSample;//powf(normSample, invSkew);
-        }
+        source[v] = normSample;
         
         syncOut[v] = sample;
         
@@ -373,14 +359,8 @@ LowFreqOscillator::LowFreqOscillator(const String& n, ElectroAudioProcessor& p, 
 AudioComponent(n, p, vts, cLowFreqParams, false),
 MappingSourceModel(p, n, true, true, Colours::chartreuse)
 {
-    for (int i = 0; i < p.numInvParameterSkews; ++i)
-    {
-        sourceValues[i] = (float*) leaf_alloc(&p.leaf, sizeof(float) * MAX_NUM_VOICES);
-        sources[i] = &sourceValues[i];
-    }
-    
+    setParams();
     sync = vts.getParameter(n + " Sync");
-    
     for (int i = 0; i < MAX_NUM_VOICES; i++)
     {
         tIntPhasor_init(&saw[i], &processor.leaf);
@@ -399,11 +379,6 @@ MappingSourceModel(p, n, true, true, Colours::chartreuse)
 
 LowFreqOscillator::~LowFreqOscillator()
 {
-    for (int i = 0; i < processor.numInvParameterSkews; ++i)
-    {
-        leaf_free(&processor.leaf, (char*)sourceValues[i]);
-    }
-    
     for (int i = 0; i < MAX_NUM_VOICES; i++)
     {
         tIntPhasor_free(&saw[i]);
@@ -565,12 +540,7 @@ float LowFreqOscillator::tick()
         (this->*shapeTick)(sample, v);
         float normSample = (sample + 1.f) * 0.5f;
         r = sample;
-        sourceValues[0][v] = normSample;
-        for (int i = 1; i < processor.numInvParameterSkews; ++i)
-        {
-            float invSkew = processor.quickInvParameterSkews[i];
-            sourceValues[i][v] = normSample;//powf(normSample, invSkew);
-        }
+        source[v] = normSample;
     }
     sampleInBlock++;
     return r;
@@ -630,6 +600,43 @@ void LowFreqOscillator::noteOn(int voice, float velocity)
     }
 }
 
+void LowFreqOscillator::setParams() 
+{
+    //  "Rate",
+    //"Shape",
+    //"Phase"
+    String pn = AudioComponent::name + " " + paramNames[0];
+    params.add(new OwnedArray<SmoothedParameter>());
+    for (int v = 0; v < MAX_NUM_VOICES; ++v)
+    {
+       
+        params[0]->add(new SkewedParameter(processor, vts, pn, 0.0f, 30.0f, 2.0f));
+        quickParams[0][v] = params[0]->getUnchecked(v);
+    }
+    for (int t = 0; t < 3; ++t)
+    {
+        String targetName = pn + " T" + String(t+1);
+        targets.add(new MappingTargetModel(processor, targetName, *params.getLast(), t));
+        processor.addMappingTarget(targets.getLast());
+    }
+    for (int i = 1; i < paramNames.size(); ++i)
+    {
+        String pn = AudioComponent::name + " " + paramNames[i];
+        params.add(new OwnedArray<SmoothedParameter>());
+        for (int v = 0; v < MAX_NUM_VOICES; ++v)
+        {
+           
+            params[i]->add(new SmoothedParameter(processor, vts, pn));
+            quickParams[i][v] = params[i]->getUnchecked(v);
+        }
+        for (int t = 0; t < 3; ++t)
+        {
+            String targetName = pn + " T" + String(t+1);
+            targets.add(new MappingTargetModel(processor, targetName, *params.getLast(), t));
+            processor.addMappingTarget(targets.getLast());
+        }
+    }
+}
 
 //==============================================================================
 
@@ -637,12 +644,7 @@ NoiseGenerator::NoiseGenerator(const String& n, ElectroAudioProcessor& p, AudioP
 AudioComponent(n, p, vts, cNoiseParams, true),
 MappingSourceModel(p, n, true, true, Colours::darkorange)
 {
-    for (int i = 0; i < p.numInvParameterSkews; ++i)
-    {
-        sourceValues[i] = (float*) leaf_alloc(&p.leaf, sizeof(float) * MAX_NUM_VOICES);
-        sources[i] = &sourceValues[i];
-    }
-    
+    setParams();
     for (int i = 0; i < MAX_NUM_VOICES; i++)
     {
         tVZFilter_init(&shelf1[i], Lowshelf, 80.0f, 6.0f,   &processor.leaf);
@@ -658,11 +660,6 @@ MappingSourceModel(p, n, true, true, Colours::darkorange)
 
 NoiseGenerator::~NoiseGenerator()
 {
-    for (int i = 0; i < processor.numInvParameterSkews; ++i)
-    {
-        leaf_free(&processor.leaf, (char*)sourceValues[i]);
-    }
-    
     for (int i = 0; i < MAX_NUM_VOICES; i++)
     {
         tNoise_free(&noise[i]);
@@ -771,12 +768,7 @@ void NoiseGenerator::tick(float output[][MAX_NUM_VOICES])
         sample = sample * amp; 
         float normSample = (sample + 1.f) * 0.5f;
         //float normSample = sample;
-        sourceValues[0][v] = normSample;
-        for (int i = 1; i < processor.numInvParameterSkews; ++i)
-        {
-            float invSkew = processor.quickInvParameterSkews[i];
-            sourceValues[i][v] = normSample;//powf(normSample, invSkew);
-        }
+        source[v] = normSample;
         
         float f = filterSend->tickNoHooks();
         

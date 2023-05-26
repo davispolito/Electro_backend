@@ -71,7 +71,6 @@ private:
     
     tWaveOscS wave[MAX_NUM_VOICES];
     
-    float* sourceValues[MAX_NUM_UNIQUE_SKEWS];
    
     std::unique_ptr<SmoothedParameter> filterSend;
     std::atomic<float>* isHarmonic_raw;
@@ -98,7 +97,7 @@ public:
     //==============================================================================
     LowFreqOscillator(const String&, ElectroAudioProcessor&, AudioProcessorValueTreeState&);
     ~LowFreqOscillator();
-    
+    void setParams() override;
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock);
     void frame();
@@ -138,7 +137,6 @@ private:
     
     tWaveOscS wave[MAX_NUM_VOICES];
     
-    float* sourceValues[MAX_NUM_UNIQUE_SKEWS];
     
     float phaseReset;
     
@@ -169,5 +167,5 @@ private:
     
     std::unique_ptr<SmoothedParameter> filterSend;
     
-    float* sourceValues[MAX_NUM_UNIQUE_SKEWS];
+    float* sourceValue;
 };
